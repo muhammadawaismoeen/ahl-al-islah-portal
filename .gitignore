@@ -43,3 +43,8 @@ next-env.d.ts
 /data/submissions/*.json
 !/data/submissions/.gitkeep
 /data/uploads
+
+# editor / agent tooling
+/.claude
+/.vscode
+/.idea
