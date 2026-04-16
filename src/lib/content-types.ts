@@ -76,12 +76,15 @@ export interface FooterContent {
   quote: string;
   quoteAttribution: string;
   exploreHeading: string;
+  exploreLinks: Array<{ label: string; href: string }>;
   structureHeading: string;
   structureItems: string[];
   smallPrint: string;
 }
 
 export interface NavContent {
+  siteName: string;
+  siteNameArabic: string;
   items: Array<{ label: string; href: string }>;
   ctaLabel: string;
 }

@@ -3,10 +3,9 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight, Sparkles } from "lucide-react";
-import { AhlLogo } from "@/components/AhlLogo";
 import type { HeroContent } from "@/lib/content-types";
 
-export function Hero({ content }: { content: HeroContent }) {
+export function Hero({ content, customLogo }: { content: HeroContent; customLogo?: string }) {
   return (
     <section className="relative min-h-[90vh] flex items-center overflow-hidden pt-24 pb-20">
       <div className="absolute inset-0 geometric-bg opacity-40" />
@@ -25,14 +24,17 @@ export function Hero({ content }: { content: HeroContent }) {
             <span>{content.eyebrow}</span>
           </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, delay: 0.1 }}
-            className="flex items-center justify-center mb-6"
-          >
-            <AhlLogo className="h-20 w-20 sm:h-24 sm:w-24 text-emerald-deep animate-float" />
-          </motion.div>
+          {customLogo && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8, delay: 0.1 }}
+              className="flex items-center justify-center mb-6"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={customLogo} alt="" className="h-20 w-20 sm:h-24 sm:w-24 object-contain animate-float" />
+            </motion.div>
+          )}
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}

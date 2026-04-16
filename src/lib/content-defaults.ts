@@ -18,6 +18,8 @@ import type { QuestionSet } from "./questions";
  */
 export const DEFAULT_CONTENT: SiteContent = {
   nav: {
+    siteName: "Ahl Al-Islah",
+    siteNameArabic: "أهل الإصلاح",
     items: [
       { label: "About", href: "/#about" },
       { label: "Model", href: "/#structure" },
@@ -204,6 +206,12 @@ export const DEFAULT_CONTENT: SiteContent = {
       "\u201CIndeed, Allah does not change the condition of a people until they change what is within themselves.\u201D",
     quoteAttribution: "— Surah Ar-Ra'd, 13:11",
     exploreHeading: "Explore",
+    exploreLinks: [
+      { label: "About", href: "/#about" },
+      { label: "Model", href: "/#structure" },
+      { label: "Roadmap", href: "/#roadmap" },
+      { label: "Open Positions", href: "/positions" },
+    ],
     structureHeading: "Leadership",
     structureItems: [
       "Advisor — Unified Coordinator",

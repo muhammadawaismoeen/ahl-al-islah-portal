@@ -1,9 +1,16 @@
 import Link from "next/link";
-import { AhlLogo } from "./AhlLogo";
 import { DEFAULT_CONTENT } from "@/lib/content-defaults";
-import type { FooterContent } from "@/lib/content-types";
+import type { FooterContent, NavContent } from "@/lib/content-types";
 
-export function Footer({ content = DEFAULT_CONTENT.footer, customLogo }: { content?: FooterContent; customLogo?: string }) {
+export function Footer({
+  content = DEFAULT_CONTENT.footer,
+  navContent = DEFAULT_CONTENT.nav,
+  customLogo,
+}: {
+  content?: FooterContent;
+  navContent?: NavContent;
+  customLogo?: string;
+}) {
   return (
     <footer className="relative mt-32 border-t border-cream-muted bg-ink text-cream">
       <div className="absolute inset-0 geometric-bg opacity-30 pointer-events-none" />
@@ -11,19 +18,19 @@ export function Footer({ content = DEFAULT_CONTENT.footer, customLogo }: { conte
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
           <div className="md:col-span-2 space-y-4">
             <div className="flex items-center gap-3">
-              {customLogo ? (
+              {customLogo && (
                 /* eslint-disable-next-line @next/next/no-img-element */
-                <img src={customLogo} alt="Ahl Al-Islah" className="h-10 w-10 object-contain" />
-              ) : (
-                <AhlLogo className="h-10 w-10 text-gold-warm" />
+                <img src={customLogo} alt={navContent.siteName} className="h-10 w-10 object-contain" />
               )}
               <div className="flex flex-col leading-none">
                 <span className="font-serif text-xl font-semibold text-cream">
-                  Ahl Al-Islah
+                  {navContent.siteName}
                 </span>
-                <span className="arabic-text text-sm text-gold-soft">
-                  أهل الإصلاح
-                </span>
+                {navContent.siteNameArabic && (
+                  <span className="arabic-text text-sm text-gold-soft">
+                    {navContent.siteNameArabic}
+                  </span>
+                )}
               </div>
             </div>
             <p className="text-cream/70 text-sm max-w-md leading-relaxed">
@@ -40,38 +47,16 @@ export function Footer({ content = DEFAULT_CONTENT.footer, customLogo }: { conte
               {content.exploreHeading}
             </h4>
             <ul className="space-y-2 text-sm">
-              <li>
-                <Link
-                  href="/#about"
-                  className="text-cream/80 hover:text-gold-soft transition"
-                >
-                  About
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/#structure"
-                  className="text-cream/80 hover:text-gold-soft transition"
-                >
-                  Model
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/#roadmap"
-                  className="text-cream/80 hover:text-gold-soft transition"
-                >
-                  Roadmap
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/positions"
-                  className="text-cream/80 hover:text-gold-soft transition"
-                >
-                  Open Positions
-                </Link>
-              </li>
+              {content.exploreLinks.map((link, i) => (
+                <li key={i}>
+                  <Link
+                    href={link.href}
+                    className="text-cream/80 hover:text-gold-soft transition"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
@@ -89,7 +74,7 @@ export function Footer({ content = DEFAULT_CONTENT.footer, customLogo }: { conte
 
         <div className="mt-12 pt-8 border-t border-cream/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-cream/50">
           <p>
-            &copy; {new Date().getFullYear()} Ahl Al-Islah. For internal use.
+            &copy; {new Date().getFullYear()} {navContent.siteName}. For internal use.
           </p>
           <p className="text-cream/50">{content.smallPrint}</p>
         </div>

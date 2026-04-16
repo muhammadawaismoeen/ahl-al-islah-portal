@@ -4,6 +4,7 @@ import { ArrowRight, CalendarClock, Clock, Users } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { getAllPositions, type Position } from "@/lib/positions";
+import { getContent } from "@/lib/content-store";
 
 export const metadata: Metadata = {
   title: "Open Positions",
@@ -104,14 +105,17 @@ function PositionCard({ position }: { position: Position }) {
   );
 }
 
-export default function PositionsPage() {
+export const dynamic = "force-dynamic";
+
+export default async function PositionsPage() {
   const positions = getAllPositions();
+  const content = await getContent();
   const open = positions.filter((p) => p.open);
   const closed = positions.filter((p) => !p.open);
 
   return (
     <>
-      <Navbar />
+      <Navbar content={content.nav} customLogo={content.customLogo} />
       <main className="pt-32 pb-20">
         <div className="container-prose">
           <div className="max-w-3xl mx-auto text-center mb-16">
@@ -168,7 +172,7 @@ export default function PositionsPage() {
           </div>
         </div>
       </main>
-      <Footer />
+      <Footer content={content.footer} navContent={content.nav} customLogo={content.customLogo} />
     </>
   );
 }

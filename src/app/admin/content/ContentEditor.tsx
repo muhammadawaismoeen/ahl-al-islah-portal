@@ -418,8 +418,24 @@ export function ContentEditor({
         </div>
       </Section>
 
-      {/* ─── Navigation ─── */}
-      <Section title="Navigation" icon="🧭" defaultOpen={true}>
+      {/* ─── Navigation / Header ─── */}
+      <Section title="Header &amp; Navigation" icon="🧭" defaultOpen={true}>
+        <div className="grid sm:grid-cols-2 gap-4">
+          <Field label="Site Name" help="Shown in header and footer">
+            <TextInput
+              value={content.nav.siteName}
+              onChange={(v) => set("nav", { siteName: v })}
+              placeholder="e.g., Ahl Al-Islah"
+            />
+          </Field>
+          <Field label="Site Name (Arabic)" help="Shown below the site name">
+            <TextInput
+              value={content.nav.siteNameArabic}
+              onChange={(v) => set("nav", { siteNameArabic: v })}
+              placeholder="e.g., أهل الإصلاح"
+            />
+          </Field>
+        </div>
         <Field label="CTA Button Label" help="The primary button in the navbar">
           <TextInput
             value={content.nav.ctaLabel}
@@ -1084,6 +1100,54 @@ export function ContentEditor({
               onChange={(v) => set("footer", { structureHeading: v })}
             />
           </Field>
+        </div>
+        <div>
+          <p className="text-xs uppercase tracking-wider text-ink/50 font-medium mb-2">
+            Footer Links (Explore column)
+          </p>
+          {(content.footer.exploreLinks ?? []).map((link, i) => (
+            <div key={i} className="flex items-center gap-2 mb-2">
+              <TextInput
+                value={link.label}
+                onChange={(v) => {
+                  const links = [...(content.footer.exploreLinks ?? [])];
+                  links[i] = { ...links[i], label: v };
+                  set("footer", { exploreLinks: links });
+                }}
+                placeholder="Label"
+              />
+              <TextInput
+                value={link.href}
+                onChange={(v) => {
+                  const links = [...(content.footer.exploreLinks ?? [])];
+                  links[i] = { ...links[i], href: v };
+                  set("footer", { exploreLinks: links });
+                }}
+                placeholder="href"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  const links = (content.footer.exploreLinks ?? []).filter((_, idx) => idx !== i);
+                  set("footer", { exploreLinks: links });
+                }}
+                className="p-2 text-red-400 hover:text-red-600 transition shrink-0"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={() => {
+              set("footer", {
+                exploreLinks: [...(content.footer.exploreLinks ?? []), { label: "", href: "/" }],
+              });
+            }}
+            className="text-xs text-emerald-deep hover:underline flex items-center gap-1 mt-1"
+          >
+            <Plus className="h-3 w-3" /> Add footer link
+          </button>
         </div>
         <Field label="Structure Items (one per line)">
           <TextArea

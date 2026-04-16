@@ -16,13 +16,13 @@ export default async function HomePage() {
     <>
       <Navbar content={content.nav} customLogo={content.customLogo} />
       <main>
-        {v.hero && <Hero content={content.hero} />}
+        {v.hero && <Hero content={content.hero} customLogo={content.customLogo} />}
         {v.about && <About content={content.about} />}
         {v.structure && <Structure content={content.structure} />}
         {v.roadmap && <Roadmap content={content.roadmap} />}
         {v.cta && <CTA content={content.cta} />}
       </main>
-      <Footer content={content.footer} customLogo={content.customLogo} />
+      <Footer content={content.footer} navContent={content.nav} customLogo={content.customLogo} />
     </>
   );
 }

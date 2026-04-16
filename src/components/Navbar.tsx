@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
-import { AhlLogo } from "./AhlLogo";
 import { cn } from "@/lib/utils";
 import { DEFAULT_CONTENT } from "@/lib/content-defaults";
 import type { NavContent } from "@/lib/content-types";
@@ -32,21 +31,21 @@ export function Navbar({ content = DEFAULT_CONTENT.nav, customLogo }: { content?
         <Link
           href="/"
           className="flex items-center gap-3 group"
-          aria-label="Ahl Al-Islah home"
+          aria-label={`${content.siteName} home`}
         >
-          {customLogo ? (
+          {customLogo && (
             /* eslint-disable-next-line @next/next/no-img-element */
-            <img src={customLogo} alt="Ahl Al-Islah" className="h-9 w-9 sm:h-10 sm:w-10 object-contain transition-transform group-hover:scale-105" />
-          ) : (
-            <AhlLogo className="h-9 w-9 sm:h-10 sm:w-10 text-emerald-deep transition-transform group-hover:scale-105" />
+            <img src={customLogo} alt={content.siteName} className="h-9 w-9 sm:h-10 sm:w-10 object-contain transition-transform group-hover:scale-105" />
           )}
           <div className="flex flex-col leading-none">
             <span className="font-serif text-lg sm:text-xl font-semibold text-emerald-deep">
-              Ahl Al-Islah
+              {content.siteName}
             </span>
-            <span className="arabic-text text-xs text-gold-antique">
-              أهل الإصلاح
-            </span>
+            {content.siteNameArabic && (
+              <span className="arabic-text text-xs text-gold-antique">
+                {content.siteNameArabic}
+              </span>
+            )}
           </div>
         </Link>
 

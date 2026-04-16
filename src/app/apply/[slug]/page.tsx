@@ -83,7 +83,7 @@ export default async function ApplyPage({ params }: Props) {
 
   return (
     <>
-      <Navbar />
+      <Navbar content={content.nav} customLogo={content.customLogo} />
       <main className="pt-28 pb-20">
         <div className="container-prose">
           <Link
@@ -211,7 +211,7 @@ export default async function ApplyPage({ params }: Props) {
           )}
         </div>
       </main>
-      <Footer />
+      <Footer content={content.footer} navContent={content.nav} customLogo={content.customLogo} />
     </>
   );
 }
