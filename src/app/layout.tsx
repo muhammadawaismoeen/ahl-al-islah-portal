@@ -29,16 +29,16 @@ export const metadata: Metadata = {
     template: "%s | Ahl Al-Islah",
   },
   description:
-    "A Shariah-first department within Humanity Still Exists (HSE), powered by Rijal Al-Huda. Reviving the Prophetic spirit of guidance and service in medical education through a dual-wing model of brotherhood and sisterhood.",
+    "A student-led community within Humanity Still Exists (HSE), powered by Rijal Al-Huda — cultivating character, purpose, and service in medical education through dedicated brothers' and sisters' programming.",
   keywords: [
     "Ahl Al-Islah",
-    "Islamic medical students",
+    "Muslim medical students",
     "Rijal Al-Huda",
     "HSE",
     "medical college",
-    "Islamic leadership",
-    "brotherhood",
-    "sisterhood",
+    "student leadership",
+    "community",
+    "service",
   ],
   authors: [{ name: "Muhammad Awais Moeen" }],
   openGraph: {

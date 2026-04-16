@@ -147,10 +147,17 @@ function Section({
         hasVisibility && !visible ? "opacity-60" : ""
       }`}
     >
-      <button
-        type="button"
+      <div
+        role="button"
+        tabIndex={0}
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between p-5 hover:bg-cream-warm/30 transition text-left"
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            setOpen(!open);
+          }
+        }}
+        className="w-full flex items-center justify-between p-5 hover:bg-cream-warm/30 transition text-left cursor-pointer select-none"
       >
         <div className="flex items-center gap-3 min-w-0 flex-1">
           {icon && <span className="text-lg shrink-0">{icon}</span>}
@@ -165,7 +172,10 @@ function Section({
         </div>
         <div className="flex items-center gap-3 shrink-0 ml-3">
           {hasVisibility && (
-            <div className="flex items-center gap-2">
+            <div
+              className="flex items-center gap-2"
+              onClick={(e) => e.stopPropagation()}
+            >
               {visible ? (
                 <Eye className="h-3.5 w-3.5 text-emerald-deep" />
               ) : (
@@ -184,7 +194,7 @@ function Section({
             }`}
           />
         </div>
-      </button>
+      </div>
       {open && (
         <div className="px-5 pb-6 pt-2 border-t border-cream-muted space-y-5">
           {children}
