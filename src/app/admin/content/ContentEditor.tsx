@@ -407,7 +407,7 @@ export function ContentEditor({
       </Section>
 
       {/* ─── Navigation ─── */}
-      <Section title="Navigation" icon="🧭">
+      <Section title="Navigation" icon="🧭" defaultOpen={true}>
         <Field label="CTA Button Label" help="The primary button in the navbar">
           <TextInput
             value={content.nav.ctaLabel}
@@ -469,7 +469,7 @@ export function ContentEditor({
         title="Hero"
         subtitle={content.hero.englishTitle}
         icon="🏠"
-        defaultOpen
+        defaultOpen={true}
         visible={content.visibility.hero}
         onVisibilityChange={(v) => setVis("hero", v)}
       >
@@ -577,6 +577,7 @@ export function ContentEditor({
         title="About / Vision & Mission"
         subtitle={content.about.heading}
         icon="📖"
+        defaultOpen={true}
         visible={content.visibility.about}
         onVisibilityChange={(v) => setVis("about", v)}
       >
@@ -736,6 +737,7 @@ export function ContentEditor({
         title="Organizational Model"
         subtitle={content.structure.heading}
         icon="🏛️"
+        defaultOpen={true}
         visible={content.visibility.structure}
         onVisibilityChange={(v) => setVis("structure", v)}
       >
@@ -877,6 +879,7 @@ export function ContentEditor({
         title="Roadmap"
         subtitle={content.roadmap.heading}
         icon="🗓️"
+        defaultOpen={true}
         visible={content.visibility.roadmap}
         onVisibilityChange={(v) => setVis("roadmap", v)}
       >
@@ -1003,6 +1006,7 @@ export function ContentEditor({
         title="Call to Action"
         subtitle={content.cta.heading}
         icon="📢"
+        defaultOpen={true}
         visible={content.visibility.cta}
         onVisibilityChange={(v) => setVis("cta", v)}
       >
@@ -1034,7 +1038,7 @@ export function ContentEditor({
       </Section>
 
       {/* ─── Footer ─── */}
-      <Section title="Footer" subtitle="Always visible" icon="📋">
+      <Section title="Footer" subtitle="Always visible" icon="📋" defaultOpen={true}>
         <Field label="Tagline">
           <TextArea
             value={content.footer.tagline}
