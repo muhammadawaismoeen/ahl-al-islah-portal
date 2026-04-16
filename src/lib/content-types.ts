@@ -107,4 +107,5 @@ export interface SiteContent {
   footer: FooterContent;
   nav: NavContent;
   visibility: SectionVisibility;
+  customLogo: string; // base64 data URL, or empty string for default SVG
 }

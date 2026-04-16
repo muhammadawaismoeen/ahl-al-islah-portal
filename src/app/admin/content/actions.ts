@@ -6,14 +6,23 @@ import { getContent, saveContent, resetContent } from "@/lib/content-store";
 import type { SiteContent } from "@/lib/content-types";
 
 /**
- * Save the full site content payload. Revalidates all pages
- * so the next request sees the updated text.
+ * Save the full site content payload. Accepts a JSON string and
+ * parses server-side to guard against stale client JS sending an
+ * incompatible object shape. Revalidates all pages so the next
+ * request sees the updated text.
  */
 export async function updateContent(
-  content: SiteContent
+  jsonString: string
 ): Promise<{ ok: boolean; error?: string }> {
   const authed = await isAuthenticated();
   if (!authed) return { ok: false, error: "Not authenticated." };
+
+  let content: SiteContent;
+  try {
+    content = JSON.parse(jsonString) as SiteContent;
+  } catch {
+    return { ok: false, error: "Invalid JSON payload." };
+  }
 
   try {
     await saveContent(content);

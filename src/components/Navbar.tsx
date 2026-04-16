@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import { DEFAULT_CONTENT } from "@/lib/content-defaults";
 import type { NavContent } from "@/lib/content-types";
 
-export function Navbar({ content = DEFAULT_CONTENT.nav }: { content?: NavContent }) {
+export function Navbar({ content = DEFAULT_CONTENT.nav, customLogo }: { content?: NavContent; customLogo?: string }) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
@@ -34,7 +34,12 @@ export function Navbar({ content = DEFAULT_CONTENT.nav }: { content?: NavContent
           className="flex items-center gap-3 group"
           aria-label="Ahl Al-Islah home"
         >
-          <AhlLogo className="h-9 w-9 sm:h-10 sm:w-10 text-emerald-deep transition-transform group-hover:scale-105" />
+          {customLogo ? (
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img src={customLogo} alt="Ahl Al-Islah" className="h-9 w-9 sm:h-10 sm:w-10 object-contain transition-transform group-hover:scale-105" />
+          ) : (
+            <AhlLogo className="h-9 w-9 sm:h-10 sm:w-10 text-emerald-deep transition-transform group-hover:scale-105" />
+          )}
           <div className="flex flex-col leading-none">
             <span className="font-serif text-lg sm:text-xl font-semibold text-emerald-deep">
               Ahl Al-Islah

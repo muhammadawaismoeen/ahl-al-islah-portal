@@ -3,7 +3,7 @@ import { AhlLogo } from "./AhlLogo";
 import { DEFAULT_CONTENT } from "@/lib/content-defaults";
 import type { FooterContent } from "@/lib/content-types";
 
-export function Footer({ content = DEFAULT_CONTENT.footer }: { content?: FooterContent }) {
+export function Footer({ content = DEFAULT_CONTENT.footer, customLogo }: { content?: FooterContent; customLogo?: string }) {
   return (
     <footer className="relative mt-32 border-t border-cream-muted bg-ink text-cream">
       <div className="absolute inset-0 geometric-bg opacity-30 pointer-events-none" />
@@ -11,7 +11,12 @@ export function Footer({ content = DEFAULT_CONTENT.footer }: { content?: FooterC
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
           <div className="md:col-span-2 space-y-4">
             <div className="flex items-center gap-3">
-              <AhlLogo className="h-10 w-10 text-gold-warm" />
+              {customLogo ? (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img src={customLogo} alt="Ahl Al-Islah" className="h-10 w-10 object-contain" />
+              ) : (
+                <AhlLogo className="h-10 w-10 text-gold-warm" />
+              )}
               <div className="flex flex-col leading-none">
                 <span className="font-serif text-xl font-semibold text-cream">
                   Ahl Al-Islah

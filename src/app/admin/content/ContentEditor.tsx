@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import {
   Save,
   RotateCcw,
@@ -11,6 +11,8 @@ import {
   Loader2,
   Eye,
   EyeOff,
+  Upload,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 import type { SiteContent, SectionVisibility } from "@/lib/content-types";
@@ -217,16 +219,22 @@ export function ContentEditor({
   const [saving, setSaving] = useState(false);
   const [resetting, setResetting] = useState(false);
   const [dirty, setDirty] = useState(false);
+  const [logoError, setLogoError] = useState("");
+  const logoInputRef = useRef<HTMLInputElement>(null);
 
-  // Deep setter helper
+  // Deep setter helper — restricted to object-valued sections
+  type ObjectKeys = {
+    [K in keyof SiteContent]: SiteContent[K] extends object ? K : never;
+  }[keyof SiteContent];
+
   const set = useCallback(
-    <K extends keyof SiteContent>(
+    <K extends ObjectKeys>(
       section: K,
       patch: Partial<SiteContent[K]>
     ) => {
       setContent((prev) => ({
         ...prev,
-        [section]: { ...prev[section], ...patch },
+        [section]: { ...(prev[section] as object), ...(patch as object) },
       }));
       setDirty(true);
     },
@@ -246,7 +254,7 @@ export function ContentEditor({
 
   const handleSave = async () => {
     setSaving(true);
-    const result = await updateContent(content);
+    const result = await updateContent(JSON.stringify(content));
     setSaving(false);
     if (result.ok) {
       setDirty(false);
@@ -317,6 +325,86 @@ export function ContentEditor({
           </button>
         </div>
       </div>
+
+      {/* ─── Logo ─── */}
+      <Section title="Logo" icon="🖼️" defaultOpen>
+        <div className="space-y-4">
+          <Field label="Logo Preview">
+            <div className="flex items-center gap-4">
+              {content.customLogo ? (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img
+                  src={content.customLogo}
+                  alt="Custom logo"
+                  className="h-12 w-12 object-contain rounded border border-cream-muted bg-white p-1"
+                />
+              ) : (
+                <span className="text-sm text-ink/50 italic">
+                  Using default SVG logo
+                </span>
+              )}
+            </div>
+          </Field>
+
+          <input
+            ref={logoInputRef}
+            type="file"
+            accept="image/png,image/svg+xml,image/jpeg"
+            className="hidden"
+            onChange={(e) => {
+              setLogoError("");
+              const file = e.target.files?.[0];
+              if (!file) return;
+              if (file.size > 200 * 1024) {
+                setLogoError(
+                  `File is ${(file.size / 1024).toFixed(0)} KB — maximum is 200 KB.`
+                );
+                e.target.value = "";
+                return;
+              }
+              const reader = new FileReader();
+              reader.onload = () => {
+                setContent((prev) => ({
+                  ...prev,
+                  customLogo: reader.result as string,
+                }));
+                setDirty(true);
+              };
+              reader.readAsDataURL(file);
+              e.target.value = "";
+            }}
+          />
+
+          {logoError && (
+            <p className="text-xs text-red-500 font-medium">{logoError}</p>
+          )}
+
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => logoInputRef.current?.click()}
+              className="btn-ghost !py-2 !px-4 text-xs flex items-center gap-1.5"
+            >
+              <Upload className="h-3.5 w-3.5" />
+              Upload Logo
+            </button>
+            {content.customLogo && (
+              <button
+                type="button"
+                onClick={() => {
+                  setContent((prev) => ({ ...prev, customLogo: "" }));
+                  setDirty(true);
+                  setLogoError("");
+                }}
+                className="btn-ghost !py-2 !px-4 text-xs flex items-center gap-1.5 text-red-500 hover:text-red-700"
+              >
+                <X className="h-3.5 w-3.5" />
+                Remove Custom Logo
+              </button>
+            )}
+          </div>
+        </div>
+      </Section>
 
       {/* ─── Navigation ─── */}
       <Section title="Navigation" icon="🧭">

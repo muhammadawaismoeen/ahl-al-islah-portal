@@ -14,7 +14,7 @@ export default async function HomePage() {
   const v = content.visibility;
   return (
     <>
-      <Navbar content={content.nav} />
+      <Navbar content={content.nav} customLogo={content.customLogo} />
       <main>
         {v.hero && <Hero content={content.hero} />}
         {v.about && <About content={content.about} />}
@@ -22,7 +22,7 @@ export default async function HomePage() {
         {v.roadmap && <Roadmap content={content.roadmap} />}
         {v.cta && <CTA content={content.cta} />}
       </main>
-      <Footer content={content.footer} />
+      <Footer content={content.footer} customLogo={content.customLogo} />
     </>
   );
 }

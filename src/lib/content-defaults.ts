@@ -219,4 +219,6 @@ export const DEFAULT_CONTENT: SiteContent = {
     roadmap: true,
     cta: true,
   },
+
+  customLogo: "",
 };
