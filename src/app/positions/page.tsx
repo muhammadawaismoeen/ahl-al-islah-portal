@@ -14,17 +14,17 @@ export const metadata: Metadata = {
 function WingBadge({ wing }: { wing: Position["wing"] }) {
   const map = {
     male: {
-      label: "Brothers' Wing",
+      label: "Brothers' Cohort",
       arabic: "جناح الإخوة",
       className: "bg-emerald-deep/10 text-emerald-deep border-emerald-deep/20",
     },
     female: {
-      label: "Sisters' Wing",
+      label: "Sisters' Cohort",
       arabic: "جناح الأخوات",
       className: "bg-gold-antique/10 text-gold-antique border-gold-antique/30",
     },
     both: {
-      label: "Either Wing",
+      label: "Either Cohort",
       arabic: "كلا الجناحين",
       className: "bg-ink/5 text-ink border-ink/15",
     },

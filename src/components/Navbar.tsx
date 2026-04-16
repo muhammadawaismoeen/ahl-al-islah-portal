@@ -5,15 +5,10 @@ import { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
 import { AhlLogo } from "./AhlLogo";
 import { cn } from "@/lib/utils";
+import { DEFAULT_CONTENT } from "@/lib/content-defaults";
+import type { NavContent } from "@/lib/content-types";
 
-const NAV_ITEMS = [
-  { label: "About", href: "/#about" },
-  { label: "Structure", href: "/#structure" },
-  { label: "Positions", href: "/positions" },
-  { label: "Roadmap", href: "/#roadmap" },
-];
-
-export function Navbar() {
+export function Navbar({ content = DEFAULT_CONTENT.nav }: { content?: NavContent }) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
@@ -50,9 +45,8 @@ export function Navbar() {
           </div>
         </Link>
 
-        {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-1">
-          {NAV_ITEMS.map((item) => (
+          {content.items.map((item) => (
             <Link
               key={item.href}
               href={item.href}
@@ -62,11 +56,10 @@ export function Navbar() {
             </Link>
           ))}
           <Link href="/positions" className="btn-primary ml-3 !py-2 !px-5">
-            Apply Now
+            {content.ctaLabel}
           </Link>
         </nav>
 
-        {/* Mobile toggle */}
         <button
           className="md:hidden p-2 rounded-lg hover:bg-emerald-deep/5"
           onClick={() => setOpen(!open)}
@@ -80,11 +73,10 @@ export function Navbar() {
         </button>
       </div>
 
-      {/* Mobile menu */}
       {open && (
         <div className="md:hidden border-t border-cream-muted bg-cream/95 backdrop-blur-lg">
           <nav className="container-prose py-4 flex flex-col gap-1">
-            {NAV_ITEMS.map((item) => (
+            {content.items.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
@@ -99,7 +91,7 @@ export function Navbar() {
               onClick={() => setOpen(false)}
               className="btn-primary mt-3"
             >
-              Apply Now
+              {content.ctaLabel}
             </Link>
           </nav>
         </div>

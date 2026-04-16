@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { LogOut, Mail, Phone, Download } from "lucide-react";
+import { LogOut, Mail, Phone, Download, Pencil } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { isAuthenticated, login, logout } from "./actions";
@@ -73,12 +73,21 @@ export default async function AdminPage({
                 {submissions.length === 1 ? "" : "s"}
               </p>
             </div>
-            <form action={logout}>
-              <button type="submit" className="btn-secondary !py-2 !px-4 text-xs">
-                <LogOut className="h-3.5 w-3.5" />
-                Sign out
-              </button>
-            </form>
+            <div className="flex items-center gap-2">
+              <Link
+                href="/admin/content"
+                className="btn-primary !py-2 !px-4 text-xs"
+              >
+                <Pencil className="h-3.5 w-3.5" />
+                Content Editor
+              </Link>
+              <form action={logout}>
+                <button type="submit" className="btn-secondary !py-2 !px-4 text-xs">
+                  <LogOut className="h-3.5 w-3.5" />
+                  Sign out
+                </button>
+              </form>
+            </div>
           </div>
 
           <div className="grid lg:grid-cols-[1fr_1.4fr] gap-6">

@@ -39,9 +39,10 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# local data (applications, uploads)
+# local data (applications, uploads, content overrides)
 /data/submissions/*.json
 !/data/submissions/.gitkeep
+/data/content.json
 /data/uploads
 
 # editor / agent tooling

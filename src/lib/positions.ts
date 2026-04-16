@@ -46,7 +46,7 @@ export const POSITIONS: Position[] = [
     level: "head",
     reportsTo: "Advisor",
     summary:
-      "Lead the brothers' wing day-to-day. Execute the Advisor's strategic direction, manage all male team members, and represent the wing in HSE meetings. You are accountable for all brothers' programming and for upholding the Shariah-first structure of the department.",
+      "Lead the brothers' cohort day-to-day. Execute the Advisor's strategic direction, manage all brothers' team members, and represent the cohort in HSE meetings. You are accountable for all brothers' programming and for upholding the values and standards of the department.",
     responsibilities: [
       "Lead weekly meetings with the male core team",
       "Execute the curriculum and quarterly plan set by the Advisor",
@@ -59,7 +59,7 @@ export const POSITIONS: Position[] = [
       "Senior male medical student with genuine taqwa",
       "Respected by male peers, strong communicator",
       "Committed to the 5 daily prayers and consistent in Deen",
-      "Understands and agrees with the zero cross-gender interaction policy",
+      "Comfortable leading within the parallel-cohort model",
       "Able to commit 6–8 hours per week during academic terms",
     ],
     commitment: "6–8 hours/week",
@@ -74,9 +74,9 @@ export const POSITIONS: Position[] = [
     arabicTitle: "رئيسة جناح الأخوات",
     wing: "female",
     level: "head",
-    reportsTo: "Advisor (via written communication / intermediary)",
+    reportsTo: "Advisor",
     summary:
-      "Lead the sisters' wing day-to-day. Execute the Advisor's strategic direction, manage all female team members, and represent the wing in HSE women's forums. You run an independent wing — not an assistant to the brothers' team — with full trust and authority.",
+      "Lead the sisters' cohort day-to-day. Execute the Advisor's strategic direction, manage all sisters' team members, and represent the cohort in HSE women's forums. You lead an independent cohort with full trust and authority — parallel to, not beneath, the brothers' team.",
     responsibilities: [
       "Lead weekly meetings with the female core team",
       "Execute the curriculum and quarterly plan set by the Advisor",
@@ -89,7 +89,7 @@ export const POSITIONS: Position[] = [
       "Senior female medical student with genuine taqwa",
       "Respected by female peers, strong communicator",
       "Committed to the 5 daily prayers and consistent in Deen",
-      "Embraces haya' and the Shariah-first structure",
+      "Embodies haya' and is comfortable with the parallel-cohort model",
       "Able to commit 6–8 hours per week during academic terms",
     ],
     commitment: "6–8 hours/week",

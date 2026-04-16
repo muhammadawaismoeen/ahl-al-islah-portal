@@ -69,7 +69,7 @@ const HEAD_APPLICATION: QuestionSet = {
   id: "head-application",
   name: "Head Application",
   description:
-    "Application for the Head position in either wing of Ahl Al-Islah.",
+    "Application for the Head position in Ahl Al-Islah — leading one of the two dedicated cohorts.",
   sections: [
     {
       id: "basic",
@@ -172,10 +172,10 @@ const HEAD_APPLICATION: QuestionSet = {
     },
     {
       id: "position",
-      title: "Position & Wing Confirmation",
+      title: "Position & Cohort Confirmation",
       arabicTitle: "تأكيد المنصب",
       description:
-        "Ahl Al-Islah operates two fully separate wings. The Male Head and Female Head never interact directly — all coordination flows through the Advisor.",
+        "Ahl Al-Islah runs two parallel cohorts — brothers' and sisters' — each led by its own Head, with the Advisor as the unifying coordinator across both.",
       fields: [
         {
           id: "wingConfirm",
@@ -183,8 +183,8 @@ const HEAD_APPLICATION: QuestionSet = {
           label: "I am applying as a:",
           required: true,
           options: [
-            { label: "Brother (applying for Male Head)", value: "male" },
-            { label: "Sister (applying for Female Head)", value: "female" },
+            { label: "Brother (applying for Head, Brothers' Cohort)", value: "male" },
+            { label: "Sister (applying for Head, Sisters' Cohort)", value: "female" },
           ],
         },
         {
@@ -260,31 +260,31 @@ const HEAD_APPLICATION: QuestionSet = {
           id: "hayaUnderstanding",
           type: "textarea",
           label:
-            "In your own words, what is haya' (modesty), and how does it shape how you interact with the opposite gender?",
+            "In your own words, what does haya' (modesty and dignity) mean to you as a leader, and how does it shape the way you carry yourself in professional and mixed settings?",
           required: true,
           minLength: 100,
           maxLength: 1500,
           help: "We want to hear your understanding, not a textbook answer.",
         },
         {
-          id: "zeroInteractionAgreement",
+          id: "cohortModelAgreement",
           type: "radio",
           label:
-            "Ahl Al-Islah's core structure is zero cross-gender interaction at the team level — the Advisor is the sole bridge between wings. Do you understand and agree with this?",
+            "Ahl Al-Islah operates as two parallel cohorts (brothers' and sisters'), each led by its own Head, with the Advisor as the unifying coordinator between them. Are you comfortable leading your cohort within this model?",
           required: true,
           options: [
             {
               label:
-                "Yes — I understand it, agree with it, and will uphold it without exception",
+                "Yes — fully comfortable, and I see the value in this model",
               value: "agree-strong",
             },
             {
               label:
-                "Yes, I agree in principle but have questions I'd like to discuss in the interview",
+                "Yes in principle, though I have questions I'd like to discuss in the interview",
               value: "agree-questions",
             },
             {
-              label: "I have serious reservations about this",
+              label: "I would prefer a different model",
               value: "disagree",
             },
           ],
@@ -293,11 +293,11 @@ const HEAD_APPLICATION: QuestionSet = {
           id: "boundaryScenario",
           type: "textarea",
           label:
-            "Scenario: A member of your wing quietly tells you they have been messaging someone from the other wing 'about department work.' What do you do, and why?",
+            "Scenario: A member of your cohort quietly tells you they have started coordinating independently with a counterpart in the other cohort on department matters, bypassing you and the Advisor. How do you respond, and why?",
           required: true,
           minLength: 150,
           maxLength: 2000,
-          help: "There is no single right answer — we want to see how you think.",
+          help: "There is no single right answer — we want to see how you think about discretion, channels, and trust.",
         },
       ],
     },
@@ -414,7 +414,7 @@ const HEAD_APPLICATION: QuestionSet = {
       title: "References",
       arabicTitle: "المعرّفون",
       description:
-        "Two references who can speak to your Deen and character. At least one must be someone senior in knowledge (teacher, scholar, or senior student of knowledge). References must be the same gender as you.",
+        "Two references who can speak to your Deen, character, and leadership. At least one should be someone senior in knowledge (a teacher, scholar, or mentor). To keep things simple for the referee, please provide references who can be contacted comfortably — typically same-gender mentors.",
       fields: [
         {
           id: "ref1Name",
@@ -471,10 +471,10 @@ const HEAD_APPLICATION: QuestionSet = {
           options: [{ label: "I affirm", value: "yes" }],
         },
         {
-          id: "declareShariahFirst",
+          id: "declareValues",
           type: "checkbox",
           label:
-            "I commit to uphold the Shariah-first structure of Ahl Al-Islah, including the zero cross-gender interaction policy at the team level.",
+            "I commit to uphold the values, professional standards, and coordination protocols of Ahl Al-Islah, and to work through the established channels at all times.",
           required: true,
           minSelected: 1,
           options: [{ label: "I commit", value: "yes" }],

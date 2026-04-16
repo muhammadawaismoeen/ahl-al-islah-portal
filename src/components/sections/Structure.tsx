@@ -2,8 +2,9 @@
 
 import { motion } from "framer-motion";
 import { Shield, User, Users } from "lucide-react";
+import type { StructureContent } from "@/lib/content-types";
 
-export function Structure() {
+export function Structure({ content }: { content: StructureContent }) {
   return (
     <section
       id="structure"
@@ -17,22 +18,17 @@ export function Structure() {
           transition={{ duration: 0.6 }}
           className="max-w-3xl mx-auto text-center"
         >
-          <span className="section-eyebrow">Structural Philosophy</span>
+          <span className="section-eyebrow">{content.eyebrow}</span>
           <h2 className="mt-6 heading-serif text-4xl sm:text-5xl font-semibold text-emerald-deep text-balance">
-            The Advisor-as-Bridge Model
+            {content.heading}
           </h2>
           <div className="gold-divider" />
           <p className="mt-4 text-lg text-ink/70 leading-relaxed">
-            One unified department, two fully independent wings, and zero
-            interaction between the male and female core teams. The Advisor is
-            the <em>only</em> node that connects both wings — every piece of
-            coordination flows through this single bridge.
+            {content.description}
           </p>
         </motion.div>
 
-        {/* Diagram */}
         <div className="mt-16 max-w-5xl mx-auto">
-          {/* Advisor (top) */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -46,16 +42,19 @@ export function Structure() {
                 <div className="mx-auto h-14 w-14 rounded-2xl bg-gradient-to-br from-gold-antique to-gold-warm flex items-center justify-center mb-3">
                   <Shield className="h-7 w-7 text-white" />
                 </div>
-                <div className="arabic-text text-sm text-gold-antique">المستشار</div>
+                <div className="arabic-text text-sm text-gold-antique">
+                  {content.advisorArabic}
+                </div>
                 <h3 className="heading-serif text-xl font-semibold text-emerald-deep">
-                  Advisor
+                  {content.advisorLabel}
                 </h3>
-                <p className="text-xs text-ink/60 mt-1">The Single Bridge</p>
+                <p className="text-xs text-ink/60 mt-1">
+                  {content.advisorTagline}
+                </p>
               </div>
             </div>
           </motion.div>
 
-          {/* Connector */}
           <div className="relative h-20 flex items-center justify-center">
             <svg
               viewBox="0 0 400 80"
@@ -74,15 +73,10 @@ export function Structure() {
                 fill="none"
               />
             </svg>
-            {/* Firewall label */}
-            <div className="relative z-10 px-4 py-1.5 rounded-full bg-ink text-cream text-xs uppercase tracking-widest font-medium">
-              Firewall · Zero Interaction
-            </div>
           </div>
 
-          {/* Two wings */}
           <div className="grid md:grid-cols-2 gap-8">
-            {/* Male Wing */}
+            {/* Brothers' cohort */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
@@ -97,24 +91,18 @@ export function Structure() {
                   </div>
                   <div className="flex-1">
                     <div className="arabic-text text-xs text-gold-antique">
-                      جناح الإخوة
+                      {content.maleWingArabic}
                     </div>
                     <h4 className="heading-serif text-lg font-semibold text-emerald-deep">
-                      Male Head
+                      {content.maleWingRoleTitle}
                     </h4>
                   </div>
                 </div>
               </div>
               <div className="pl-6 border-l-2 border-dashed border-emerald-deep/20 ml-5 space-y-2">
-                {[
-                  "Male Deputy",
-                  "Da'wah & Content Lead (M)",
-                  "Outreach & Engagement Lead (M)",
-                  "Logistics & Operations Lead (M)",
-                  "Secretary (M)",
-                ].map((role, i) => (
+                {content.maleWingRoles.map((role, i) => (
                   <motion.div
-                    key={role}
+                    key={role + i}
                     initial={{ opacity: 0, x: -10 }}
                     whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true }}
@@ -128,7 +116,7 @@ export function Structure() {
               </div>
             </motion.div>
 
-            {/* Female Wing */}
+            {/* Sisters' cohort */}
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               whileInView={{ opacity: 1, x: 0 }}
@@ -143,24 +131,18 @@ export function Structure() {
                   </div>
                   <div className="flex-1">
                     <div className="arabic-text text-xs text-gold-antique">
-                      جناح الأخوات
+                      {content.femaleWingArabic}
                     </div>
                     <h4 className="heading-serif text-lg font-semibold text-emerald-deep">
-                      Female Head
+                      {content.femaleWingRoleTitle}
                     </h4>
                   </div>
                 </div>
               </div>
               <div className="pl-6 border-l-2 border-dashed border-gold-antique/30 ml-5 space-y-2">
-                {[
-                  "Female Deputy",
-                  "Da'wah & Content Lead (F)",
-                  "Outreach & Engagement Lead (F)",
-                  "Logistics & Operations Lead (F)",
-                  "Secretary (F)",
-                ].map((role, i) => (
+                {content.femaleWingRoles.map((role, i) => (
                   <motion.div
-                    key={role}
+                    key={role + i}
                     initial={{ opacity: 0, x: 10 }}
                     whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true }}
@@ -176,7 +158,6 @@ export function Structure() {
           </div>
         </div>
 
-        {/* Why it works */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -186,18 +167,11 @@ export function Structure() {
         >
           <div className="ornate-card p-8 sm:p-10 bg-emerald-deep text-cream border-0">
             <h3 className="heading-serif text-2xl sm:text-3xl font-semibold mb-6">
-              Why the structure works
+              {content.whyWorksHeading}
             </h3>
             <div className="grid sm:grid-cols-2 gap-x-10 gap-y-4 text-sm leading-relaxed">
-              {[
-                "Shariah compliance is structural, not aspirational — built into the architecture.",
-                "Both wings receive identical strategic direction, so the department feels unified externally.",
-                "Fitnah is eliminated at the root — no scenario where a brother and sister on the core team coordinate directly.",
-                "Same-gender leadership grows stronger — the Female Head is a truly independent leader.",
-                "The model is scalable — new members join their wing and never need to cross over.",
-                "It mirrors the Prophetic approach — dedicated teaching, trusted intermediaries, purposeful communication.",
-              ].map((text) => (
-                <div key={text} className="flex items-start gap-3">
+              {content.whyWorksItems.map((text, i) => (
+                <div key={i} className="flex items-start gap-3">
                   <span className="mt-1.5 shrink-0 h-1.5 w-1.5 rounded-full bg-gold-warm" />
                   <p className="text-cream/85">{text}</p>
                 </div>

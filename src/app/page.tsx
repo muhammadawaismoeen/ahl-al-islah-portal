@@ -5,19 +5,23 @@ import { About } from "@/components/sections/About";
 import { Structure } from "@/components/sections/Structure";
 import { Roadmap } from "@/components/sections/Roadmap";
 import { CTA } from "@/components/sections/CTA";
+import { getContent } from "@/lib/content-store";
 
-export default function HomePage() {
+export const dynamic = "force-dynamic";
+
+export default async function HomePage() {
+  const content = await getContent();
   return (
     <>
-      <Navbar />
+      <Navbar content={content.nav} />
       <main>
-        <Hero />
-        <About />
-        <Structure />
-        <Roadmap />
-        <CTA />
+        <Hero content={content.hero} />
+        <About content={content.about} />
+        <Structure content={content.structure} />
+        <Roadmap content={content.roadmap} />
+        <CTA content={content.cta} />
       </main>
-      <Footer />
+      <Footer content={content.footer} />
     </>
   );
 }
