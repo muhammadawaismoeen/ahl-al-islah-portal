@@ -74,7 +74,7 @@ export function Footer({
 
         <div className="mt-12 pt-8 border-t border-cream/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-cream/50">
           <p>
-            &copy; {new Date().getFullYear()} {navContent.siteName}. For internal use.
+            &copy; {new Date().getFullYear()} {navContent.siteName}.
           </p>
           <p className="text-cream/50">{content.smallPrint}</p>
         </div>
