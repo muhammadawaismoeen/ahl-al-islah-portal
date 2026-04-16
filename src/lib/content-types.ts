@@ -98,6 +98,56 @@ export interface SectionVisibility {
   cta: boolean;
 }
 
+// ---------------------------------------------------------------------------
+// Application form configuration — editable from the admin content editor.
+// Mirrors the shape of questions.ts but is stored as dynamic JSON so the
+// Advisor can add/remove/edit fields without touching code.
+// ---------------------------------------------------------------------------
+
+export interface FormFieldOption {
+  label: string;
+  value: string;
+}
+
+export interface FormField {
+  id: string;
+  type: "text" | "email" | "tel" | "number" | "textarea" | "select" | "radio" | "checkbox" | "date" | "url";
+  label: string;
+  placeholder?: string;
+  help?: string;
+  required?: boolean;
+  options?: FormFieldOption[];
+  minLength?: number;
+  maxLength?: number;
+  min?: number;
+  max?: number;
+  minSelected?: number;
+}
+
+export interface FormSection {
+  id: string;
+  title: string;
+  description?: string;
+  arabicTitle?: string;
+  fields: FormField[];
+}
+
+export interface FormQuestionSet {
+  id: string;
+  name: string;
+  description: string;
+  sections: FormSection[];
+}
+
+/**
+ * Stores per-position form overrides. Keys are position slugs
+ * (e.g. "male-head", "female-head"). When a key is present the
+ * apply page uses this config instead of the static questions.ts.
+ */
+export interface FormConfig {
+  [positionSlug: string]: FormQuestionSet;
+}
+
 export interface SiteContent {
   hero: HeroContent;
   about: AboutContent;
@@ -108,4 +158,5 @@ export interface SiteContent {
   nav: NavContent;
   visibility: SectionVisibility;
   customLogo: string; // base64 data URL, or empty string for default SVG
+  formConfig: FormConfig;
 }

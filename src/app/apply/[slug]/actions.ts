@@ -3,9 +3,41 @@
 import { revalidatePath } from "next/cache";
 import { getPositionBySlug } from "@/lib/positions";
 import { getQuestionSet } from "@/lib/questions";
+import type { QuestionSet } from "@/lib/questions";
 import { buildSchemaForQuestionSet } from "@/lib/schema";
 import { saveSubmission } from "@/lib/storage";
 import { notifyNewSubmission } from "@/lib/notify";
+import { getContent } from "@/lib/content-store";
+import type { FormQuestionSet } from "@/lib/content-types";
+
+/** Convert dynamic form config to QuestionSet for schema building */
+function formConfigToQuestionSet(fqs: FormQuestionSet): QuestionSet {
+  return {
+    id: fqs.id,
+    name: fqs.name,
+    description: fqs.description,
+    sections: fqs.sections.map((s) => ({
+      id: s.id,
+      title: s.title,
+      description: s.description,
+      arabicTitle: s.arabicTitle,
+      fields: s.fields.map((f) => ({
+        id: f.id,
+        type: f.type,
+        label: f.label,
+        placeholder: f.placeholder,
+        help: f.help,
+        required: f.required,
+        options: f.options,
+        minLength: f.minLength,
+        maxLength: f.maxLength,
+        min: f.min,
+        max: f.max,
+        minSelected: f.minSelected,
+      })),
+    })),
+  };
+}
 
 export interface SubmitResult {
   ok: boolean;
@@ -26,9 +58,19 @@ export async function submitApplication(
     return { ok: false, error: "Applications for this position are closed." };
   }
 
-  const qs = getQuestionSet(position.questionSet);
-  if (!qs) {
-    return { ok: false, error: "Question set missing. Contact the Advisor." };
+  // Try dynamic form config first, fall back to static
+  const content = await getContent();
+  const dynamicConfig = content.formConfig?.[slug];
+
+  let qs: QuestionSet;
+  if (dynamicConfig && dynamicConfig.sections.length > 0) {
+    qs = formConfigToQuestionSet(dynamicConfig);
+  } else {
+    const staticQs = getQuestionSet(position.questionSet);
+    if (!staticQs) {
+      return { ok: false, error: "Question set missing. Contact the Advisor." };
+    }
+    qs = staticQs;
   }
 
   const schema = buildSchemaForQuestionSet(qs);

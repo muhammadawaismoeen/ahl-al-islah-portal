@@ -107,6 +107,7 @@
     inset: 0;
     padding: 1px;
     border-radius: inherit;
+    pointer-events: none;
     background: linear-gradient(
       135deg,
       transparent 0%,

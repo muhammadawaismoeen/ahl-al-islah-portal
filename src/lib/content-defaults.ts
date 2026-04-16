@@ -1,4 +1,6 @@
-import type { SiteContent } from "./content-types";
+import type { SiteContent, FormConfig, FormQuestionSet } from "./content-types";
+import { QUESTION_SETS } from "./questions";
+import type { QuestionSet } from "./questions";
 
 /**
  * DEFAULT PUBLIC COPY — practicing Hikmah and Diplomacy.
@@ -221,4 +223,50 @@ export const DEFAULT_CONTENT: SiteContent = {
   },
 
   customLogo: "",
+
+  formConfig: buildDefaultFormConfig(),
 };
+
+// ---------------------------------------------------------------------------
+// Seed form config from the static question-sets registry
+// ---------------------------------------------------------------------------
+
+function questionSetToFormConfig(qs: QuestionSet): FormQuestionSet {
+  return {
+    id: qs.id,
+    name: qs.name,
+    description: qs.description,
+    sections: qs.sections.map((s) => ({
+      id: s.id,
+      title: s.title,
+      description: s.description,
+      arabicTitle: s.arabicTitle,
+      fields: s.fields.map((f) => ({
+        id: f.id,
+        type: f.type,
+        label: f.label,
+        placeholder: f.placeholder,
+        help: f.help,
+        required: f.required,
+        options: f.options?.map((o) => ({ label: o.label, value: o.value })),
+        minLength: f.minLength,
+        maxLength: f.maxLength,
+        min: f.min,
+        max: f.max,
+        minSelected: f.minSelected,
+      })),
+    })),
+  };
+}
+
+function buildDefaultFormConfig(): FormConfig {
+  const headQs = QUESTION_SETS["head-application"];
+  const converted = headQs ? questionSetToFormConfig(headQs) : undefined;
+  const config: FormConfig = {};
+  if (converted) {
+    // Both head positions share the same form by default
+    config["male-head"] = { ...converted, id: "male-head", name: "Male Head Application" };
+    config["female-head"] = { ...converted, id: "female-head", name: "Female Head Application" };
+  }
+  return config;
+}

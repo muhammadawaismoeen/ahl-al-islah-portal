@@ -82,5 +82,6 @@ function mergeWithDefaults(stored: Partial<SiteContent>): SiteContent {
     nav: { ...DEFAULT_CONTENT.nav, ...(stored.nav ?? {}) },
     visibility: { ...DEFAULT_CONTENT.visibility, ...(stored.visibility ?? {}) },
     customLogo: stored.customLogo ?? DEFAULT_CONTENT.customLogo,
+    formConfig: { ...DEFAULT_CONTENT.formConfig, ...(stored.formConfig ?? {}) },
   };
 }

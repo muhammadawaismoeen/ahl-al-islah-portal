@@ -7,6 +7,9 @@ import { Footer } from "@/components/Footer";
 import { ApplicationForm } from "@/components/ApplicationForm";
 import { getAllPositions, getPositionBySlug } from "@/lib/positions";
 import { getQuestionSet } from "@/lib/questions";
+import type { QuestionSet } from "@/lib/questions";
+import { getContent } from "@/lib/content-store";
+import type { FormQuestionSet } from "@/lib/content-types";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -26,14 +29,56 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
+/**
+ * Convert a stored FormQuestionSet (from content editor) to the
+ * QuestionSet shape that ApplicationForm and the schema builder expect.
+ */
+function formConfigToQuestionSet(fqs: FormQuestionSet): QuestionSet {
+  return {
+    id: fqs.id,
+    name: fqs.name,
+    description: fqs.description,
+    sections: fqs.sections.map((s) => ({
+      id: s.id,
+      title: s.title,
+      description: s.description,
+      arabicTitle: s.arabicTitle,
+      fields: s.fields.map((f) => ({
+        id: f.id,
+        type: f.type,
+        label: f.label,
+        placeholder: f.placeholder,
+        help: f.help,
+        required: f.required,
+        options: f.options,
+        minLength: f.minLength,
+        maxLength: f.maxLength,
+        min: f.min,
+        max: f.max,
+        minSelected: f.minSelected,
+      })),
+    })),
+  };
+}
+
 export default async function ApplyPage({ params }: Props) {
   const { slug } = await params;
   const position = getPositionBySlug(slug);
   if (!position) notFound();
 
-  const questionSet = getQuestionSet(position.questionSet);
-  if (!questionSet) {
-    throw new Error(`Question set not found: ${position.questionSet}`);
+  // Try dynamic form config from content store first, fall back to static
+  const content = await getContent();
+  const dynamicConfig = content.formConfig?.[slug];
+
+  let questionSet: QuestionSet;
+  if (dynamicConfig && dynamicConfig.sections.length > 0) {
+    questionSet = formConfigToQuestionSet(dynamicConfig);
+  } else {
+    const staticQs = getQuestionSet(position.questionSet);
+    if (!staticQs) {
+      throw new Error(`Question set not found: ${position.questionSet}`);
+    }
+    questionSet = staticQs;
   }
 
   return (
