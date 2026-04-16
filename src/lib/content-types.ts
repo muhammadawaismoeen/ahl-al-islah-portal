@@ -86,6 +86,18 @@ export interface NavContent {
   ctaLabel: string;
 }
 
+/**
+ * Controls which sections are visible on the public landing page.
+ * Toggled from the admin content editor.
+ */
+export interface SectionVisibility {
+  hero: boolean;
+  about: boolean;
+  structure: boolean;
+  roadmap: boolean;
+  cta: boolean;
+}
+
 export interface SiteContent {
   hero: HeroContent;
   about: AboutContent;
@@ -94,4 +106,5 @@ export interface SiteContent {
   cta: CtaContent;
   footer: FooterContent;
   nav: NavContent;
+  visibility: SectionVisibility;
 }

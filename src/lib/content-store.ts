@@ -48,5 +48,6 @@ function mergeWithDefaults(stored: Partial<SiteContent>): SiteContent {
     cta: { ...DEFAULT_CONTENT.cta, ...(stored.cta ?? {}) },
     footer: { ...DEFAULT_CONTENT.footer, ...(stored.footer ?? {}) },
     nav: { ...DEFAULT_CONTENT.nav, ...(stored.nav ?? {}) },
+    visibility: { ...DEFAULT_CONTENT.visibility, ...(stored.visibility ?? {}) },
   };
 }

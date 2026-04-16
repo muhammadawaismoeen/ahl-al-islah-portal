@@ -9,9 +9,11 @@ import {
   Trash2,
   Check,
   Loader2,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { toast } from "sonner";
-import type { SiteContent } from "@/lib/content-types";
+import type { SiteContent, SectionVisibility } from "@/lib/content-types";
 import { updateContent, resetToDefaults } from "./actions";
 
 // ---------------------------------------------------------------------------
@@ -81,39 +83,107 @@ function TextArea({
 }
 
 // ---------------------------------------------------------------------------
-// Collapsible section wrapper
+// Toggle switch
+// ---------------------------------------------------------------------------
+
+function Toggle({
+  checked,
+  onChange,
+  label,
+}: {
+  checked: boolean;
+  onChange: (v: boolean) => void;
+  label: string;
+}) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      aria-label={label}
+      onClick={(e) => {
+        e.stopPropagation();
+        onChange(!checked);
+      }}
+      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors ${
+        checked ? "bg-emerald-deep" : "bg-ink/20"
+      }`}
+    >
+      <span
+        className={`pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-sm ring-0 transition-transform ${
+          checked ? "translate-x-5" : "translate-x-1"
+        }`}
+      />
+    </button>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Collapsible section wrapper (with optional visibility toggle)
 // ---------------------------------------------------------------------------
 
 function Section({
   title,
+  subtitle,
   icon,
   defaultOpen = false,
+  visible,
+  onVisibilityChange,
   children,
 }: {
   title: string;
+  subtitle?: string;
   icon?: string;
   defaultOpen?: boolean;
+  visible?: boolean;
+  onVisibilityChange?: (v: boolean) => void;
   children: React.ReactNode;
 }) {
   const [open, setOpen] = useState(defaultOpen);
+  const hasVisibility = visible !== undefined && onVisibilityChange;
   return (
-    <div className="ornate-card overflow-hidden">
+    <div
+      className={`ornate-card overflow-hidden transition-opacity ${
+        hasVisibility && !visible ? "opacity-60" : ""
+      }`}
+    >
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between p-5 hover:bg-cream-warm/30 transition"
+        className="w-full flex items-center justify-between p-5 hover:bg-cream-warm/30 transition text-left"
       >
-        <div className="flex items-center gap-3">
-          {icon && <span className="text-lg">{icon}</span>}
-          <h3 className="heading-serif text-lg font-semibold text-emerald-deep">
-            {title}
-          </h3>
+        <div className="flex items-center gap-3 min-w-0 flex-1">
+          {icon && <span className="text-lg shrink-0">{icon}</span>}
+          <div className="min-w-0">
+            <h3 className="heading-serif text-lg font-semibold text-emerald-deep">
+              {title}
+            </h3>
+            {subtitle && (
+              <p className="text-xs text-ink/40 truncate mt-0.5">{subtitle}</p>
+            )}
+          </div>
         </div>
-        <ChevronDown
-          className={`h-5 w-5 text-ink/40 transition-transform ${
-            open ? "rotate-180" : ""
-          }`}
-        />
+        <div className="flex items-center gap-3 shrink-0 ml-3">
+          {hasVisibility && (
+            <div className="flex items-center gap-2">
+              {visible ? (
+                <Eye className="h-3.5 w-3.5 text-emerald-deep" />
+              ) : (
+                <EyeOff className="h-3.5 w-3.5 text-ink/30" />
+              )}
+              <Toggle
+                checked={visible}
+                onChange={onVisibilityChange}
+                label={`${visible ? "Hide" : "Show"} ${title} section`}
+              />
+            </div>
+          )}
+          <ChevronDown
+            className={`h-5 w-5 text-ink/40 transition-transform ${
+              open ? "rotate-180" : ""
+            }`}
+          />
+        </div>
       </button>
       {open && (
         <div className="px-5 pb-6 pt-2 border-t border-cream-muted space-y-5">
@@ -147,6 +217,17 @@ export function ContentEditor({
       setContent((prev) => ({
         ...prev,
         [section]: { ...prev[section], ...patch },
+      }));
+      setDirty(true);
+    },
+    []
+  );
+
+  const setVis = useCallback(
+    (key: keyof SectionVisibility, val: boolean) => {
+      setContent((prev) => ({
+        ...prev,
+        visibility: { ...prev.visibility, [key]: val },
       }));
       setDirty(true);
     },
@@ -286,7 +367,14 @@ export function ContentEditor({
       </Section>
 
       {/* ─── Hero ─── */}
-      <Section title="Hero" icon="🏠" defaultOpen>
+      <Section
+        title="Hero"
+        subtitle={content.hero.englishTitle}
+        icon="🏠"
+        defaultOpen
+        visible={content.visibility.hero}
+        onVisibilityChange={(v) => setVis("hero", v)}
+      >
         <Field label="Eyebrow">
           <TextInput
             value={content.hero.eyebrow}
@@ -387,7 +475,13 @@ export function ContentEditor({
       </Section>
 
       {/* ─── About ─── */}
-      <Section title="About / Vision & Mission" icon="📖">
+      <Section
+        title="About / Vision & Mission"
+        subtitle={content.about.heading}
+        icon="📖"
+        visible={content.visibility.about}
+        onVisibilityChange={(v) => setVis("about", v)}
+      >
         <Field label="Eyebrow">
           <TextInput
             value={content.about.eyebrow}
@@ -540,7 +634,13 @@ export function ContentEditor({
       </Section>
 
       {/* ─── Structure ─── */}
-      <Section title="Organizational Model" icon="🏛️">
+      <Section
+        title="Organizational Model"
+        subtitle={content.structure.heading}
+        icon="🏛️"
+        visible={content.visibility.structure}
+        onVisibilityChange={(v) => setVis("structure", v)}
+      >
         <Field label="Eyebrow">
           <TextInput
             value={content.structure.eyebrow}
@@ -675,7 +775,13 @@ export function ContentEditor({
       </Section>
 
       {/* ─── Roadmap ─── */}
-      <Section title="Roadmap" icon="🗓️">
+      <Section
+        title="Roadmap"
+        subtitle={content.roadmap.heading}
+        icon="🗓️"
+        visible={content.visibility.roadmap}
+        onVisibilityChange={(v) => setVis("roadmap", v)}
+      >
         <Field label="Eyebrow">
           <TextInput
             value={content.roadmap.eyebrow}
@@ -795,7 +901,13 @@ export function ContentEditor({
       </Section>
 
       {/* ─── CTA ─── */}
-      <Section title="Call to Action" icon="📢">
+      <Section
+        title="Call to Action"
+        subtitle={content.cta.heading}
+        icon="📢"
+        visible={content.visibility.cta}
+        onVisibilityChange={(v) => setVis("cta", v)}
+      >
         <Field label="Arabic Title">
           <TextInput
             value={content.cta.arabicTitle}
@@ -824,7 +936,7 @@ export function ContentEditor({
       </Section>
 
       {/* ─── Footer ─── */}
-      <Section title="Footer" icon="📋">
+      <Section title="Footer" subtitle="Always visible" icon="📋">
         <Field label="Tagline">
           <TextArea
             value={content.footer.tagline}

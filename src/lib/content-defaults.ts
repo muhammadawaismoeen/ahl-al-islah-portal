@@ -211,4 +211,12 @@ export const DEFAULT_CONTENT: SiteContent = {
     ],
     smallPrint: "Built with ikhlas for Rijal Al-Huda.",
   },
+
+  visibility: {
+    hero: true,
+    about: true,
+    structure: true,
+    roadmap: true,
+    cta: true,
+  },
 };

@@ -11,15 +11,16 @@ export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   const content = await getContent();
+  const v = content.visibility;
   return (
     <>
       <Navbar content={content.nav} />
       <main>
-        <Hero content={content.hero} />
-        <About content={content.about} />
-        <Structure content={content.structure} />
-        <Roadmap content={content.roadmap} />
-        <CTA content={content.cta} />
+        {v.hero && <Hero content={content.hero} />}
+        {v.about && <About content={content.about} />}
+        {v.structure && <Structure content={content.structure} />}
+        {v.roadmap && <Roadmap content={content.roadmap} />}
+        {v.cta && <CTA content={content.cta} />}
       </main>
       <Footer content={content.footer} />
     </>
