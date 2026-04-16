@@ -43,6 +43,7 @@ export async function saveContent(content: SiteContent): Promise<void> {
     await put(BLOB_CONTENT_KEY, JSON.stringify(content, null, 2), {
       access: "public",
       addRandomSuffix: false,
+      allowOverwrite: true,
       contentType: "application/json",
     });
   } else {

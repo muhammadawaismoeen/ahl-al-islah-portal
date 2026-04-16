@@ -29,8 +29,9 @@ export async function updateContent(
     revalidatePath("/", "layout");
     return { ok: true };
   } catch (err) {
-    console.error("Failed to save content:", err);
-    return { ok: false, error: "Failed to save content." };
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error("Failed to save content:", msg, err);
+    return { ok: false, error: `Save failed: ${msg}` };
   }
 }
 

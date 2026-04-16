@@ -47,6 +47,7 @@ export async function saveSubmission(
     await put(`${BLOB_PREFIX}${id}.json`, JSON.stringify(record, null, 2), {
       access: "public",
       addRandomSuffix: false,
+      allowOverwrite: true,
       contentType: "application/json",
     });
   } else {
