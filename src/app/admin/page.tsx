@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { LogOut, Mail, Phone, Download, Pencil } from "lucide-react";
+import { LogOut, Mail, Phone, Download, Pencil, MessageCircle } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { isAuthenticated, login, logout } from "./actions";
 import { listSubmissions } from "@/lib/storage";
+import { listMessages } from "@/lib/message-store";
 import { getPositionBySlug } from "@/lib/positions";
 import { getQuestionSet } from "@/lib/questions";
 import { LoginForm } from "./LoginForm";
@@ -51,7 +52,11 @@ export default async function AdminPage({
     );
   }
 
-  const submissions = await listSubmissions();
+  const [submissions, messages] = await Promise.all([
+    listSubmissions(),
+    listMessages(),
+  ]);
+  const unreadMessages = messages.filter((m) => m.status === "unread").length;
   const { id: selectedId } = await searchParams;
   const selected = selectedId
     ? submissions.find((s) => s.id === selectedId)
@@ -73,7 +78,19 @@ export default async function AdminPage({
                 {submissions.length === 1 ? "" : "s"}
               </p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
+              <Link
+                href="/admin/messages"
+                className="btn-ghost !py-2 !px-4 text-xs relative"
+              >
+                <MessageCircle className="h-3.5 w-3.5" />
+                Inbox
+                {unreadMessages > 0 && (
+                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-gold-antique text-white text-[9px] font-bold flex items-center justify-center">
+                    {unreadMessages}
+                  </span>
+                )}
+              </Link>
               <Link
                 href="/admin/content"
                 className="btn-primary !py-2 !px-4 text-xs"
