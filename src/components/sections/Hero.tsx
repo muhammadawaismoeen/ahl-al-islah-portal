@@ -69,6 +69,13 @@ export function Hero({ content, customLogo }: { content: HeroContent; customLogo
             transition={{ duration: 0.8, delay: 0.6 }}
             className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4"
           >
+            <Link
+              href="/apply/core-member"
+              className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full bg-gold-gradient text-ink font-semibold tracking-wide shadow-lg hover:shadow-gold-warm/30 hover:scale-[1.02] transition-all group"
+            >
+              <Sparkles className="h-4 w-4" />
+              Become a Core Member
+            </Link>
             <Link href="/positions" className="btn-primary group">
               {content.primaryCtaLabel}
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />

@@ -98,6 +98,36 @@ export const POSITIONS: Position[] = [
     open: true,
     priority: 2,
   },
+  {
+    slug: "core-member",
+    title: "Core Member",
+    arabicTitle: "عضو أساسي",
+    wing: "both",
+    level: "member",
+    reportsTo: "Head of Cohort",
+    summary:
+      "Core Members are the backbone of Ahl Al-Islah — committed individuals who actively contribute to their cohort's programmes, support department events, and grow in Islamic character and leadership under the guidance of the Advisor and their Cohort Head.",
+    responsibilities: [
+      "Attend and actively participate in weekly cohort meetings",
+      "Support the planning and execution of department events and programmes",
+      "Build genuine brotherhood or sisterhood within the cohort",
+      "Complete assigned tasks punctually and with excellence",
+      "Maintain consistent communication with their Cohort Head",
+      "Work on personal development goals set alongside the Advisor",
+    ],
+    idealProfile: [
+      "Medical student of any year with a sincere desire to grow in deen",
+      "Consistent in salah and working on strengthening their Islamic practice",
+      "Team-oriented, dependable, and eager to contribute",
+      "Able to commit 3–5 hours per week during academic terms",
+      "Comfortable working within a structured, values-driven team",
+    ],
+    commitment: "3–5 hours/week",
+    termLength: "1 academic year",
+    questionSet: "core-member-application",
+    open: true,
+    priority: 5,
+  },
   // Example of a future position you can uncomment/add:
   // {
   //   slug: "male-deputy",

@@ -500,8 +500,234 @@ const HEAD_APPLICATION: QuestionSet = {
   ],
 };
 
+// ---------------------------------------------------------------
+// Core Member Application
+// ---------------------------------------------------------------
+const CORE_MEMBER_APPLICATION: QuestionSet = {
+  id: "core-member-application",
+  name: "Core Member Application",
+  description:
+    "Application to join Ahl Al-Islah as a Core Member — open to brothers and sisters of all years.",
+  sections: [
+    {
+      id: "personal",
+      title: "Personal Information",
+      arabicTitle: "المعلومات الشخصية",
+      description: "Tell us who you are.",
+      fields: [
+        {
+          id: "fullName",
+          type: "text",
+          label: "Full name",
+          placeholder: "e.g., Fatima bint Ahmad",
+          required: true,
+          minLength: 3,
+          maxLength: 100,
+        },
+        {
+          id: "gender",
+          type: "radio",
+          label: "Gender",
+          required: true,
+          options: [
+            { label: "Male (Brothers' Cohort)", value: "male" },
+            { label: "Female (Sisters' Cohort)", value: "female" },
+          ],
+          help: "You will be assigned to the cohort that matches your gender.",
+        },
+        {
+          id: "email",
+          type: "email",
+          label: "Email address",
+          placeholder: "you@example.com",
+          required: true,
+          help: "Used only for application correspondence.",
+        },
+        {
+          id: "phone",
+          type: "tel",
+          label: "WhatsApp number (with country code)",
+          placeholder: "+92 3XX XXXXXXX",
+          required: true,
+          help: "Your Cohort Head will use this to contact you.",
+        },
+        {
+          id: "institution",
+          type: "text",
+          label: "Medical college / institution",
+          placeholder: "Full institution name",
+          required: true,
+        },
+        {
+          id: "yearOfStudy",
+          type: "select",
+          label: "Current year of study",
+          required: true,
+          options: [
+            { label: "1st year MBBS / BDS", value: "1st" },
+            { label: "2nd year MBBS / BDS", value: "2nd" },
+            { label: "3rd year MBBS / BDS", value: "3rd" },
+            { label: "4th year MBBS / BDS", value: "4th" },
+            { label: "Final year MBBS / BDS", value: "final" },
+            { label: "House officer / intern", value: "house" },
+            { label: "Other", value: "other" },
+          ],
+        },
+        {
+          id: "city",
+          type: "text",
+          label: "City of residence",
+          placeholder: "e.g., Karachi",
+          required: true,
+        },
+      ],
+    },
+    {
+      id: "deen",
+      title: "Deen & Character",
+      arabicTitle: "الدين والخلق",
+      description:
+        "These questions are not a test — they help us understand where you are in your journey so we can support you. Be honest. There is no wrong answer except dishonesty.",
+      fields: [
+        {
+          id: "prayers",
+          type: "radio",
+          label: "How consistent are you with the 5 daily prayers?",
+          required: true,
+          options: [
+            { label: "I pray all 5 daily, on time or in jamaa'ah", value: "consistent" },
+            { label: "I pray all 5 daily, though not always on time", value: "mostly-on-time" },
+            { label: "I pray most prayers but occasionally miss one", value: "mostly" },
+            { label: "I am working on becoming more consistent", value: "improving" },
+          ],
+        },
+        {
+          id: "quranEngagement",
+          type: "textarea",
+          label: "Describe your current relationship with the Qur'an",
+          placeholder: "e.g., 'I try to recite a page after Fajr, and I attend a weekly tafsir circle…'",
+          required: true,
+          minLength: 40,
+          maxLength: 800,
+        },
+        {
+          id: "whyJoin",
+          type: "textarea",
+          label: "Why do you want to join Ahl Al-Islah as a Core Member?",
+          placeholder: "Be specific. What drew you to this department? What do you hope to gain and give?",
+          required: true,
+          minLength: 80,
+          maxLength: 1500,
+          help: "Sincerity matters more than eloquence.",
+        },
+        {
+          id: "ukhuwwah",
+          type: "textarea",
+          label:
+            "What does ukhuwwah (brotherhood / sisterhood in Islam) mean to you practically — beyond the greeting and the smile?",
+          required: true,
+          minLength: 60,
+          maxLength: 1000,
+        },
+      ],
+    },
+    {
+      id: "contribution",
+      title: "Availability & Contribution",
+      arabicTitle: "الإتاحة والمساهمة",
+      fields: [
+        {
+          id: "weeklyHours",
+          type: "select",
+          label: "How many hours per week can you realistically commit during term?",
+          required: true,
+          options: [
+            { label: "1–2 hours", value: "1-2" },
+            { label: "3–5 hours (recommended)", value: "3-5" },
+            { label: "5–8 hours", value: "5-8" },
+            { label: "More than 8 hours", value: "8+" },
+          ],
+        },
+        {
+          id: "skills",
+          type: "textarea",
+          label: "What skills or strengths can you bring to the team?",
+          placeholder:
+            "e.g., graphic design, event management, writing, public speaking, tech, teaching…",
+          required: true,
+          minLength: 40,
+          maxLength: 800,
+          help: "No skill is too small. Be honest about what you enjoy doing.",
+        },
+        {
+          id: "priorExperience",
+          type: "textarea",
+          label:
+            "Any prior experience in Islamic work, student societies, or community service? (optional)",
+          placeholder:
+            "e.g., 'Organised Ramadan iftars at my hostel for 2 years, volunteered at a masjid literacy programme…'",
+          required: false,
+          maxLength: 1000,
+        },
+        {
+          id: "examConflicts",
+          type: "textarea",
+          label:
+            "Are there periods (exams, clinical postings) when your availability will significantly drop? How will you manage?",
+          required: true,
+          minLength: 30,
+          maxLength: 600,
+        },
+      ],
+    },
+    {
+      id: "declarations",
+      title: "Declarations",
+      arabicTitle: "الإقرارات",
+      description: "Read each statement carefully before ticking.",
+      fields: [
+        {
+          id: "declareTruthful",
+          type: "checkbox",
+          label:
+            "I affirm that everything in this application is truthful and accurate to the best of my knowledge.",
+          required: true,
+          minSelected: 1,
+          options: [{ label: "I affirm", value: "yes" }],
+        },
+        {
+          id: "declareValues",
+          type: "checkbox",
+          label:
+            "I commit to uphold the values, standards, and coordination channels of Ahl Al-Islah throughout my membership.",
+          required: true,
+          minSelected: 1,
+          options: [{ label: "I commit", value: "yes" }],
+        },
+        {
+          id: "declareConfidentiality",
+          type: "checkbox",
+          label:
+            "I understand that internal department matters are confidential and I will not share them outside the team.",
+          required: true,
+          minSelected: 1,
+          options: [{ label: "I understand", value: "yes" }],
+        },
+        {
+          id: "additionalNotes",
+          type: "textarea",
+          label: "Anything else you'd like the Advisor to know? (optional)",
+          required: false,
+          maxLength: 1000,
+        },
+      ],
+    },
+  ],
+};
+
 export const QUESTION_SETS: Record<string, QuestionSet> = {
   "head-application": HEAD_APPLICATION,
+  "core-member-application": CORE_MEMBER_APPLICATION,
 };
 
 export function getQuestionSet(id: string): QuestionSet | undefined {

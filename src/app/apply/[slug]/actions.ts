@@ -89,11 +89,22 @@ export async function submitApplication(
     };
   }
 
+  // For positions open to both wings, derive the actual wing from
+  // a "gender" field in the submitted data (value: "male" | "female").
+  // This ensures admin filtering by gender works correctly.
+  const data = parsed.data as Record<string, unknown>;
+  const resolvedWing =
+    position.wing === "both"
+      ? (data.gender as string) === "male" || (data.gender as string) === "female"
+        ? (data.gender as string)
+        : "both"
+      : position.wing;
+
   const record = await saveSubmission({
     positionSlug: position.slug,
     positionTitle: position.title,
-    wing: position.wing,
-    data: parsed.data as Record<string, unknown>,
+    wing: resolvedWing,
+    data,
   });
 
   // Fire-and-forget notification (non-blocking failure)

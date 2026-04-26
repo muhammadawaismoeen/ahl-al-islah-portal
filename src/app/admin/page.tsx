@@ -21,7 +21,7 @@ export const dynamic = "force-dynamic";
 export default async function AdminPage({
   searchParams,
 }: {
-  searchParams: Promise<{ id?: string }>;
+  searchParams: Promise<{ id?: string; wing?: string; position?: string }>;
 }) {
   const authed = await isAuthenticated();
 
@@ -57,10 +57,31 @@ export default async function AdminPage({
     listMessages(),
   ]);
   const unreadMessages = messages.filter((m) => m.status === "unread").length;
-  const { id: selectedId } = await searchParams;
+  const { id: selectedId, wing: wingFilter, position: positionFilter } = await searchParams;
+
+  // Apply filters
+  const filtered = submissions
+    .filter((s) => !wingFilter || s.wing === wingFilter)
+    .filter((s) => !positionFilter || s.positionSlug === positionFilter);
+
   const selected = selectedId
     ? submissions.find((s) => s.id === selectedId)
     : null;
+
+  // Counts for filter tabs
+  const countAll = submissions.length;
+  const countMale = submissions.filter((s) => s.wing === "male").length;
+  const countFemale = submissions.filter((s) => s.wing === "female").length;
+  const countCore = submissions.filter((s) => s.positionSlug === "core-member").length;
+
+  // Build filter URL helper
+  function filterUrl(params: Record<string, string | undefined>) {
+    const q = new URLSearchParams();
+    if (params.wing) q.set("wing", params.wing);
+    if (params.position) q.set("position", params.position);
+    const s = q.toString();
+    return `/admin${s ? `?${s}` : ""}`;
+  }
 
   return (
     <>
@@ -74,8 +95,8 @@ export default async function AdminPage({
                 Applications
               </h1>
               <p className="text-sm text-ink/60 mt-1">
-                {submissions.length} total submission
-                {submissions.length === 1 ? "" : "s"}
+                {filtered.length} of {countAll} submission
+                {countAll === 1 ? "" : "s"}
               </p>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
@@ -107,26 +128,75 @@ export default async function AdminPage({
             </div>
           </div>
 
+          {/* Filter tabs */}
+          <div className="flex flex-wrap gap-2 mb-4">
+            <Link
+              href={filterUrl({})}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
+                !wingFilter && !positionFilter
+                  ? "bg-emerald-deep text-white"
+                  : "bg-cream-muted text-ink/60 hover:bg-emerald-deep/10 hover:text-emerald-deep"
+              }`}
+            >
+              All ({countAll})
+            </Link>
+            <Link
+              href={filterUrl({ wing: "male" })}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
+                wingFilter === "male" && !positionFilter
+                  ? "bg-emerald-deep text-white"
+                  : "bg-cream-muted text-ink/60 hover:bg-emerald-deep/10 hover:text-emerald-deep"
+              }`}
+            >
+              Brothers ({countMale})
+            </Link>
+            <Link
+              href={filterUrl({ wing: "female" })}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
+                wingFilter === "female" && !positionFilter
+                  ? "bg-gold-antique text-white"
+                  : "bg-cream-muted text-ink/60 hover:bg-gold-antique/10 hover:text-gold-antique"
+              }`}
+            >
+              Sisters ({countFemale})
+            </Link>
+            <Link
+              href={filterUrl({ position: "core-member" })}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
+                positionFilter === "core-member"
+                  ? "bg-ink text-white"
+                  : "bg-cream-muted text-ink/60 hover:bg-ink/10 hover:text-ink"
+              }`}
+            >
+              Core Members ({countCore})
+            </Link>
+          </div>
+
           <div className="grid lg:grid-cols-[1fr_1.4fr] gap-6">
             {/* List */}
             <div className="ornate-card p-2 max-h-[calc(100vh-16rem)] overflow-y-auto">
-              {submissions.length === 0 ? (
+              {filtered.length === 0 ? (
                 <p className="p-8 text-sm text-ink/60 text-center">
-                  No applications yet.
+                  {submissions.length === 0 ? "No applications yet." : "No applications match this filter."}
                 </p>
               ) : (
                 <ul className="divide-y divide-cream-muted">
-                  {submissions.map((s) => {
+                  {filtered.map((s) => {
                     const position = getPositionBySlug(s.positionSlug);
                     const name =
                       (s.data.fullName as string) ??
                       (s.data.name as string) ??
                       "Unnamed";
                     const isSelected = s.id === selectedId;
+                    // Preserve active filters in the selection URL
+                    const selectionParams = new URLSearchParams();
+                    selectionParams.set("id", s.id);
+                    if (wingFilter) selectionParams.set("wing", wingFilter);
+                    if (positionFilter) selectionParams.set("position", positionFilter);
                     return (
                       <li key={s.id}>
                         <Link
-                          href={`/admin?id=${s.id}`}
+                          href={`/admin?${selectionParams.toString()}`}
                           className={`block p-4 rounded-xl transition ${
                             isSelected
                               ? "bg-emerald-deep/5"

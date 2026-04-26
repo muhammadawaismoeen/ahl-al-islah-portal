@@ -59,7 +59,13 @@ export function Navbar({ content = DEFAULT_CONTENT.nav, customLogo }: { content?
               {item.label}
             </Link>
           ))}
-          <Link href="/positions" className="btn-primary ml-3 !py-2 !px-5">
+          <Link
+            href="/apply/core-member"
+            className="ml-2 px-4 py-2 text-sm font-semibold text-gold-antique hover:text-amber-700 transition-colors rounded-full hover:bg-gold-antique/5 border border-gold-antique/30 hover:border-gold-antique/60"
+          >
+            Join Us
+          </Link>
+          <Link href="/positions" className="btn-primary ml-2 !py-2 !px-5">
             {content.ctaLabel}
           </Link>
         </nav>
@@ -91,9 +97,16 @@ export function Navbar({ content = DEFAULT_CONTENT.nav, customLogo }: { content?
               </Link>
             ))}
             <Link
+              href="/apply/core-member"
+              onClick={() => setOpen(false)}
+              className="px-4 py-3 text-sm font-semibold text-gold-antique hover:bg-gold-antique/5 rounded-lg transition-colors border border-gold-antique/20 mt-1"
+            >
+              ✦ Join as Core Member
+            </Link>
+            <Link
               href="/positions"
               onClick={() => setOpen(false)}
-              className="btn-primary mt-3"
+              className="btn-primary mt-2"
             >
               {content.ctaLabel}
             </Link>
