@@ -62,7 +62,7 @@ export default async function AdminPage({
   // Apply filters
   const filtered = submissions
     .filter((s) => !wingFilter || s.wing === wingFilter)
-    .filter((s) => !positionFilter || s.positionSlug === positionFilter);
+    .filter((s) => !positionFilter || s.positionSlug.startsWith(positionFilter));
 
   const selected = selectedId
     ? submissions.find((s) => s.id === selectedId)
@@ -72,7 +72,7 @@ export default async function AdminPage({
   const countAll = submissions.length;
   const countMale = submissions.filter((s) => s.wing === "male").length;
   const countFemale = submissions.filter((s) => s.wing === "female").length;
-  const countCore = submissions.filter((s) => s.positionSlug === "core-member").length;
+  const countCore = submissions.filter((s) => s.positionSlug.startsWith("core-member")).length;
 
   // Build filter URL helper
   function filterUrl(params: Record<string, string | undefined>) {

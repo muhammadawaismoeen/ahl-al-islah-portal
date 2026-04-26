@@ -525,17 +525,6 @@ const CORE_MEMBER_APPLICATION: QuestionSet = {
           maxLength: 100,
         },
         {
-          id: "gender",
-          type: "radio",
-          label: "Gender",
-          required: true,
-          options: [
-            { label: "Male (Brothers' Cohort)", value: "male" },
-            { label: "Female (Sisters' Cohort)", value: "female" },
-          ],
-          help: "You will be assigned to the cohort that matches your gender.",
-        },
-        {
           id: "email",
           type: "email",
           label: "Email address",

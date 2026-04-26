@@ -33,11 +33,11 @@ export function CTA({ content }: { content: CtaContent }) {
 
             <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
-                href="/apply/core-member"
+                href="/join"
                 className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-gold-gradient text-ink font-semibold tracking-wide shadow-xl hover:shadow-gold-warm/30 hover:scale-[1.02] transition-all group"
               >
                 <Sparkles className="h-4 w-4" />
-                Become a Core Member
+                Join as Core Member
               </Link>
               <Link
                 href="/positions"

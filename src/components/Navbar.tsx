@@ -60,13 +60,10 @@ export function Navbar({ content = DEFAULT_CONTENT.nav, customLogo }: { content?
             </Link>
           ))}
           <Link
-            href="/apply/core-member"
-            className="ml-2 px-4 py-2 text-sm font-semibold text-gold-antique hover:text-amber-700 transition-colors rounded-full hover:bg-gold-antique/5 border border-gold-antique/30 hover:border-gold-antique/60"
+            href="/join"
+            className="ml-3 inline-flex items-center gap-2 px-5 py-2 rounded-full bg-gold-gradient text-ink text-sm font-semibold tracking-wide shadow-md hover:shadow-gold-warm/40 hover:scale-[1.03] transition-all"
           >
-            Join Us
-          </Link>
-          <Link href="/positions" className="btn-primary ml-2 !py-2 !px-5">
-            {content.ctaLabel}
+            Join as Core Member
           </Link>
         </nav>
 
@@ -97,18 +94,11 @@ export function Navbar({ content = DEFAULT_CONTENT.nav, customLogo }: { content?
               </Link>
             ))}
             <Link
-              href="/apply/core-member"
+              href="/join"
               onClick={() => setOpen(false)}
-              className="px-4 py-3 text-sm font-semibold text-gold-antique hover:bg-gold-antique/5 rounded-lg transition-colors border border-gold-antique/20 mt-1"
+              className="inline-flex items-center justify-center gap-2 mt-3 px-5 py-3 rounded-full bg-gold-gradient text-ink text-sm font-semibold tracking-wide shadow-md"
             >
-              ✦ Join as Core Member
-            </Link>
-            <Link
-              href="/positions"
-              onClick={() => setOpen(false)}
-              className="btn-primary mt-2"
-            >
-              {content.ctaLabel}
+              Join as Core Member
             </Link>
           </nav>
         </div>
