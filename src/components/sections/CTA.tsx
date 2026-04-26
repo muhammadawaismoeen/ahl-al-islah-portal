@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import type { CtaContent } from "@/lib/content-types";
 
 export function CTA({ content }: { content: CtaContent }) {
@@ -31,20 +31,13 @@ export function CTA({ content }: { content: CtaContent }) {
               {content.description}
             </p>
 
-            <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+            <div className="mt-10 flex items-center justify-center">
               <Link
                 href="/join"
-                className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-gold-gradient text-ink font-semibold tracking-wide shadow-xl hover:shadow-gold-warm/30 hover:scale-[1.02] transition-all group"
+                className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-gold-gradient text-ink font-semibold tracking-wide shadow-xl hover:shadow-gold-warm/30 hover:scale-[1.02] transition-all"
               >
                 <Sparkles className="h-4 w-4" />
                 Join as Core Member
-              </Link>
-              <Link
-                href="/positions"
-                className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-white/10 text-cream border border-cream/20 font-semibold tracking-wide hover:bg-white/20 transition-all group"
-              >
-                {content.buttonLabel}
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Link>
             </div>
           </div>

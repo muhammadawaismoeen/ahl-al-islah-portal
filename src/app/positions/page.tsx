@@ -89,15 +89,25 @@ function PositionCard({ position }: { position: Position }) {
       </div>
 
       {position.open ? (
-        <Link
-          href={`/apply/${position.slug}`}
-          className="btn-primary w-full group"
-        >
-          Apply for this role
-          <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-        </Link>
+        position.slug.startsWith("core-member") ? (
+          <Link
+            href="/join"
+            className="inline-flex items-center justify-center gap-2 w-full px-6 py-3 rounded-full bg-gold-gradient text-ink font-semibold tracking-wide shadow-md hover:shadow-gold-warm/30 hover:scale-[1.02] transition-all"
+          >
+            Join as Core Member
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        ) : (
+          <Link
+            href={`/apply/${position.slug}`}
+            className="btn-primary w-full group"
+          >
+            Apply for this role
+            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+          </Link>
+        )
       ) : (
-        <button disabled className="btn-primary w-full">
+        <button disabled className="btn-primary w-full opacity-50 cursor-not-allowed">
           Applications closed
         </button>
       )}
