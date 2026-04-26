@@ -80,9 +80,11 @@ export default async function CohortPage({
   const wing = WING_CONFIG[role];
   const allSubmissions = await listSubmissions();
 
-  // Show only applications that belong to this head's wing
+  // Show only applications that belong to this head's wing,
+  // submitted on or after the cohort portal launch date (hide pre-existing test/old entries)
+  const COHORT_VISIBLE_FROM = "2026-04-26";
   const submissions = allSubmissions
-    .filter((s) => s.wing === role)
+    .filter((s) => s.wing === role && s.submittedAt.slice(0, 10) >= COHORT_VISIBLE_FROM)
     .sort((a, b) => b.submittedAt.localeCompare(a.submittedAt));
 
   const { id: selectedId } = await searchParams;
