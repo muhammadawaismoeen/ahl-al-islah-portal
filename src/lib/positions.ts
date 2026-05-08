@@ -123,7 +123,7 @@ export const POSITIONS: Position[] = [
     ],
     commitment: "3–5 hours/week",
     termLength: "1 academic year",
-    questionSet: "core-member-application",
+    questionSet: "core-member-brothers-application",
     open: true,
     priority: 5,
   },

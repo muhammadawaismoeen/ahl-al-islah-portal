@@ -501,212 +501,196 @@ const HEAD_APPLICATION: QuestionSet = {
 };
 
 // ---------------------------------------------------------------
-// Core Member Application
+// Shared personal fields for Core Member forms
+// ---------------------------------------------------------------
+const CORE_MEMBER_PERSONAL_FIELDS: Field[] = [
+  {
+    id: "fullName",
+    type: "text",
+    label: "Full name",
+    placeholder: "e.g., Fatima bint Ahmad",
+    required: true,
+    minLength: 3,
+    maxLength: 100,
+  },
+  {
+    id: "email",
+    type: "email",
+    label: "Email address",
+    placeholder: "you@example.com",
+    required: true,
+    help: "Used only for application correspondence.",
+  },
+  {
+    id: "phone",
+    type: "tel",
+    label: "WhatsApp number (with country code)",
+    placeholder: "+92 3XX XXXXXXX",
+    required: true,
+    help: "Your Cohort Head will use this to contact you.",
+  },
+  {
+    id: "institution",
+    type: "text",
+    label: "Medical college / institution",
+    placeholder: "Full institution name",
+    required: true,
+  },
+  {
+    id: "yearOfStudy",
+    type: "select",
+    label: "Current year of study",
+    required: true,
+    options: [
+      { label: "1st year MBBS / BDS", value: "1st" },
+      { label: "2nd year MBBS / BDS", value: "2nd" },
+      { label: "3rd year MBBS / BDS", value: "3rd" },
+      { label: "4th year MBBS / BDS", value: "4th" },
+      { label: "Final year MBBS / BDS", value: "final" },
+      { label: "House officer / intern", value: "house" },
+      { label: "Other", value: "other" },
+    ],
+  },
+  {
+    id: "city",
+    type: "text",
+    label: "City of residence",
+    placeholder: "e.g., Karachi",
+    required: true,
+  },
+];
+
+const CORE_MEMBER_MOTIVATION_FIELDS: Field[] = [
+  {
+    id: "whyJoin",
+    type: "textarea",
+    label: "Why do you want to join Ahl Al-Islah?",
+    placeholder: "What drew you here, and what do you hope to contribute?",
+    required: true,
+    maxLength: 500,
+    help: "A few sincere sentences are enough.",
+  },
+  {
+    id: "weeklyHours",
+    type: "select",
+    label: "Hours per week you can commit during term",
+    required: true,
+    options: [
+      { label: "1–2 hours", value: "1-2" },
+      { label: "3–5 hours", value: "3-5" },
+      { label: "5–8 hours", value: "5-8" },
+      { label: "More than 8 hours", value: "8+" },
+    ],
+  },
+  {
+    id: "skills",
+    type: "textarea",
+    label: "Skills or strengths you bring to the team",
+    placeholder: "e.g., graphic design, event management, writing, public speaking…",
+    required: true,
+    maxLength: 400,
+    help: "No skill is too small.",
+  },
+];
+
+const CORE_MEMBER_DECLARATION_FIELDS: Field[] = [
+  {
+    id: "declareTruthful",
+    type: "checkbox",
+    label: "I affirm that everything in this application is truthful and accurate.",
+    required: true,
+    minSelected: 1,
+    options: [{ label: "I affirm", value: "yes" }],
+  },
+  {
+    id: "declareValues",
+    type: "checkbox",
+    label: "I commit to uphold the values and standards of Ahl Al-Islah throughout my membership.",
+    required: true,
+    minSelected: 1,
+    options: [{ label: "I commit", value: "yes" }],
+  },
+  {
+    id: "additionalNotes",
+    type: "textarea",
+    label: "Anything else you'd like the Advisor to know? (optional)",
+    required: false,
+    maxLength: 500,
+  },
+];
+
+// ---------------------------------------------------------------
+// Core Member Application — Sisters
 // ---------------------------------------------------------------
 const CORE_MEMBER_APPLICATION: QuestionSet = {
   id: "core-member-application",
   name: "Core Member Application",
-  description:
-    "Application to join Ahl Al-Islah as a Core Member — open to brothers and sisters of all years.",
+  description: "Application to join Ahl Al-Islah as a Core Member.",
   sections: [
     {
       id: "personal",
       title: "Personal Information",
       arabicTitle: "المعلومات الشخصية",
-      description: "Tell us who you are.",
-      fields: [
-        {
-          id: "fullName",
-          type: "text",
-          label: "Full name",
-          placeholder: "e.g., Fatima bint Ahmad",
-          required: true,
-          minLength: 3,
-          maxLength: 100,
-        },
-        {
-          id: "email",
-          type: "email",
-          label: "Email address",
-          placeholder: "you@example.com",
-          required: true,
-          help: "Used only for application correspondence.",
-        },
-        {
-          id: "phone",
-          type: "tel",
-          label: "WhatsApp number (with country code)",
-          placeholder: "+92 3XX XXXXXXX",
-          required: true,
-          help: "Your Cohort Head will use this to contact you.",
-        },
-        {
-          id: "institution",
-          type: "text",
-          label: "Medical college / institution",
-          placeholder: "Full institution name",
-          required: true,
-        },
-        {
-          id: "yearOfStudy",
-          type: "select",
-          label: "Current year of study",
-          required: true,
-          options: [
-            { label: "1st year MBBS / BDS", value: "1st" },
-            { label: "2nd year MBBS / BDS", value: "2nd" },
-            { label: "3rd year MBBS / BDS", value: "3rd" },
-            { label: "4th year MBBS / BDS", value: "4th" },
-            { label: "Final year MBBS / BDS", value: "final" },
-            { label: "House officer / intern", value: "house" },
-            { label: "Other", value: "other" },
-          ],
-        },
-        {
-          id: "city",
-          type: "text",
-          label: "City of residence",
-          placeholder: "e.g., Karachi",
-          required: true,
-        },
-      ],
+      fields: CORE_MEMBER_PERSONAL_FIELDS,
     },
     {
       id: "motivation",
-      title: "Motivation & Values",
-      arabicTitle: "الدوافع والقيم",
-      description:
-        "Help us understand who you are and what drives you. There are no right or wrong answers — we are looking for honesty and self-awareness.",
-      fields: [
-        {
-          id: "whyJoin",
-          type: "textarea",
-          label: "Why do you want to join Ahl Al-Islah as a Core Member?",
-          placeholder: "What drew you to this department? What do you hope to contribute, and what do you hope to gain?",
-          required: true,
-          minLength: 80,
-          maxLength: 1500,
-          help: "Be specific. Sincerity matters more than eloquence.",
-        },
-        {
-          id: "values",
-          type: "textarea",
-          label: "What three values matter most to you as a person and team-member, and why?",
-          placeholder: "e.g., integrity, reliability, compassion — explain each briefly in your own words.",
-          required: true,
-          minLength: 60,
-          maxLength: 1000,
-        },
-        {
-          id: "teamConflict",
-          type: "textarea",
-          label: "Describe a time you disagreed with someone in a team. How did you handle it, and what did you learn?",
-          placeholder: "It can be from any context — college, family, a society, or community work.",
-          required: true,
-          minLength: 60,
-          maxLength: 1000,
-        },
-        {
-          id: "selfImprovement",
-          type: "textarea",
-          label: "What is one area you are actively working to improve in yourself right now?",
-          placeholder: "Be honest — this is about self-awareness, not perfection.",
-          required: true,
-          minLength: 40,
-          maxLength: 600,
-        },
-      ],
-    },
-    {
-      id: "contribution",
-      title: "Availability & Contribution",
-      arabicTitle: "الإتاحة والمساهمة",
-      fields: [
-        {
-          id: "weeklyHours",
-          type: "select",
-          label: "How many hours per week can you realistically commit during term?",
-          required: true,
-          options: [
-            { label: "1–2 hours", value: "1-2" },
-            { label: "3–5 hours (recommended)", value: "3-5" },
-            { label: "5–8 hours", value: "5-8" },
-            { label: "More than 8 hours", value: "8+" },
-          ],
-        },
-        {
-          id: "skills",
-          type: "textarea",
-          label: "What skills or strengths can you bring to the team?",
-          placeholder:
-            "e.g., graphic design, event management, writing, public speaking, tech, teaching…",
-          required: true,
-          minLength: 40,
-          maxLength: 800,
-          help: "No skill is too small. Be honest about what you enjoy doing.",
-        },
-        {
-          id: "priorExperience",
-          type: "textarea",
-          label:
-            "Any prior experience in Islamic work, student societies, or community service? (optional)",
-          placeholder:
-            "e.g., 'Organised Ramadan iftars at my hostel for 2 years, volunteered at a masjid literacy programme…'",
-          required: false,
-          maxLength: 1000,
-        },
-        {
-          id: "examConflicts",
-          type: "textarea",
-          label:
-            "Are there periods (exams, clinical postings) when your availability will significantly drop? How will you manage?",
-          required: true,
-          minLength: 30,
-          maxLength: 600,
-        },
-      ],
+      title: "Motivation & Availability",
+      arabicTitle: "الدوافع والإتاحة",
+      fields: CORE_MEMBER_MOTIVATION_FIELDS,
     },
     {
       id: "declarations",
       title: "Declarations",
       arabicTitle: "الإقرارات",
-      description: "Read each statement carefully before ticking.",
+      fields: CORE_MEMBER_DECLARATION_FIELDS,
+    },
+  ],
+};
+
+// ---------------------------------------------------------------
+// Core Member Application — Brothers (includes role preference)
+// ---------------------------------------------------------------
+const CORE_MEMBER_BROTHERS_APPLICATION: QuestionSet = {
+  id: "core-member-brothers-application",
+  name: "Core Member Application — Brothers",
+  description: "Application to join Ahl Al-Islah — Brothers' Cohort.",
+  sections: [
+    {
+      id: "role",
+      title: "Role Interest",
+      arabicTitle: "اهتمام بالدور",
+      description: "Let us know which role you are interested in.",
       fields: [
         {
-          id: "declareTruthful",
-          type: "checkbox",
-          label:
-            "I affirm that everything in this application is truthful and accurate to the best of my knowledge.",
+          id: "roleInterest",
+          type: "radio",
+          label: "Would you like to join as a Core Member or as Deputy Head of Brothers' Cohort?",
           required: true,
-          minSelected: 1,
-          options: [{ label: "I affirm", value: "yes" }],
-        },
-        {
-          id: "declareValues",
-          type: "checkbox",
-          label:
-            "I commit to uphold the values, standards, and coordination channels of Ahl Al-Islah throughout my membership.",
-          required: true,
-          minSelected: 1,
-          options: [{ label: "I commit", value: "yes" }],
-        },
-        {
-          id: "declareConfidentiality",
-          type: "checkbox",
-          label:
-            "I understand that internal department matters are confidential and I will not share them outside the team.",
-          required: true,
-          minSelected: 1,
-          options: [{ label: "I understand", value: "yes" }],
-        },
-        {
-          id: "additionalNotes",
-          type: "textarea",
-          label: "Anything else you'd like the Advisor to know? (optional)",
-          required: false,
-          maxLength: 1000,
+          options: [
+            { label: "Core Member", value: "core-member" },
+            { label: "Deputy Head of Brothers' Cohort", value: "deputy-head" },
+          ],
         },
       ],
+    },
+    {
+      id: "personal",
+      title: "Personal Information",
+      arabicTitle: "المعلومات الشخصية",
+      fields: CORE_MEMBER_PERSONAL_FIELDS,
+    },
+    {
+      id: "motivation",
+      title: "Motivation & Availability",
+      arabicTitle: "الدوافع والإتاحة",
+      fields: CORE_MEMBER_MOTIVATION_FIELDS,
+    },
+    {
+      id: "declarations",
+      title: "Declarations",
+      arabicTitle: "الإقرارات",
+      fields: CORE_MEMBER_DECLARATION_FIELDS,
     },
   ],
 };
@@ -714,6 +698,7 @@ const CORE_MEMBER_APPLICATION: QuestionSet = {
 export const QUESTION_SETS: Record<string, QuestionSet> = {
   "head-application": HEAD_APPLICATION,
   "core-member-application": CORE_MEMBER_APPLICATION,
+  "core-member-brothers-application": CORE_MEMBER_BROTHERS_APPLICATION,
 };
 
 export function getQuestionSet(id: string): QuestionSet | undefined {
