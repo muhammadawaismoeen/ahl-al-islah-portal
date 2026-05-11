@@ -5,15 +5,13 @@
 
 export type MessageRole =
   | "female-head"
-  | "female-deputy"
   | "male-head"
-  | "male-deputy";
+  | "core-member";
 
 export const ROLE_LABELS: Record<MessageRole, string> = {
   "female-head": "Head of Sisters' Cohort",
-  "female-deputy": "Deputy Head of Sisters' Cohort",
   "male-head": "Head of Brothers' Cohort",
-  "male-deputy": "Deputy Head of Brothers' Cohort",
+  "core-member": "Core Member",
 };
 
 export interface AdvisorMessage {

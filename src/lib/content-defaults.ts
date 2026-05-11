@@ -110,7 +110,6 @@ export const DEFAULT_CONTENT: SiteContent = {
     maleWingArabic: "جناح الإخوة",
     maleWingRoleTitle: "Head, Brothers' Cohort",
     maleWingRoles: [
-      "Deputy Head",
       "Da'wah & Content Lead",
       "Outreach & Engagement Lead",
       "Logistics & Operations Lead",
@@ -120,7 +119,6 @@ export const DEFAULT_CONTENT: SiteContent = {
     femaleWingArabic: "جناح الأخوات",
     femaleWingRoleTitle: "Head, Sisters' Cohort",
     femaleWingRoles: [
-      "Deputy Head",
       "Da'wah & Content Lead",
       "Outreach & Engagement Lead",
       "Logistics & Operations Lead",

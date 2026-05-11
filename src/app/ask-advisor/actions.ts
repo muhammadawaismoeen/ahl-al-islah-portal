@@ -33,9 +33,8 @@ export async function submitMessage(
   // Validate role
   const validRoles: MessageRole[] = [
     "female-head",
-    "female-deputy",
     "male-head",
-    "male-deputy",
+    "core-member",
   ];
   if (!validRoles.includes(role)) {
     return { ok: false, error: "Invalid role selected." };
