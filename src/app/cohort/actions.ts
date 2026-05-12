@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 const COOKIE = "ahl_head_role";
 const MAX_AGE = 60 * 60 * 8; // 8 hours
 
-export type HeadRole = "male" | "female";
+export type HeadRole = "male" | "female" | "male-core";
 
 export async function getHeadRole(): Promise<HeadRole | null> {
   const val = (await cookies()).get(COOKIE)?.value;
@@ -24,6 +24,8 @@ export async function loginHead(
   const malePass = process.env.HEAD_MALE_PASSWORD ?? "";
   const femaleEmail = (process.env.HEAD_FEMALE_EMAIL ?? "").toLowerCase();
   const femalePass = process.env.HEAD_FEMALE_PASSWORD ?? "";
+  const maleCoreEmail = (process.env.HEAD_MALE_CORE_EMAIL ?? "").toLowerCase();
+  const maleCorePass = process.env.HEAD_MALE_CORE_PASSWORD ?? "";
 
   let role: HeadRole | null = null;
 
@@ -36,6 +38,13 @@ export async function loginHead(
     password === femalePass
   ) {
     role = "female";
+  } else if (
+    maleCoreEmail &&
+    maleCorePass &&
+    email === maleCoreEmail &&
+    password === maleCorePass
+  ) {
+    role = "male-core";
   }
 
   if (!role) {

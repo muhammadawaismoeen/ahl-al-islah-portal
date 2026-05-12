@@ -31,6 +31,12 @@ const WING_CONFIG = {
     dot: "bg-gold-antique",
     badge: "bg-gold-antique/10 text-gold-antique",
   },
+  "male-core": {
+    label: "Brothers' Core Members",
+    arabic: "أعضاء الإخوة",
+    dot: "bg-emerald-deep",
+    badge: "bg-emerald-deep/10 text-emerald-deep",
+  },
 } as const;
 
 export default async function CohortPage({
@@ -81,10 +87,17 @@ export default async function CohortPage({
   const allSubmissions = await listSubmissions();
 
   // Show only applications that belong to this head's wing,
-  // submitted on or after the cohort portal launch date (hide pre-existing test/old entries)
+  // submitted on or after the cohort portal launch date (hide pre-existing test/old entries).
+  // The "male-core" role sees only Core Member (brothers) applications.
   const COHORT_VISIBLE_FROM = "2026-04-26";
+  const CORE_MEMBER_SLUGS = new Set(["core-member-male"]);
+  const wingFilter = role === "male-core" ? "male" : role;
   const submissions = allSubmissions
-    .filter((s) => s.wing === role && s.submittedAt.slice(0, 10) >= COHORT_VISIBLE_FROM)
+    .filter((s) => {
+      if (s.wing !== wingFilter) return false;
+      if (role === "male-core" && !CORE_MEMBER_SLUGS.has(s.positionSlug)) return false;
+      return s.submittedAt.slice(0, 10) >= COHORT_VISIBLE_FROM;
+    })
     .sort((a, b) => b.submittedAt.localeCompare(a.submittedAt));
 
   const { id: selectedId } = await searchParams;
