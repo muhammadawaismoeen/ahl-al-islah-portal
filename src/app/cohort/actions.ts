@@ -10,7 +10,7 @@ export type HeadRole = "male" | "female" | "male-core";
 
 export async function getHeadRole(): Promise<HeadRole | null> {
   const val = (await cookies()).get(COOKIE)?.value;
-  if (val === "male" || val === "female") return val;
+  if (val === "male" || val === "female" || val === "male-core") return val;
   return null;
 }
 
