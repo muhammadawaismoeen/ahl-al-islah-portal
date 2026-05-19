@@ -41,6 +41,7 @@ export interface FeedbackEntry {
   gatheringRating?: Rating;
   advisorReflection?: string;
   advisorRating?: Rating;
+  deepestLine?: string;
   questions?: string;
   preferredChannel?: ResponseChannel;
   channelOther?: string;

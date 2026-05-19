@@ -201,6 +201,22 @@ export function FeedbackForm() {
             maxLength={3000}
           />
         </div>
+
+        <div>
+          <label className="label-field">
+            The line that struck you most deeply from the session
+          </label>
+          <textarea
+            name="deepestLine"
+            rows={3}
+            className="input-field resize-y"
+            placeholder="A sentence, a phrase, an āyah, a story — whatever pierced your heart."
+            maxLength={1000}
+          />
+          <p className="help-text">
+            Even a single line is enough. Quote it as best you remember.
+          </p>
+        </div>
       </section>
 
       {/* ── Questions ─────────────────────────────────── */}

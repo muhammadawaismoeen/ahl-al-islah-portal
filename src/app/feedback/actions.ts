@@ -41,6 +41,7 @@ export async function submitFeedback(
   const gatheringRatingRaw = clean(formData.get("gatheringRating"), 50) ?? "";
   const advisorReflection = clean(formData.get("advisorReflection"));
   const advisorRatingRaw = clean(formData.get("advisorRating"), 50) ?? "";
+  const deepestLine = clean(formData.get("deepestLine"), 1000);
   const questions = clean(formData.get("questions"));
   const preferredChannelRaw = clean(formData.get("preferredChannel"), 50);
   const channelOther = clean(formData.get("channelOther"), 200);
@@ -64,6 +65,7 @@ export async function submitFeedback(
   const hasAnyContent =
     gatheringReflection ||
     advisorReflection ||
+    deepestLine ||
     questions ||
     additionalNotes ||
     gatheringRating ||
@@ -84,6 +86,7 @@ export async function submitFeedback(
       gatheringRating,
       advisorReflection,
       advisorRating,
+      deepestLine,
       questions,
       preferredChannel,
       channelOther,

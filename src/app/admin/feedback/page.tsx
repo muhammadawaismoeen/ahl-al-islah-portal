@@ -8,6 +8,7 @@ import {
   UserX,
   Star,
   HelpCircle,
+  Quote,
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -123,6 +124,7 @@ export default async function FeedbackAdminPage({
                     const preview =
                       entry.gatheringReflection ||
                       entry.advisorReflection ||
+                      entry.deepestLine ||
                       entry.questions ||
                       entry.additionalNotes ||
                       "(rating only)";
@@ -275,8 +277,8 @@ function FeedbackDetail({ entry }: { entry: FeedbackEntry }) {
         </section>
       )}
 
-      {/* ── Advisor ─────────────────────────────────── */}
-      {(entry.advisorRating || entry.advisorReflection) && (
+      {/* ── Advisor Session ─────────────────────────────────── */}
+      {(entry.advisorRating || entry.advisorReflection || entry.deepestLine) && (
         <section>
           <h3 className="text-xs uppercase tracking-wider text-gold-antique font-semibold mb-3 flex items-center gap-1.5">
             <Star className="h-3.5 w-3.5" /> The Advisor Session
@@ -290,13 +292,23 @@ function FeedbackDetail({ entry }: { entry: FeedbackEntry }) {
             </div>
           )}
           {entry.advisorReflection && (
-            <div>
+            <div className="mb-4">
               <span className="text-[10px] uppercase tracking-wider text-ink/40 block mb-1">
                 Reflection
               </span>
               <p className="text-sm text-ink/85 leading-relaxed whitespace-pre-wrap bg-cream-warm rounded-xl p-4 border border-cream-muted">
                 {entry.advisorReflection}
               </p>
+            </div>
+          )}
+          {entry.deepestLine && (
+            <div>
+              <span className="text-[10px] uppercase tracking-wider text-ink/40 mb-1 flex items-center gap-1.5">
+                <Quote className="h-3 w-3" /> The line that struck them most
+              </span>
+              <blockquote className="text-sm text-emerald-deep leading-relaxed whitespace-pre-wrap bg-emerald-deep/5 rounded-xl p-4 border-l-4 border-emerald-deep italic font-serif">
+                &ldquo;{entry.deepestLine}&rdquo;
+              </blockquote>
             </div>
           )}
         </section>
