@@ -80,8 +80,9 @@ export function FeedbackForm() {
         <div className="text-xs text-ink/75 leading-relaxed">
           <p className="font-semibold text-emerald-deep">This form is anonymous.</p>
           <p className="mt-0.5">
-            Your name and WhatsApp number below are optional. Leave them blank to
-            stay fully anonymous. Share them only if you would like a direct response.
+            Only your <strong>name</strong> is optional — leave it blank to stay
+            fully anonymous. The remaining questions are required so the Advisor
+            receives complete reflections.
           </p>
         </div>
       </div>
@@ -93,8 +94,7 @@ export function FeedbackForm() {
             About You <span className="text-xs font-normal text-ink/40">(optional)</span>
           </h3>
           <p className="text-xs text-ink/55 mt-0.5">
-            Skip to stay anonymous. If you choose WhatsApp as the response
-            channel below, a number field will appear there.
+            Skip to stay anonymous.
           </p>
         </div>
 
@@ -122,7 +122,7 @@ export function FeedbackForm() {
         </div>
 
         <div>
-          <label className="label-field">How was the first gathering for you?</label>
+          <label className="label-field">How was the first gathering for you? *</label>
           <div className="flex flex-wrap gap-2 mt-1">
             {RATING_ORDER.map((r) => (
               <label
@@ -133,6 +133,7 @@ export function FeedbackForm() {
                   type="radio"
                   name="gatheringRating"
                   value={r}
+                  required
                   className="sr-only"
                 />
                 <span className="text-xs font-medium">{RATING_LABELS[r]}</span>
@@ -143,10 +144,11 @@ export function FeedbackForm() {
 
         <div>
           <label className="label-field">
-            Your reflections on the gathering
+            Your reflections on the gathering *
           </label>
           <textarea
             name="gatheringReflection"
+            required
             rows={4}
             className="input-field resize-y"
             placeholder="What you appreciated, what could improve, what touched you…"
@@ -169,7 +171,7 @@ export function FeedbackForm() {
 
         <div>
           <label className="label-field">
-            How would you rate the Advisor Session so far?
+            How would you rate the Advisor Session so far? *
           </label>
           <div className="flex flex-wrap gap-2 mt-1">
             {RATING_ORDER.map((r) => (
@@ -181,6 +183,7 @@ export function FeedbackForm() {
                   type="radio"
                   name="advisorRating"
                   value={r}
+                  required
                   className="sr-only"
                 />
                 <span className="text-xs font-medium">{RATING_LABELS[r]}</span>
@@ -191,10 +194,11 @@ export function FeedbackForm() {
 
         <div>
           <label className="label-field">
-            Your thoughts on the Advisor Session
+            Your thoughts on the Advisor Session *
           </label>
           <textarea
             name="advisorReflection"
+            required
             rows={4}
             className="input-field resize-y"
             placeholder="What is working, what feels unclear, what you would like more of…"
@@ -204,10 +208,11 @@ export function FeedbackForm() {
 
         <div>
           <label className="label-field">
-            The line that struck you most deeply from the session
+            The line that struck you most deeply from the session *
           </label>
           <textarea
             name="deepestLine"
+            required
             rows={3}
             className="input-field resize-y"
             placeholder="A sentence, a phrase, an āyah, a story — whatever pierced your heart."
@@ -232,9 +237,10 @@ export function FeedbackForm() {
         </div>
 
         <div>
-          <label className="label-field">Your questions</label>
+          <label className="label-field">Your questions *</label>
           <textarea
             name="questions"
+            required
             rows={4}
             className="input-field resize-y"
             placeholder="Ask anything. No question is too small."
@@ -244,7 +250,7 @@ export function FeedbackForm() {
 
         <div>
           <label className="label-field">
-            How would you prefer to receive a response?
+            How would you prefer to receive a response? *
           </label>
           <div className="grid sm:grid-cols-2 gap-2 mt-1">
             {CHANNEL_ORDER.map((c) => (
@@ -258,6 +264,7 @@ export function FeedbackForm() {
                   value={c}
                   checked={channel === c}
                   onChange={() => setChannel(c)}
+                  required
                   className="h-4 w-4 accent-emerald-deep"
                 />
                 <span className="text-sm">{RESPONSE_CHANNEL_LABELS[c]}</span>
@@ -291,6 +298,7 @@ export function FeedbackForm() {
             <input
               type="text"
               name="channelOther"
+              required
               className="input-field mt-3"
               placeholder="Specify how you'd like to be contacted…"
               maxLength={200}
@@ -303,13 +311,14 @@ export function FeedbackForm() {
       <section className="space-y-5 pt-2 border-t border-cream-muted">
         <div>
           <label className="label-field">
-            Anything else you would like to share?
+            Anything else you would like to share? *
           </label>
           <textarea
             name="additionalNotes"
+            required
             rows={3}
             className="input-field resize-y"
-            placeholder="Suggestions, du'ās, encouragement, concerns — anything."
+            placeholder="Suggestions, du'ās, encouragement, concerns — anything. Write 'nothing' if you have nothing to add."
             maxLength={3000}
           />
         </div>

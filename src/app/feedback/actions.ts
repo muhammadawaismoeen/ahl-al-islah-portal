@@ -61,20 +61,29 @@ export async function submitFeedback(
       ? (preferredChannelRaw as ResponseChannel)
       : undefined;
 
-  // Require at least one substantive field — otherwise it's an empty form
-  const hasAnyContent =
-    gatheringReflection ||
-    advisorReflection ||
-    deepestLine ||
-    questions ||
-    additionalNotes ||
-    gatheringRating ||
-    advisorRating;
+  // All fields required except `name`. WhatsApp is required only when the
+  // preferred response channel is "whatsapp". `channelOther` is required only
+  // when the preferred channel is "other".
+  const missing: string[] = [];
+  if (!gatheringRating) missing.push("first gathering rating");
+  if (!gatheringReflection) missing.push("reflections on the gathering");
+  if (!advisorRating) missing.push("Advisor Session rating");
+  if (!advisorReflection) missing.push("thoughts on the Advisor Session");
+  if (!deepestLine) missing.push("the line that struck you most");
+  if (!questions) missing.push("your questions");
+  if (!preferredChannel) missing.push("preferred response channel");
+  if (preferredChannel === "whatsapp" && !whatsapp) {
+    missing.push("WhatsApp number");
+  }
+  if (preferredChannel === "other" && !channelOther) {
+    missing.push("how you'd like to be contacted");
+  }
+  if (!additionalNotes) missing.push("anything else (write 'nothing' if blank)");
 
-  if (!hasAnyContent) {
+  if (missing.length) {
     return {
       ok: false,
-      error: "Please share at least one piece of feedback before submitting.",
+      error: `Please complete: ${missing.join(", ")}.`,
     };
   }
 
