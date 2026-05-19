@@ -279,7 +279,7 @@ function FeedbackDetail({ entry }: { entry: FeedbackEntry }) {
       {(entry.advisorRating || entry.advisorReflection) && (
         <section>
           <h3 className="text-xs uppercase tracking-wider text-gold-antique font-semibold mb-3 flex items-center gap-1.5">
-            <Star className="h-3.5 w-3.5" /> The Advisor
+            <Star className="h-3.5 w-3.5" /> The Advisor Session
           </h3>
           {entry.advisorRating && (
             <div className="mb-3">

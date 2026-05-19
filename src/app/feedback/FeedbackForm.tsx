@@ -166,21 +166,21 @@ export function FeedbackForm() {
         </div>
       </section>
 
-      {/* ── Advisor ─────────────────────────────────── */}
+      {/* ── Advisor Session ─────────────────────────────── */}
       <section className="space-y-5 pt-2 border-t border-cream-muted">
         <div>
           <h3 className="heading-serif text-lg font-semibold text-emerald-deep">
-            The Advisor
+            The Advisor Session
           </h3>
           <p className="text-xs text-ink/55 mt-0.5">
-            How is the Advisor&apos;s guidance landing with you? Be honest — it
+            How is the Advisor Session landing with you? Be honest — it
             helps the work mature.
           </p>
         </div>
 
         <div>
           <label className="label-field">
-            How would you rate the Advisor&apos;s guidance so far?
+            How would you rate the Advisor Session so far?
           </label>
           <div className="flex flex-wrap gap-2 mt-1">
             {RATING_ORDER.map((r) => (
@@ -202,7 +202,7 @@ export function FeedbackForm() {
 
         <div>
           <label className="label-field">
-            Your thoughts on the Advisor&apos;s role and guidance
+            Your thoughts on the Advisor Session
           </label>
           <textarea
             name="advisorReflection"
