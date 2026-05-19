@@ -25,6 +25,7 @@ export const DEFAULT_CONTENT: SiteContent = {
       { label: "Model", href: "/#structure" },
       { label: "Positions", href: "/positions" },
       { label: "Roadmap", href: "/#roadmap" },
+      { label: "Feedback", href: "/feedback" },
     ],
     ctaLabel: "Apply Now",
   },

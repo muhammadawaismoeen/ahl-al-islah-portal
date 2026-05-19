@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { LogOut, Mail, Phone, Download, Pencil, MessageCircle } from "lucide-react";
+import { LogOut, Mail, Phone, Download, Pencil, MessageCircle, MessageSquareHeart } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { isAuthenticated, login, logout } from "./actions";
 import { listSubmissions } from "@/lib/storage";
 import { listMessages } from "@/lib/message-store";
+import { listFeedback } from "@/lib/feedback-store";
 import { getPositionBySlug } from "@/lib/positions";
 import { getQuestionSet } from "@/lib/questions";
 import { LoginForm } from "./LoginForm";
@@ -52,11 +53,13 @@ export default async function AdminPage({
     );
   }
 
-  const [submissions, messages] = await Promise.all([
+  const [submissions, messages, feedback] = await Promise.all([
     listSubmissions(),
     listMessages(),
+    listFeedback(),
   ]);
   const unreadMessages = messages.filter((m) => m.status === "unread").length;
+  const unreadFeedback = feedback.filter((f) => f.status === "unread").length;
   const { id: selectedId, wing: wingFilter, position: positionFilter } = await searchParams;
 
   // Apply filters
@@ -109,6 +112,18 @@ export default async function AdminPage({
                 {unreadMessages > 0 && (
                   <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-gold-antique text-white text-[9px] font-bold flex items-center justify-center">
                     {unreadMessages}
+                  </span>
+                )}
+              </Link>
+              <Link
+                href="/admin/feedback"
+                className="btn-ghost !py-2 !px-4 text-xs relative"
+              >
+                <MessageSquareHeart className="h-3.5 w-3.5" />
+                Feedback
+                {unreadFeedback > 0 && (
+                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-gold-antique text-white text-[9px] font-bold flex items-center justify-center">
+                    {unreadFeedback}
                   </span>
                 )}
               </Link>
