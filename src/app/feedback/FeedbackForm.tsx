@@ -93,31 +93,20 @@ export function FeedbackForm() {
             About You <span className="text-xs font-normal text-ink/40">(optional)</span>
           </h3>
           <p className="text-xs text-ink/55 mt-0.5">
-            Skip if you wish to remain anonymous.
+            Skip to stay anonymous. If you choose WhatsApp as the response
+            channel below, a number field will appear there.
           </p>
         </div>
 
-        <div className="grid sm:grid-cols-2 gap-4">
-          <div>
-            <label className="label-field">Your name</label>
-            <input
-              type="text"
-              name="name"
-              className="input-field"
-              placeholder="Optional"
-              maxLength={100}
-            />
-          </div>
-          <div>
-            <label className="label-field">WhatsApp number</label>
-            <input
-              type="tel"
-              name="whatsapp"
-              className="input-field"
-              placeholder="+92 3XX XXXXXXX (optional)"
-              maxLength={30}
-            />
-          </div>
+        <div>
+          <label className="label-field">Your name</label>
+          <input
+            type="text"
+            name="name"
+            className="input-field"
+            placeholder="Optional"
+            maxLength={100}
+          />
         </div>
       </section>
 
@@ -259,6 +248,29 @@ export function FeedbackForm() {
               </label>
             ))}
           </div>
+          {channel === "whatsapp" && (
+            <div className="mt-3 p-4 bg-emerald-deep/5 rounded-xl border border-emerald-deep/15 space-y-2">
+              <label className="label-field !mb-1">
+                WhatsApp number for the response *
+              </label>
+              <input
+                type="tel"
+                name="whatsapp"
+                required
+                className="input-field"
+                placeholder="+92 3XX XXXXXXX"
+                maxLength={30}
+              />
+              <p className="help-text !mt-1">
+                The Advisor will reply privately on this number.
+              </p>
+            </div>
+          )}
+          {channel === "in-person" && (
+            <p className="help-text text-gold-antique mt-3">
+              Reminder: leave your name above so the Advisor can recognise you.
+            </p>
+          )}
           {channel === "other" && (
             <input
               type="text"
@@ -267,11 +279,6 @@ export function FeedbackForm() {
               placeholder="Specify how you'd like to be contacted…"
               maxLength={200}
             />
-          )}
-          {(channel === "whatsapp" || channel === "in-person") && (
-            <p className="help-text text-gold-antique">
-              Reminder: leave your name &amp; WhatsApp number above so we can reach you.
-            </p>
           )}
         </div>
       </section>
