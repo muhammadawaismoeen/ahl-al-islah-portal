@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useMemo, useState, useTransition, type ReactNode } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useForm, Controller, type FieldErrors } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -23,12 +23,32 @@ import {
 import { submitApplication } from "@/app/apply/[slug]/actions";
 import { cn } from "@/lib/utils";
 
+interface SuccessLink {
+  href: string;
+  label: string;
+}
+
 interface Props {
   position: Position;
   questionSet: QuestionSet;
+  cancelHref?: string;
+  cancelLabel?: string;
+  successToast?: string;
+  successHeading?: string;
+  successDescription?: ReactNode;
+  successSecondaryLink?: SuccessLink;
 }
 
-export function ApplicationForm({ position, questionSet }: Props) {
+export function ApplicationForm({
+  position,
+  questionSet,
+  cancelHref = "/positions",
+  cancelLabel = "Cancel and go back to positions",
+  successToast,
+  successHeading,
+  successDescription,
+  successSecondaryLink,
+}: Props) {
   const schema = useMemo(
     () => buildSchemaForQuestionSet(questionSet),
     [questionSet]
@@ -80,7 +100,9 @@ export function ApplicationForm({ position, questionSet }: Props) {
       if (result.ok) {
         setSubmitted(true);
         setSubmissionId(result.submissionId ?? null);
-        toast.success("Your application has been submitted. Jazak Allahu khayran.");
+        toast.success(
+          successToast ?? "Your application has been submitted. Jazak Allahu khayran."
+        );
       } else {
         if (result.fieldErrors) {
           for (const [key, msg] of Object.entries(result.fieldErrors)) {
@@ -104,7 +126,15 @@ export function ApplicationForm({ position, questionSet }: Props) {
   }
 
   if (submitted) {
-    return <SuccessState position={position} submissionId={submissionId} />;
+    return (
+      <SuccessState
+        position={position}
+        submissionId={submissionId}
+        heading={successHeading}
+        description={successDescription}
+        secondaryLink={successSecondaryLink}
+      />
+    );
   }
 
   return (
@@ -222,10 +252,10 @@ export function ApplicationForm({ position, questionSet }: Props) {
       <div className="mt-6 text-center">
         <button
           type="button"
-          onClick={() => router.push("/positions")}
+          onClick={() => router.push(cancelHref)}
           className="text-xs text-ink/50 hover:text-ink underline underline-offset-4"
         >
-          Cancel and go back to positions
+          {cancelLabel}
         </button>
       </div>
     </div>
@@ -441,10 +471,17 @@ function FieldView({
 function SuccessState({
   position,
   submissionId,
+  heading,
+  description,
+  secondaryLink,
 }: {
   position: Position;
   submissionId: string | null;
+  heading?: string;
+  description?: ReactNode;
+  secondaryLink?: SuccessLink;
 }) {
+  const secondary = secondaryLink ?? { href: "/positions", label: "View other positions" };
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
@@ -462,19 +499,25 @@ function SuccessState({
         جزاك الله خيراً
       </div>
       <h2 className="heading-serif text-4xl font-semibold text-emerald-deep">
-        Application received
+        {heading ?? "Application received"}
       </h2>
       <div className="gold-divider" />
-      <p className="mt-4 text-lg text-ink/70 leading-relaxed">
-        Your application for{" "}
-        <span className="font-semibold text-emerald-deep">{position.title}</span>{" "}
-        has been submitted. May Allah reward your intention whether you are
-        selected or not.
-      </p>
-      <p className="mt-4 text-sm text-ink/60">
-        The Advisor will review and reach out via the contact details you
-        provided. References will be contacted only with your permission.
-      </p>
+      {description ? (
+        <div className="mt-4 text-lg text-ink/70 leading-relaxed">{description}</div>
+      ) : (
+        <>
+          <p className="mt-4 text-lg text-ink/70 leading-relaxed">
+            Your application for{" "}
+            <span className="font-semibold text-emerald-deep">{position.title}</span>{" "}
+            has been submitted. May Allah reward your intention whether you are
+            selected or not.
+          </p>
+          <p className="mt-4 text-sm text-ink/60">
+            The Advisor will review and reach out via the contact details you
+            provided. References will be contacted only with your permission.
+          </p>
+        </>
+      )}
       {submissionId && (
         <p className="mt-6 text-xs text-ink/50">
           Submission reference:{" "}
@@ -487,8 +530,8 @@ function SuccessState({
         <Link href="/" className="btn-primary">
           Return home
         </Link>
-        <Link href="/positions" className="btn-ghost">
-          View other positions
+        <Link href={secondary.href} className="btn-ghost">
+          {secondary.label}
         </Link>
       </div>
     </motion.div>

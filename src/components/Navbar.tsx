@@ -49,7 +49,7 @@ export function Navbar({ content = DEFAULT_CONTENT.nav, customLogo }: { content?
           </div>
         </Link>
 
-        <nav className="hidden md:flex items-center gap-1">
+        <nav className="hidden lg:flex items-center gap-1">
           {content.items.map((item) => (
             <Link
               key={item.href}
@@ -60,15 +60,21 @@ export function Navbar({ content = DEFAULT_CONTENT.nav, customLogo }: { content?
             </Link>
           ))}
           <Link
+            href="/become-a-member"
+            className="ml-3 inline-flex items-center gap-2 px-4 py-2 rounded-full border border-emerald-deep/40 text-emerald-deep text-sm font-medium whitespace-nowrap hover:bg-emerald-deep/5 hover:border-emerald-deep/70 transition-all"
+          >
+            Become a Member
+          </Link>
+          <Link
             href="/join"
-            className="ml-3 inline-flex items-center gap-2 px-5 py-2 rounded-full bg-gold-gradient text-ink text-sm font-semibold tracking-wide shadow-md hover:shadow-gold-warm/40 hover:scale-[1.03] transition-all"
+            className="ml-2 inline-flex items-center gap-2 px-5 py-2 rounded-full bg-gold-gradient text-ink text-sm font-semibold tracking-wide whitespace-nowrap shadow-md hover:shadow-gold-warm/40 hover:scale-[1.03] transition-all"
           >
             Join as Core Member
           </Link>
         </nav>
 
         <button
-          className="md:hidden p-2 rounded-lg hover:bg-emerald-deep/5"
+          className="lg:hidden p-2 rounded-lg hover:bg-emerald-deep/5"
           onClick={() => setOpen(!open)}
           aria-label={open ? "Close menu" : "Open menu"}
         >
@@ -81,7 +87,7 @@ export function Navbar({ content = DEFAULT_CONTENT.nav, customLogo }: { content?
       </div>
 
       {open && (
-        <div className="md:hidden border-t border-cream-muted bg-cream/95 backdrop-blur-lg">
+        <div className="lg:hidden border-t border-cream-muted bg-cream/95 backdrop-blur-lg">
           <nav className="container-prose py-4 flex flex-col gap-1">
             {content.items.map((item) => (
               <Link
@@ -94,9 +100,16 @@ export function Navbar({ content = DEFAULT_CONTENT.nav, customLogo }: { content?
               </Link>
             ))}
             <Link
+              href="/become-a-member"
+              onClick={() => setOpen(false)}
+              className="inline-flex items-center justify-center gap-2 mt-3 px-5 py-3 rounded-full border-2 border-emerald-deep/40 text-emerald-deep text-sm font-medium hover:bg-emerald-deep/5"
+            >
+              Become a Member
+            </Link>
+            <Link
               href="/join"
               onClick={() => setOpen(false)}
-              className="inline-flex items-center justify-center gap-2 mt-3 px-5 py-3 rounded-full bg-gold-gradient text-ink text-sm font-semibold tracking-wide shadow-md"
+              className="inline-flex items-center justify-center gap-2 mt-2 px-5 py-3 rounded-full bg-gold-gradient text-ink text-sm font-semibold tracking-wide shadow-md"
             >
               Join as Core Member
             </Link>

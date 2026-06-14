@@ -156,6 +156,27 @@ export const POSITIONS: Position[] = [
     open: false,
     priority: 6,
   },
+  {
+    slug: "general-member",
+    title: "Ahl Al-Islah Membership",
+    arabicTitle: "العضوية",
+    wing: "both",
+    level: "member",
+    reportsTo: "Cohort Head",
+    summary:
+      "Be part of the Ahl Al-Islah community — show up to sessions, stay on the updates list, and grow alongside the cohort. No leadership commitment required.",
+    responsibilities: [
+      "Attend sessions when you can",
+      "Stay engaged with cohort updates",
+      "Grow with the community",
+    ],
+    idealProfile: ["Any HSE student with sincere interest in the journey"],
+    commitment: "As you are able",
+    termLength: "Open-ended",
+    questionSet: "general-member-application",
+    open: true,
+    priority: 100,
+  },
   // Example of a future position you can uncomment/add:
   // {
   //   slug: "male-deputy",

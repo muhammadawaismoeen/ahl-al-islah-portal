@@ -727,10 +727,129 @@ const CORE_MEMBER_BROTHERS_APPLICATION: QuestionSet = {
   ],
 };
 
+// ---------------------------------------------------------------
+// General Member ("Become a Member") — broadest entry point.
+// Lighter than Core Member: no weekly hours, no skills inventory,
+// no formal declarations. Intended as a low-friction sign-up so
+// any HSE student on the journey can join the cohort.
+// ---------------------------------------------------------------
+const GENERAL_MEMBER_APPLICATION: QuestionSet = {
+  id: "general-member-application",
+  name: "Become a Member",
+  description: "Sign up to be part of the Ahl Al-Islah community.",
+  sections: [
+    {
+      id: "personal",
+      title: "About You",
+      arabicTitle: "عن نفسك",
+      fields: [
+        {
+          id: "fullName",
+          type: "text",
+          label: "Full name",
+          placeholder: "Your name",
+          required: true,
+          minLength: 3,
+          maxLength: 100,
+        },
+        {
+          id: "email",
+          type: "email",
+          label: "Email",
+          placeholder: "you@example.com",
+          required: true,
+          help: "We will use this for community updates.",
+        },
+        {
+          id: "phone",
+          type: "tel",
+          label: "WhatsApp number (with country code)",
+          placeholder: "+92 3XX XXXXXXX",
+          required: true,
+          help: "For session reminders and cohort updates.",
+        },
+        {
+          id: "institution",
+          type: "text",
+          label: "Medical college / institution",
+          placeholder: "Full institution name",
+          required: true,
+        },
+        {
+          id: "yearOfStudy",
+          type: "select",
+          label: "Current year of study",
+          required: true,
+          options: [
+            { label: "1st year", value: "1st" },
+            { label: "2nd year", value: "2nd" },
+            { label: "3rd year", value: "3rd" },
+            { label: "4th year", value: "4th" },
+            { label: "Final year", value: "final" },
+            { label: "House officer / intern", value: "house" },
+            { label: "Other", value: "other" },
+          ],
+        },
+      ],
+    },
+    {
+      id: "cohort",
+      title: "Your Cohort",
+      arabicTitle: "كوهورتك",
+      description:
+        "Ahl Al-Islah runs two dedicated cohorts so each one has its own space and programming.",
+      fields: [
+        {
+          id: "gender",
+          type: "radio",
+          label: "Which cohort would you like to join?",
+          required: true,
+          options: [
+            { label: "Brothers' Cohort", value: "male" },
+            { label: "Sisters' Cohort", value: "female" },
+          ],
+        },
+      ],
+    },
+    {
+      id: "intent",
+      title: "Your Intent",
+      arabicTitle: "النية",
+      fields: [
+        {
+          id: "whyJoin",
+          type: "textarea",
+          label: "What draws you to Ahl Al-Islah?",
+          placeholder: "A few sincere lines are plenty.",
+          required: true,
+          minLength: 20,
+          maxLength: 400,
+        },
+        {
+          id: "howHeard",
+          type: "text",
+          label: "How did you hear about us? (optional)",
+          placeholder: "e.g., friend, session, social media",
+          required: false,
+          maxLength: 200,
+        },
+        {
+          id: "additionalNotes",
+          type: "textarea",
+          label: "Anything else you'd like the Advisor to know? (optional)",
+          required: false,
+          maxLength: 500,
+        },
+      ],
+    },
+  ],
+};
+
 export const QUESTION_SETS: Record<string, QuestionSet> = {
   "head-application": HEAD_APPLICATION,
   "core-member-application": CORE_MEMBER_APPLICATION,
   "core-member-brothers-application": CORE_MEMBER_BROTHERS_APPLICATION,
+  "general-member-application": GENERAL_MEMBER_APPLICATION,
 };
 
 export function getQuestionSet(id: string): QuestionSet | undefined {
