@@ -10,6 +10,7 @@ interface Props {
   startTime: string; // HH:MM, 24h, treated as PKT
   offsetMinutes?: number;
   activityHref?: string;
+  className?: string;
 }
 
 /**
@@ -26,6 +27,7 @@ export function ClassActivityButton({
   startTime,
   offsetMinutes = 40,
   activityHref,
+  className = "",
 }: Props) {
   const href = activityHref ?? `/activity/identity-pillars?session=${sessionId}`;
 
@@ -49,15 +51,14 @@ export function ClassActivityButton({
 
   if (!Number.isFinite(unlockAt)) return null;
 
+  const lockedClass = `btn-secondary inline-flex cursor-not-allowed opacity-70 ${className}`.trim();
+  const unlockedClass = `btn-secondary inline-flex ${className}`.trim();
+
   // Server render and first paint: show locked state with no countdown text
   // (avoids hydration mismatch since "now" depends on the client clock).
   if (now === null) {
     return (
-      <button
-        type="button"
-        disabled
-        className="btn-secondary inline-flex cursor-not-allowed opacity-70"
-      >
+      <button type="button" disabled className={lockedClass}>
         <Lock className="h-4 w-4" />
         Class activity locked
       </button>
@@ -69,7 +70,7 @@ export function ClassActivityButton({
 
   if (unlocked) {
     return (
-      <Link href={href} className="btn-secondary inline-flex">
+      <Link href={href} className={unlockedClass}>
         <ClipboardList className="h-4 w-4" />
         Open the class activity
       </Link>
@@ -80,7 +81,7 @@ export function ClassActivityButton({
     <button
       type="button"
       disabled
-      className="btn-secondary inline-flex cursor-not-allowed opacity-70"
+      className={lockedClass}
       aria-live="polite"
     >
       <Lock className="h-4 w-4" />

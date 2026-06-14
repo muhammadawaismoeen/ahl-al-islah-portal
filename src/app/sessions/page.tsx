@@ -6,6 +6,7 @@ import { Footer } from "@/components/Footer";
 import { listSessions } from "@/lib/sessions-store";
 import { getContent } from "@/lib/content-store";
 import { formatDate, formatSessionTime } from "@/lib/utils";
+import { ClassActivityButton } from "./[slug]/ClassActivityButton";
 
 export const metadata: Metadata = {
   title: "Sessions — Ahl Al-Islah",
@@ -82,17 +83,27 @@ export default async function SessionsPage() {
                           </p>
                         )}
                       </Link>
-                      {s.meetingLink && (
-                        <div className="mt-5">
-                          <a
-                            href={s.meetingLink}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="btn-primary inline-flex !py-2 !px-4 text-sm"
-                          >
-                            <Video className="h-4 w-4" />
-                            Join the session
-                          </a>
+                      {(s.meetingLink || s.startTime) && (
+                        <div className="mt-5 flex flex-wrap gap-2">
+                          {s.meetingLink && (
+                            <a
+                              href={s.meetingLink}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="btn-primary inline-flex !py-2 !px-4 text-sm"
+                            >
+                              <Video className="h-4 w-4" />
+                              Join the session
+                            </a>
+                          )}
+                          {s.startTime && (
+                            <ClassActivityButton
+                              sessionId={s.id}
+                              date={s.date}
+                              startTime={s.startTime}
+                              className="!py-2 !px-4 text-sm"
+                            />
+                          )}
                         </div>
                       )}
                     </div>
