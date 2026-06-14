@@ -3,19 +3,29 @@ import { MessageSquareHeart, Shield } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { getContent } from "@/lib/content-store";
+import { listSessions } from "@/lib/sessions-store";
 import { FeedbackForm } from "./FeedbackForm";
 
 export const metadata: Metadata = {
   title: "Anonymous Feedback — Ahl Al-Islah",
   description:
-    "Share your honest reflections on Ahl Al-Islah — the first gathering, the Advisor, your questions. Stay anonymous, or leave a name.",
+    "Share your honest reflections on any Ahl Al-Islah session — the experience, the Advisor, your questions. Stay anonymous, or leave a name.",
   robots: { index: false, follow: false },
 };
 
 export const dynamic = "force-dynamic";
 
 export default async function FeedbackPage() {
-  const content = await getContent();
+  const [content, sessions] = await Promise.all([
+    getContent(),
+    listSessions(),
+  ]);
+
+  const sessionOptions = sessions.map((s) => ({
+    id: s.id,
+    title: s.title,
+    date: s.date,
+  }));
 
   return (
     <>
@@ -32,12 +42,11 @@ export default async function FeedbackPage() {
               ملاحظاتكم
             </span>
             <h1 className="heading-serif text-4xl font-semibold text-emerald-deep">
-              Anonymous Feedback
+              Session Feedback
             </h1>
             <p className="mt-3 text-ink/65 leading-relaxed max-w-lg mx-auto">
-              Your honest reflections shape Ahl Al-Islah. Tell us about the
-              first gathering, the Advisor, and anything else — anonymously if
-              you wish.
+              Pick the session you&apos;re reflecting on and share what stayed
+              with you. Your honest words shape every session that follows.
             </p>
             <div className="inline-flex items-center gap-1.5 mt-4 text-xs text-ink/50 bg-cream-warm px-3 py-1.5 rounded-full border border-cream-muted">
               <Shield className="h-3 w-3" />
@@ -45,7 +54,7 @@ export default async function FeedbackPage() {
             </div>
           </div>
 
-          <FeedbackForm />
+          <FeedbackForm sessions={sessionOptions} />
 
         </div>
       </main>

@@ -1,6 +1,7 @@
 "use server";
 
 import { saveFeedback } from "@/lib/feedback-store";
+import { getSession } from "@/lib/sessions-store";
 import type { ResponseChannel, Rating } from "@/lib/feedback-types";
 
 export interface FeedbackResult {
@@ -35,6 +36,7 @@ function clean(value: FormDataEntryValue | null, maxLen = 3000): string | undefi
 export async function submitFeedback(
   formData: FormData
 ): Promise<FeedbackResult> {
+  const sessionId = clean(formData.get("sessionId"), 100);
   const name = clean(formData.get("name"), 100);
   const whatsapp = clean(formData.get("whatsapp"), 30);
   const gatheringReflection = clean(formData.get("gatheringReflection"));
@@ -42,10 +44,26 @@ export async function submitFeedback(
   const advisorReflection = clean(formData.get("advisorReflection"));
   const advisorRatingRaw = clean(formData.get("advisorRating"), 50) ?? "";
   const deepestLine = clean(formData.get("deepestLine"), 1000);
+  const oneChange = clean(formData.get("oneChange"), 1000);
   const questions = clean(formData.get("questions"));
   const preferredChannelRaw = clean(formData.get("preferredChannel"), 50);
   const channelOther = clean(formData.get("channelOther"), 200);
   const additionalNotes = clean(formData.get("additionalNotes"));
+
+  // Validate session — look up to snapshot title so the admin still
+  // sees the title even if the session is later renamed.
+  let sessionTitle: string | undefined;
+  if (sessionId) {
+    const session = await getSession(sessionId);
+    if (!session) {
+      return {
+        ok: false,
+        error:
+          "The selected session is no longer available. Please refresh and pick again.",
+      };
+    }
+    sessionTitle = session.title;
+  }
 
   // Validate rating values
   const gatheringRating = VALID_RATINGS.includes(gatheringRatingRaw as Rating)
@@ -65,11 +83,13 @@ export async function submitFeedback(
   // preferred response channel is "whatsapp". `channelOther` is required only
   // when the preferred channel is "other".
   const missing: string[] = [];
-  if (!gatheringRating) missing.push("first gathering rating");
-  if (!gatheringReflection) missing.push("reflections on the gathering");
-  if (!advisorRating) missing.push("Advisor Session rating");
-  if (!advisorReflection) missing.push("thoughts on the Advisor Session");
+  if (!sessionId) missing.push("session selection");
+  if (!gatheringRating) missing.push("session rating");
+  if (!gatheringReflection) missing.push("what stayed with you");
   if (!deepestLine) missing.push("the line that struck you most");
+  if (!oneChange) missing.push("one change for this week");
+  if (!advisorRating) missing.push("Advisor delivery rating");
+  if (!advisorReflection) missing.push("thoughts on the Advisor's delivery");
   if (!questions) missing.push("your questions");
   if (!preferredChannel) missing.push("preferred response channel");
   if (preferredChannel === "whatsapp" && !whatsapp) {
@@ -89,6 +109,8 @@ export async function submitFeedback(
 
   try {
     const record = await saveFeedback({
+      sessionId,
+      sessionTitle,
       name,
       whatsapp,
       gatheringReflection,
@@ -96,6 +118,7 @@ export async function submitFeedback(
       advisorReflection,
       advisorRating,
       deepestLine,
+      oneChange,
       questions,
       preferredChannel,
       channelOther,

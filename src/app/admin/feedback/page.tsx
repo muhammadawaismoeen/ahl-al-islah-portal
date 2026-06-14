@@ -9,6 +9,8 @@ import {
   Star,
   HelpCircle,
   Quote,
+  CalendarDays,
+  Target,
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -20,8 +22,10 @@ import {
   RATING_LABELS,
 } from "@/lib/feedback-store";
 import type { FeedbackEntry } from "@/lib/feedback-types";
+import { listSessions } from "@/lib/sessions-store";
 import { formatDate } from "@/lib/utils";
 import { DeleteFeedbackButton, MarkFeedbackReadButton } from "./FeedbackActions";
+import { SessionFilter } from "./SessionFilter";
 
 export const metadata: Metadata = {
   title: "Feedback Inbox — Admin",
@@ -38,7 +42,7 @@ const STATUS_CONFIG = {
 export default async function FeedbackAdminPage({
   searchParams,
 }: {
-  searchParams: Promise<{ id?: string }>;
+  searchParams: Promise<{ id?: string; session?: string }>;
 }) {
   const authed = await isAuthenticated();
 
@@ -64,10 +68,32 @@ export default async function FeedbackAdminPage({
     );
   }
 
-  const entries = await listFeedback();
-  const { id: selectedId } = await searchParams;
-  const selected = selectedId ? entries.find((m) => m.id === selectedId) : null;
+  const [allEntries, sessions] = await Promise.all([
+    listFeedback(),
+    listSessions(),
+  ]);
+  const { id: selectedId, session: sessionFilter } = await searchParams;
+
+  // Filter entries by session if filter is active
+  const entries = sessionFilter
+    ? sessionFilter === "legacy"
+      ? allEntries.filter((e) => !e.sessionId)
+      : allEntries.filter((e) => e.sessionId === sessionFilter)
+    : allEntries;
+
+  const selected = selectedId ? allEntries.find((m) => m.id === selectedId) : null;
   const unreadCount = entries.filter((m) => m.status === "unread").length;
+
+  // Per-session counts for the filter dropdown
+  const countsBySession = new Map<string, number>();
+  let legacyCount = 0;
+  for (const e of allEntries) {
+    if (e.sessionId) {
+      countsBySession.set(e.sessionId, (countsBySession.get(e.sessionId) ?? 0) + 1);
+    } else {
+      legacyCount++;
+    }
+  }
 
   return (
     <>
@@ -90,6 +116,11 @@ export default async function FeedbackAdminPage({
               </h1>
               <p className="text-sm text-ink/60 mt-1">
                 {entries.length} response{entries.length !== 1 ? "s" : ""}
+                {sessionFilter && (
+                  <span className="ml-2 text-ink/50">
+                    (of {allEntries.length} total)
+                  </span>
+                )}
                 {unreadCount > 0 && (
                   <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full bg-gold-antique text-white text-xs font-medium">
                     {unreadCount} unread
@@ -97,6 +128,21 @@ export default async function FeedbackAdminPage({
                 )}
               </p>
             </div>
+
+            {/* Session filter */}
+            {(sessions.length > 0 || legacyCount > 0) && (
+              <SessionFilter
+                sessions={sessions.map((s) => ({
+                  id: s.id,
+                  title: s.title,
+                  date: s.date,
+                  count: countsBySession.get(s.id) ?? 0,
+                }))}
+                legacyCount={legacyCount}
+                totalCount={allEntries.length}
+                selected={sessionFilter}
+              />
+            )}
           </div>
 
           <div className="grid lg:grid-cols-[1fr_1.5fr] gap-6">
@@ -105,14 +151,20 @@ export default async function FeedbackAdminPage({
               {entries.length === 0 ? (
                 <div className="p-10 text-center">
                   <MessageSquareHeart className="h-10 w-10 text-ink/20 mx-auto mb-3" />
-                  <p className="text-sm text-ink/60">No feedback yet.</p>
-                  <p className="text-xs text-ink/40 mt-1">
-                    Share{" "}
-                    <code className="font-mono bg-cream-muted px-1 rounded">
-                      /feedback
-                    </code>{" "}
-                    with cohort members.
+                  <p className="text-sm text-ink/60">
+                    {sessionFilter
+                      ? "No feedback for this session yet."
+                      : "No feedback yet."}
                   </p>
+                  {!sessionFilter && (
+                    <p className="text-xs text-ink/40 mt-1">
+                      Share{" "}
+                      <code className="font-mono bg-cream-muted px-1 rounded">
+                        /feedback
+                      </code>{" "}
+                      with cohort members.
+                    </p>
+                  )}
                 </div>
               ) : (
                 <ul className="divide-y divide-cream-muted">
@@ -123,6 +175,7 @@ export default async function FeedbackAdminPage({
                     const isAnonymous = !entry.name?.trim();
                     const preview =
                       entry.gatheringReflection ||
+                      entry.oneChange ||
                       entry.advisorReflection ||
                       entry.deepestLine ||
                       entry.questions ||
@@ -131,7 +184,9 @@ export default async function FeedbackAdminPage({
                     return (
                       <li key={entry.id}>
                         <Link
-                          href={`/admin/feedback?id=${entry.id}`}
+                          href={`/admin/feedback?id=${entry.id}${
+                            sessionFilter ? `&session=${sessionFilter}` : ""
+                          }`}
                           className={`block p-4 rounded-xl transition ${
                             isSelected ? "bg-emerald-deep/5" : "hover:bg-cream-warm/40"
                           }`}
@@ -153,6 +208,16 @@ export default async function FeedbackAdminPage({
                               {status.label}
                             </span>
                           </div>
+                          {entry.sessionTitle ? (
+                            <p className="text-[11px] text-emerald-deep/70 mb-1 truncate flex items-center gap-1">
+                              <CalendarDays className="h-3 w-3 shrink-0" />
+                              {entry.sessionTitle}
+                            </p>
+                          ) : (
+                            <p className="text-[11px] text-ink/35 italic mb-1">
+                              Pre-session-selector entry
+                            </p>
+                          )}
                           <p className="text-xs text-ink/60 truncate">{preview}</p>
                           <p className="text-[11px] text-ink/40 mt-1">
                             {formatDate(entry.submittedAt)}
@@ -220,6 +285,27 @@ function FeedbackDetail({ entry }: { entry: FeedbackEntry }) {
           </div>
         </div>
 
+        {/* Session badge */}
+        {entry.sessionTitle && (
+          <div className="mt-4 inline-flex items-center gap-2 px-3 py-2 bg-gold-antique/10 rounded-xl border border-gold-antique/25">
+            <CalendarDays className="h-4 w-4 text-gold-antique shrink-0" />
+            <div>
+              <p className="text-[10px] uppercase tracking-wider text-ink/45 leading-none mb-0.5">
+                Session
+              </p>
+              <p className="text-sm font-medium text-emerald-deep leading-tight">
+                {entry.sessionTitle}
+              </p>
+            </div>
+          </div>
+        )}
+        {!entry.sessionTitle && (
+          <div className="mt-4 inline-flex items-center gap-2 text-xs italic text-ink/45">
+            <CalendarDays className="h-3.5 w-3.5" />
+            Submitted before the session-selector was added.
+          </div>
+        )}
+
         {/* Contact info if provided */}
         {entry.whatsapp && (
           <div className="mt-4">
@@ -250,11 +336,11 @@ function FeedbackDetail({ entry }: { entry: FeedbackEntry }) {
         </div>
       </header>
 
-      {/* ── First Gathering ─────────────────────────────────── */}
-      {(entry.gatheringRating || entry.gatheringReflection) && (
+      {/* ── The Session ─────────────────────────────────── */}
+      {(entry.gatheringRating || entry.gatheringReflection || entry.deepestLine) && (
         <section>
           <h3 className="text-xs uppercase tracking-wider text-gold-antique font-semibold mb-3 flex items-center gap-1.5">
-            <Star className="h-3.5 w-3.5" /> The First Gathering
+            <Star className="h-3.5 w-3.5" /> The Session
           </h3>
           {entry.gatheringRating && (
             <div className="mb-3">
@@ -265,39 +351,12 @@ function FeedbackDetail({ entry }: { entry: FeedbackEntry }) {
             </div>
           )}
           {entry.gatheringReflection && (
-            <div>
+            <div className="mb-4">
               <span className="text-[10px] uppercase tracking-wider text-ink/40 block mb-1">
-                Reflection
+                What stayed with them
               </span>
               <p className="text-sm text-ink/85 leading-relaxed whitespace-pre-wrap bg-cream-warm rounded-xl p-4 border border-cream-muted">
                 {entry.gatheringReflection}
-              </p>
-            </div>
-          )}
-        </section>
-      )}
-
-      {/* ── Advisor Session ─────────────────────────────────── */}
-      {(entry.advisorRating || entry.advisorReflection || entry.deepestLine) && (
-        <section>
-          <h3 className="text-xs uppercase tracking-wider text-gold-antique font-semibold mb-3 flex items-center gap-1.5">
-            <Star className="h-3.5 w-3.5" /> The Advisor Session
-          </h3>
-          {entry.advisorRating && (
-            <div className="mb-3">
-              <span className="text-[10px] uppercase tracking-wider text-ink/40 block mb-1">
-                Rating
-              </span>
-              <RatingBadge value={entry.advisorRating} />
-            </div>
-          )}
-          {entry.advisorReflection && (
-            <div className="mb-4">
-              <span className="text-[10px] uppercase tracking-wider text-ink/40 block mb-1">
-                Reflection
-              </span>
-              <p className="text-sm text-ink/85 leading-relaxed whitespace-pre-wrap bg-cream-warm rounded-xl p-4 border border-cream-muted">
-                {entry.advisorReflection}
               </p>
             </div>
           )}
@@ -309,6 +368,48 @@ function FeedbackDetail({ entry }: { entry: FeedbackEntry }) {
               <blockquote className="text-sm text-emerald-deep leading-relaxed whitespace-pre-wrap bg-emerald-deep/5 rounded-xl p-4 border-l-4 border-emerald-deep italic font-serif">
                 &ldquo;{entry.deepestLine}&rdquo;
               </blockquote>
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* ── The One Change ─────────────────────────────────── */}
+      {entry.oneChange && (
+        <section>
+          <h3 className="text-xs uppercase tracking-wider text-gold-antique font-semibold mb-3 flex items-center gap-1.5">
+            <Target className="h-3.5 w-3.5" /> The One Change
+          </h3>
+          <span className="text-[10px] uppercase tracking-wider text-ink/40 block mb-1">
+            What they will do this week
+          </span>
+          <p className="text-sm text-emerald-deep leading-relaxed whitespace-pre-wrap bg-gold-antique/8 rounded-xl p-4 border border-gold-antique/30 font-medium">
+            {entry.oneChange}
+          </p>
+        </section>
+      )}
+
+      {/* ── The Advisor's Delivery ────────────────────────────── */}
+      {(entry.advisorRating || entry.advisorReflection) && (
+        <section>
+          <h3 className="text-xs uppercase tracking-wider text-gold-antique font-semibold mb-3 flex items-center gap-1.5">
+            <Star className="h-3.5 w-3.5" /> The Advisor&apos;s Delivery
+          </h3>
+          {entry.advisorRating && (
+            <div className="mb-3">
+              <span className="text-[10px] uppercase tracking-wider text-ink/40 block mb-1">
+                Rating
+              </span>
+              <RatingBadge value={entry.advisorRating} />
+            </div>
+          )}
+          {entry.advisorReflection && (
+            <div>
+              <span className="text-[10px] uppercase tracking-wider text-ink/40 block mb-1">
+                Reflection
+              </span>
+              <p className="text-sm text-ink/85 leading-relaxed whitespace-pre-wrap bg-cream-warm rounded-xl p-4 border border-cream-muted">
+                {entry.advisorReflection}
+              </p>
             </div>
           )}
         </section>

@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { Send, Loader2, CheckCircle, Shield } from "lucide-react";
+import { Send, Loader2, CheckCircle, Shield, CalendarDays } from "lucide-react";
 import { submitFeedback } from "./actions";
 import {
   RESPONSE_CHANNEL_LABELS,
   RATING_LABELS,
   type ResponseChannel,
 } from "@/lib/feedback-types";
+import { formatDate } from "@/lib/utils";
 
 const CHANNEL_ORDER: ResponseChannel[] = [
   "none",
@@ -24,7 +25,13 @@ const RATING_ORDER: Array<keyof typeof RATING_LABELS> = [
   "needs-improvement",
 ];
 
-export function FeedbackForm() {
+interface SessionOption {
+  id: string;
+  title: string;
+  date: string;
+}
+
+export function FeedbackForm({ sessions }: { sessions: SessionOption[] }) {
   const [pending, setPending] = useState(false);
   const [result, setResult] = useState<{ ok: boolean; id?: string; error?: string } | null>(null);
   const [channel, setChannel] = useState<ResponseChannel | "">("");
@@ -71,6 +78,22 @@ export function FeedbackForm() {
     );
   }
 
+  // No sessions yet — show a friendly empty state instead of an unusable form
+  if (sessions.length === 0) {
+    return (
+      <div className="ornate-card p-10 text-center">
+        <CalendarDays className="h-10 w-10 text-ink/25 mx-auto mb-3" />
+        <h2 className="heading-serif text-xl font-semibold text-emerald-deep mb-2">
+          No sessions to reflect on yet
+        </h2>
+        <p className="text-sm text-ink/60 max-w-md mx-auto">
+          Once a session is published, this form will let you share what stayed
+          with you. Come back after the next gathering.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <form ref={formRef} onSubmit={handleSubmit} className="ornate-card p-6 sm:p-8 space-y-8">
 
@@ -87,8 +110,36 @@ export function FeedbackForm() {
         </div>
       </div>
 
+      {/* ── Session selector ────────────────────────────────── */}
+      <section className="space-y-3">
+        <div>
+          <h3 className="heading-serif text-lg font-semibold text-emerald-deep flex items-center gap-2">
+            <CalendarDays className="h-4 w-4 text-gold-antique" />
+            Which session is this feedback about?
+          </h3>
+          <p className="text-xs text-ink/55 mt-0.5">
+            Pick the gathering you&apos;re reflecting on.
+          </p>
+        </div>
+        <select
+          name="sessionId"
+          required
+          defaultValue=""
+          className="input-field"
+        >
+          <option value="" disabled>
+            Select a session…
+          </option>
+          {sessions.map((s) => (
+            <option key={s.id} value={s.id}>
+              {formatDate(s.date)} — {s.title}
+            </option>
+          ))}
+        </select>
+      </section>
+
       {/* ── Optional Identity ─────────────────────────────────── */}
-      <section className="space-y-5">
+      <section className="space-y-5 pt-2 border-t border-cream-muted">
         <div>
           <h3 className="heading-serif text-lg font-semibold text-emerald-deep">
             About You <span className="text-xs font-normal text-ink/40">(optional)</span>
@@ -110,19 +161,19 @@ export function FeedbackForm() {
         </div>
       </section>
 
-      {/* ── First Gathering ─────────────────────────────────── */}
+      {/* ── The Session ─────────────────────────────────── */}
       <section className="space-y-5 pt-2 border-t border-cream-muted">
         <div>
           <h3 className="heading-serif text-lg font-semibold text-emerald-deep">
-            The First Gathering
+            The Session
           </h3>
           <p className="text-xs text-ink/55 mt-0.5">
-            What did the opening session feel like? What stayed with you?
+            How did this session land for you? What stayed with you?
           </p>
         </div>
 
         <div>
-          <label className="label-field">How was the first gathering for you? *</label>
+          <label className="label-field">How did this session land for you? *</label>
           <div className="flex flex-wrap gap-2 mt-1">
             {RATING_ORDER.map((r) => (
               <label
@@ -144,34 +195,80 @@ export function FeedbackForm() {
 
         <div>
           <label className="label-field">
-            Your reflections on the gathering *
+            What stayed with you? *
           </label>
           <textarea
             name="gatheringReflection"
             required
             rows={4}
             className="input-field resize-y"
-            placeholder="What you appreciated, what could improve, what touched you…"
+            placeholder="What touched, challenged, or shifted something inside you…"
             maxLength={3000}
           />
         </div>
+
+        <div>
+          <label className="label-field">
+            The line that struck you most deeply *
+          </label>
+          <textarea
+            name="deepestLine"
+            required
+            rows={3}
+            className="input-field resize-y"
+            placeholder="A sentence, a phrase, an āyah, a story — whatever pierced your heart."
+            maxLength={1000}
+          />
+          <p className="help-text">
+            Even a single line is enough. Quote it as best you remember.
+          </p>
+        </div>
       </section>
 
-      {/* ── Advisor Session ─────────────────────────────── */}
+      {/* ── The One Change ─────────────────────────────────── */}
       <section className="space-y-5 pt-2 border-t border-cream-muted">
         <div>
           <h3 className="heading-serif text-lg font-semibold text-emerald-deep">
-            The Advisor Session
+            The One Change
           </h3>
           <p className="text-xs text-ink/55 mt-0.5">
-            How is the Advisor Session landing with you? Be honest — it
-            helps the work mature.
+            ʿIlm without ʿamal stays as ink on paper. Name one thing you will
+            actually do.
           </p>
         </div>
 
         <div>
           <label className="label-field">
-            How would you rate the Advisor Session so far? *
+            One concrete thing this session calls you to do this week *
+          </label>
+          <textarea
+            name="oneChange"
+            required
+            rows={3}
+            className="input-field resize-y"
+            placeholder="An action, not a theme. e.g. 'Pray Fajr in the masjid for 7 days', not 'be more disciplined'."
+            maxLength={1000}
+          />
+          <p className="help-text">
+            One small, specific action — done before the next session.
+          </p>
+        </div>
+      </section>
+
+      {/* ── The Advisor's Delivery ─────────────────────────────── */}
+      <section className="space-y-5 pt-2 border-t border-cream-muted">
+        <div>
+          <h3 className="heading-serif text-lg font-semibold text-emerald-deep">
+            The Advisor&apos;s Delivery
+          </h3>
+          <p className="text-xs text-ink/55 mt-0.5">
+            Be honest — it helps the work mature.
+          </p>
+        </div>
+
+        <div>
+          <label className="label-field">
+            How was the Advisor in this session? *
           </label>
           <div className="flex flex-wrap gap-2 mt-1">
             {RATING_ORDER.map((r) => (
@@ -194,33 +291,16 @@ export function FeedbackForm() {
 
         <div>
           <label className="label-field">
-            Your thoughts on the Advisor Session *
+            What worked, what could mature, what you would like more of *
           </label>
           <textarea
             name="advisorReflection"
             required
             rows={4}
             className="input-field resize-y"
-            placeholder="What is working, what feels unclear, what you would like more of…"
+            placeholder="Clarity, pacing, presence, the way questions were held…"
             maxLength={3000}
           />
-        </div>
-
-        <div>
-          <label className="label-field">
-            The line that struck you most deeply from the session *
-          </label>
-          <textarea
-            name="deepestLine"
-            required
-            rows={3}
-            className="input-field resize-y"
-            placeholder="A sentence, a phrase, an āyah, a story — whatever pierced your heart."
-            maxLength={1000}
-          />
-          <p className="help-text">
-            Even a single line is enough. Quote it as best you remember.
-          </p>
         </div>
       </section>
 
@@ -228,11 +308,11 @@ export function FeedbackForm() {
       <section className="space-y-5 pt-2 border-t border-cream-muted">
         <div>
           <h3 className="heading-serif text-lg font-semibold text-emerald-deep">
-            Questions & Concerns
+            Questions &amp; Concerns
           </h3>
           <p className="text-xs text-ink/55 mt-0.5">
-            Anything you would like answered — about the department, the model,
-            expectations, or anything else.
+            Anything you would like answered — about the department, the
+            session content, expectations, anything.
           </p>
         </div>
 

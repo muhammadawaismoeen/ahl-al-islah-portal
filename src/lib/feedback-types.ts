@@ -32,16 +32,25 @@ export interface FeedbackEntry {
   submittedAt: string;
   status: "unread" | "read";
 
+  // Session this feedback is about. Snapshotted so the admin still
+  // sees the title even if the session is later renamed or removed.
+  // Optional for backward-compat with entries submitted before the
+  // session-selector was added to the form.
+  sessionId?: string;
+  sessionTitle?: string;
+
   // All optional — feedback can be fully anonymous
   name?: string;
   whatsapp?: string;
 
-  // Feedback content
+  // Feedback content. Field labels intentionally generic so the same
+  // shape works for any session, not just the first gathering.
   gatheringReflection?: string;
   gatheringRating?: Rating;
   advisorReflection?: string;
   advisorRating?: Rating;
   deepestLine?: string;
+  oneChange?: string;
   questions?: string;
   preferredChannel?: ResponseChannel;
   channelOther?: string;
