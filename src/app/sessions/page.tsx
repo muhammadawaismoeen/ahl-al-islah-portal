@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CalendarDays, ListChecks, ArrowRight, Clock, Video } from "lucide-react";
+import { CalendarDays, ListChecks, Clock, Video } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { listSessions } from "@/lib/sessions-store";
@@ -82,8 +82,8 @@ export default async function SessionsPage() {
                           </p>
                         )}
                       </Link>
-                      <div className="mt-5 flex flex-wrap items-center gap-3">
-                        {s.meetingLink && (
+                      {s.meetingLink && (
+                        <div className="mt-5">
                           <a
                             href={s.meetingLink}
                             target="_blank"
@@ -93,15 +93,8 @@ export default async function SessionsPage() {
                             <Video className="h-4 w-4" />
                             Join the session
                           </a>
-                        )}
-                        <Link
-                          href={`/sessions/${s.slug}`}
-                          className="inline-flex items-center gap-1.5 text-sm font-medium text-emerald-deep group-hover:gap-2 transition-all"
-                        >
-                          Read the session
-                          <ArrowRight className="h-4 w-4" />
-                        </Link>
-                      </div>
+                        </div>
+                      )}
                     </div>
                   </li>
                 );
