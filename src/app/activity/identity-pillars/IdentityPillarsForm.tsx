@@ -8,6 +8,7 @@ import {
   Shield,
   Printer,
   RefreshCw,
+  Download,
 } from "lucide-react";
 import { submitIdentityPillars } from "./actions";
 import { PILLAR_TYPE_LABELS } from "@/lib/activity-submissions-types";
@@ -276,6 +277,9 @@ function CompletedView({
   record: CompletedRecord;
   onReset: () => void;
 }) {
+  const [downloading, setDownloading] = useState(false);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
+
   const formattedDate = new Date(record.submittedAt).toLocaleDateString("en-US", {
     year: "numeric",
     month: "long",
@@ -284,6 +288,151 @@ function CompletedView({
 
   function handlePrint() {
     window.print();
+  }
+
+  async function handleDownload() {
+    setDownloading(true);
+    setDownloadError(null);
+    try {
+      const { jsPDF } = await import("jspdf");
+      const doc = new jsPDF({ unit: "pt", format: "letter", compress: true });
+
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const margin = 60;
+      const contentWidth = pageWidth - margin * 2;
+      let y = margin;
+
+      const ensureRoom = (needed: number) => {
+        if (y + needed > pageHeight - margin) {
+          doc.addPage();
+          y = margin;
+        }
+      };
+
+      // Header
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(20);
+      doc.setTextColor(15, 64, 51);
+      doc.text("Identity Pillars Audit", pageWidth / 2, y, { align: "center" });
+      y += 26;
+
+      if (record.sessionTitle) {
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(11);
+        doc.setTextColor(80, 80, 80);
+        const sessionLine = record.sessionDate
+          ? `${record.sessionTitle}  ·  ${record.sessionDate}`
+          : record.sessionTitle;
+        doc.text(sessionLine, pageWidth / 2, y, { align: "center" });
+        y += 16;
+      }
+
+      doc.setFontSize(10);
+      doc.setTextColor(140, 140, 140);
+      const meta = record.name
+        ? `By ${record.name}  ·  Completed ${formattedDate}`
+        : `Completed ${formattedDate}`;
+      doc.text(meta, pageWidth / 2, y, { align: "center" });
+      y += 22;
+
+      doc.setDrawColor(180, 140, 40);
+      doc.setLineWidth(1);
+      doc.line(pageWidth / 2 - 30, y, pageWidth / 2 + 30, y);
+      y += 28;
+
+      // Pillars
+      const pillars = [record.pillar1, record.pillar2, record.pillar3];
+      pillars.forEach((pillar, i) => {
+        ensureRoom(80);
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(9);
+        doc.setTextColor(180, 140, 40);
+        doc.text(`PILLAR ${i + 1}`, margin, y);
+
+        if (pillar.type) {
+          const typeText =
+            pillar.type === "A"
+              ? "A  ·  Allah-grounded"
+              : "B  ·  Approval-grounded";
+          if (pillar.type === "A") {
+            doc.setTextColor(15, 64, 51);
+          } else {
+            doc.setTextColor(180, 140, 40);
+          }
+          doc.text(typeText, pageWidth - margin, y, { align: "right" });
+        }
+        y += 14;
+
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(11);
+        doc.setTextColor(30, 30, 30);
+        const lines = doc.splitTextToSize(pillar.text || "—", contentWidth);
+        lines.forEach((line: string) => {
+          ensureRoom(14);
+          doc.text(line, margin, y);
+          y += 14;
+        });
+        y += 14;
+      });
+
+      // Reflection
+      if (record.reflection) {
+        ensureRoom(60);
+        doc.setDrawColor(220, 213, 200);
+        doc.setLineWidth(0.5);
+        doc.line(margin, y, pageWidth - margin, y);
+        y += 20;
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(9);
+        doc.setTextColor(180, 140, 40);
+        doc.text("ONE HONEST SENTENCE", margin, y);
+        y += 14;
+
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(11);
+        doc.setTextColor(30, 30, 30);
+        const reflectionLines = doc.splitTextToSize(
+          record.reflection,
+          contentWidth
+        );
+        reflectionLines.forEach((line: string) => {
+          ensureRoom(14);
+          doc.text(line, margin, y);
+          y += 14;
+        });
+      }
+
+      // Footer line on last page
+      doc.setFont("helvetica", "italic");
+      doc.setFontSize(9);
+      doc.setTextColor(150, 150, 150);
+      const footerLines = doc.splitTextToSize(
+        "Ibrahim (alayhi as-salam) held one pillar. Every test was the same question: will you hold this pillar even now?",
+        contentWidth
+      );
+      const footerY = pageHeight - margin - footerLines.length * 12;
+      doc.text(footerLines, pageWidth / 2, footerY, { align: "center" });
+
+      const safeName = record.name
+        ? record.name
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/^-+|-+$/g, "")
+            .slice(0, 40)
+        : "anonymous";
+      const dateSlug = new Date(record.submittedAt).toISOString().slice(0, 10);
+      doc.save(`identity-pillars-${safeName}-${dateSlug}.pdf`);
+    } catch (err) {
+      console.error("PDF download failed:", err);
+      setDownloadError(
+        "Could not generate the PDF. Try the Print option instead."
+      );
+    } finally {
+      setDownloading(false);
+    }
   }
 
   return (
@@ -297,18 +446,35 @@ function CompletedView({
           </h2>
           <p className="mt-2 text-sm text-ink/70 max-w-md mx-auto">
             JazakAllāhu khayran. Your pillars have been recorded privately for
-            the Speaker. Below is your own copy — print it, save it as a PDF, or
-            keep it as a screenshot for yourself.
+            the Speaker. Download your own copy below, or print it.
           </p>
         </div>
         <div className="flex flex-wrap gap-2 justify-center">
           <button
             type="button"
-            onClick={handlePrint}
+            onClick={handleDownload}
+            disabled={downloading}
             className="btn-primary inline-flex"
           >
+            {downloading ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Preparing PDF…
+              </>
+            ) : (
+              <>
+                <Download className="h-4 w-4" />
+                Download PDF
+              </>
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={handlePrint}
+            className="btn-ghost inline-flex"
+          >
             <Printer className="h-4 w-4" />
-            Print / Save as PDF
+            Print
           </button>
           <button
             type="button"
@@ -319,6 +485,11 @@ function CompletedView({
             Submit another
           </button>
         </div>
+        {downloadError && (
+          <p className="text-xs text-red-500 bg-red-50 border border-red-200 rounded-xl px-4 py-2 inline-block">
+            {downloadError}
+          </p>
+        )}
       </div>
 
       {/* Printable card */}
