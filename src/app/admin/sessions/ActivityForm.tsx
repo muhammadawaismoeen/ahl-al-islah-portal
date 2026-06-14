@@ -9,7 +9,7 @@ export function ActivityForm({
   submitLabel,
   defaults,
 }: {
-  action: (formData: FormData) => Promise<unknown>;
+  action: (formData: FormData) => Promise<void>;
   submitLabel: string;
   defaults?: {
     title?: string;

@@ -16,19 +16,16 @@ import {
 /*  Session CRUD                                                       */
 /* ------------------------------------------------------------------ */
 
-export async function createSessionAction(
-  formData: FormData
-): Promise<{ ok: boolean; error?: string }> {
+export async function createSessionAction(formData: FormData): Promise<void> {
   const authed = await isAuthenticated();
-  if (!authed) return { ok: false, error: "Not authorised." };
+  if (!authed) redirect("/admin");
 
   const title = String(formData.get("title") ?? "").trim();
   const arabicTitle = String(formData.get("arabicTitle") ?? "").trim();
   const date = String(formData.get("date") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
 
-  if (!title) return { ok: false, error: "Title is required." };
-  if (!date) return { ok: false, error: "Date is required." };
+  if (!title || !date) redirect("/admin/sessions/new");
 
   const record = await createSession({
     title,
@@ -45,17 +42,16 @@ export async function createSessionAction(
 export async function updateSessionAction(
   sessionId: string,
   formData: FormData
-): Promise<{ ok: boolean; error?: string }> {
+): Promise<void> {
   const authed = await isAuthenticated();
-  if (!authed) return { ok: false, error: "Not authorised." };
+  if (!authed) redirect("/admin");
 
   const title = String(formData.get("title") ?? "").trim();
   const arabicTitle = String(formData.get("arabicTitle") ?? "").trim();
   const date = String(formData.get("date") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
 
-  if (!title) return { ok: false, error: "Title is required." };
-  if (!date) return { ok: false, error: "Date is required." };
+  if (!title || !date) redirect(`/admin/sessions/${sessionId}`);
 
   const result = await updateSession(sessionId, {
     title,
@@ -64,7 +60,7 @@ export async function updateSessionAction(
     description: description || undefined,
   });
 
-  if (!result) return { ok: false, error: "Session not found." };
+  if (!result) redirect("/admin/sessions");
 
   revalidatePath("/admin/sessions");
   revalidatePath(`/admin/sessions/${sessionId}`);
@@ -93,17 +89,16 @@ export async function deleteSessionAction(
 export async function addActivityAction(
   sessionId: string,
   formData: FormData
-): Promise<{ ok: boolean; error?: string }> {
+): Promise<void> {
   const authed = await isAuthenticated();
-  if (!authed) return { ok: false, error: "Not authorised." };
+  if (!authed) redirect("/admin");
 
   const title = String(formData.get("title") ?? "").trim();
   const timeMarker = String(formData.get("timeMarker") ?? "").trim();
   const durationRaw = String(formData.get("durationMin") ?? "").trim();
   const body = String(formData.get("body") ?? "").trim();
 
-  if (!title) return { ok: false, error: "Activity title is required." };
-  if (!body) return { ok: false, error: "Activity body cannot be empty." };
+  if (!title || !body) redirect(`/admin/sessions/${sessionId}/activities/new`);
 
   const durationMin = durationRaw ? parseInt(durationRaw, 10) : undefined;
 
@@ -114,7 +109,7 @@ export async function addActivityAction(
     body,
   });
 
-  if (!result) return { ok: false, error: "Session not found." };
+  if (!result) redirect("/admin/sessions");
 
   revalidatePath(`/admin/sessions/${sessionId}`);
   revalidatePath("/sessions");
@@ -125,17 +120,17 @@ export async function updateActivityAction(
   sessionId: string,
   activityId: string,
   formData: FormData
-): Promise<{ ok: boolean; error?: string }> {
+): Promise<void> {
   const authed = await isAuthenticated();
-  if (!authed) return { ok: false, error: "Not authorised." };
+  if (!authed) redirect("/admin");
 
   const title = String(formData.get("title") ?? "").trim();
   const timeMarker = String(formData.get("timeMarker") ?? "").trim();
   const durationRaw = String(formData.get("durationMin") ?? "").trim();
   const body = String(formData.get("body") ?? "").trim();
 
-  if (!title) return { ok: false, error: "Activity title is required." };
-  if (!body) return { ok: false, error: "Activity body cannot be empty." };
+  if (!title || !body)
+    redirect(`/admin/sessions/${sessionId}/activities/${activityId}`);
 
   const durationMin = durationRaw ? parseInt(durationRaw, 10) : undefined;
 
@@ -146,7 +141,7 @@ export async function updateActivityAction(
     body,
   });
 
-  if (!result) return { ok: false, error: "Activity not found." };
+  if (!result) redirect("/admin/sessions");
 
   revalidatePath(`/admin/sessions/${sessionId}`);
   revalidatePath("/sessions");
