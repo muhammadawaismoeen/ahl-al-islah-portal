@@ -65,7 +65,7 @@ export const POSITIONS: Position[] = [
     commitment: "6–8 hours/week",
     termLength: "1 academic year",
     questionSet: "head-application",
-    open: true,
+    open: false,
     priority: 1,
   },
   {
@@ -95,7 +95,7 @@ export const POSITIONS: Position[] = [
     commitment: "6–8 hours/week",
     termLength: "1 academic year",
     questionSet: "head-application",
-    open: true,
+    open: false,
     priority: 2,
   },
   {
@@ -124,7 +124,7 @@ export const POSITIONS: Position[] = [
     commitment: "3–5 hours/week",
     termLength: "1 academic year",
     questionSet: "core-member-brothers-application",
-    open: true,
+    open: false,
     priority: 5,
   },
   {
@@ -153,7 +153,7 @@ export const POSITIONS: Position[] = [
     commitment: "3–5 hours/week",
     termLength: "1 academic year",
     questionSet: "core-member-application",
-    open: true,
+    open: false,
     priority: 6,
   },
   // Example of a future position you can uncomment/add:
