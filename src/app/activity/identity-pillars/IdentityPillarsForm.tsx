@@ -102,32 +102,30 @@ export function IdentityPillarsForm({
     >
       {sessionId && <input type="hidden" name="sessionId" value={sessionId} />}
 
-      {/* Anonymity banner */}
+      {/* Privacy banner */}
       <div className="flex items-start gap-3 p-4 bg-emerald-deep/5 rounded-xl border border-emerald-deep/15">
         <Shield className="h-5 w-5 text-emerald-deep shrink-0 mt-0.5" />
         <div className="text-xs text-ink/75 leading-relaxed">
           <p className="font-semibold text-emerald-deep">
-            This audit is anonymous.
+            Your audit goes privately to the Speaker.
           </p>
           <p className="mt-0.5">
-            Your name is optional — leave it blank to stay fully anonymous.
-            After submitting you can print or save your own pillars as a PDF.
+            Only the Speaker reads your responses. You will see a printable
+            copy and a PDF download on the next screen.
           </p>
         </div>
       </div>
 
-      {/* Optional name */}
+      {/* Name */}
       <section className="space-y-3">
-        <label className="label-field">
-          Your name{" "}
-          <span className="text-xs font-normal text-ink/40">(optional)</span>
-        </label>
+        <label className="label-field">Your name *</label>
         <input
           type="text"
           name="name"
+          required
           maxLength={100}
           className="input-field"
-          placeholder="Leave blank to stay anonymous"
+          placeholder="Your full name"
         />
       </section>
 
@@ -156,8 +154,7 @@ export function IdentityPillarsForm({
       <section className="space-y-3 pt-2 border-t border-cream-muted">
         <div>
           <h3 className="heading-serif text-lg font-semibold text-emerald-deep">
-            One Honest Sentence{" "}
-            <span className="text-xs font-normal text-ink/40">(optional)</span>
+            One Honest Sentence *
           </h3>
           <p className="text-xs text-ink/55 mt-0.5">
             What did this audit show you about yourself?
@@ -165,10 +162,12 @@ export function IdentityPillarsForm({
         </div>
         <textarea
           name="reflection"
+          required
           rows={4}
+          minLength={1}
           maxLength={2000}
           className="input-field resize-y"
-          placeholder="A single honest sentence. No one will read it but you and the Speaker."
+          placeholder="A single honest sentence — only the Speaker will read it."
         />
       </section>
 

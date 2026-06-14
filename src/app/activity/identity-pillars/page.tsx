@@ -10,7 +10,7 @@ import { IdentityPillarsForm } from "./IdentityPillarsForm";
 export const metadata: Metadata = {
   title: "Identity Pillars Audit — Ahl Al-Islah",
   description:
-    "Audit the three pillars your life is actually built on. Mark which are Allah-grounded and which are approval-grounded. Anonymous, printable.",
+    "Audit the three pillars your life is actually built on. Mark which are Allah-grounded and which are approval-grounded. Private, printable.",
   robots: { index: false, follow: false },
 };
 
@@ -60,7 +60,7 @@ export default async function IdentityPillarsActivityPage({
             </p>
             <div className="inline-flex items-center gap-1.5 mt-4 text-xs text-ink/50 bg-cream-warm px-3 py-1.5 rounded-full border border-cream-muted">
               <Shield className="h-3 w-3" />
-              Anonymous · printable
+              Private · printable
             </div>
           </div>
 

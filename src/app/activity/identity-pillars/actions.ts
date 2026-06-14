@@ -57,12 +57,14 @@ export async function submitIdentityPillars(
   }
 
   const missing: string[] = [];
+  if (!name) missing.push("your name");
   if (!pillar1.text) missing.push("pillar 1");
   if (!pillar1.type) missing.push("pillar 1 classification (A or B)");
   if (!pillar2.text) missing.push("pillar 2");
   if (!pillar2.type) missing.push("pillar 2 classification (A or B)");
   if (!pillar3.text) missing.push("pillar 3");
   if (!pillar3.type) missing.push("pillar 3 classification (A or B)");
+  if (!reflection) missing.push("one honest sentence");
 
   if (missing.length) {
     return {
