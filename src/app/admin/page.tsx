@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { LogOut, Mail, Phone, Download, Pencil, MessageCircle, MessageSquareHeart } from "lucide-react";
+import { LogOut, Mail, Phone, Download, Pencil, MessageCircle, MessageSquareHeart, CalendarDays } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { isAuthenticated, login, logout } from "./actions";
@@ -126,6 +126,13 @@ export default async function AdminPage({
                     {unreadFeedback}
                   </span>
                 )}
+              </Link>
+              <Link
+                href="/admin/sessions"
+                className="btn-ghost !py-2 !px-4 text-xs"
+              >
+                <CalendarDays className="h-3.5 w-3.5" />
+                Sessions
               </Link>
               <Link
                 href="/admin/content"

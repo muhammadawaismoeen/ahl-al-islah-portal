@@ -23,6 +23,7 @@ export const DEFAULT_CONTENT: SiteContent = {
     items: [
       { label: "About", href: "/#about" },
       { label: "Model", href: "/#structure" },
+      { label: "Sessions", href: "/sessions" },
       { label: "Positions", href: "/positions" },
       { label: "Roadmap", href: "/#roadmap" },
       { label: "Feedback", href: "/feedback" },

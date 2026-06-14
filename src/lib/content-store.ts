@@ -69,10 +69,31 @@ export async function resetContent(): Promise<void> {
 }
 
 /**
+ * Internal portal routes that must always appear in the public nav,
+ * even if a previously-saved nav configuration predates them. Each
+ * entry is appended to stored nav.items only if no item with the same
+ * href is already present.
+ */
+const REQUIRED_NAV_ROUTES: { label: string; href: string }[] = [
+  { label: "Sessions", href: "/sessions" },
+  { label: "Feedback", href: "/feedback" },
+];
+
+/**
  * Shallow-merge stored content with defaults so newly-added fields
  * (after a code update) don't render as undefined on the public site.
  */
 function mergeWithDefaults(stored: Partial<SiteContent>): SiteContent {
+  const mergedNav = { ...DEFAULT_CONTENT.nav, ...(stored.nav ?? {}) };
+  // ensure portal-required routes are always present in nav.items
+  const items = [...(mergedNav.items ?? [])];
+  for (const required of REQUIRED_NAV_ROUTES) {
+    if (!items.some((it) => it.href === required.href)) {
+      items.push(required);
+    }
+  }
+  mergedNav.items = items;
+
   return {
     hero: { ...DEFAULT_CONTENT.hero, ...(stored.hero ?? {}) },
     about: { ...DEFAULT_CONTENT.about, ...(stored.about ?? {}) },
@@ -80,7 +101,7 @@ function mergeWithDefaults(stored: Partial<SiteContent>): SiteContent {
     roadmap: { ...DEFAULT_CONTENT.roadmap, ...(stored.roadmap ?? {}) },
     cta: { ...DEFAULT_CONTENT.cta, ...(stored.cta ?? {}) },
     footer: { ...DEFAULT_CONTENT.footer, ...(stored.footer ?? {}) },
-    nav: { ...DEFAULT_CONTENT.nav, ...(stored.nav ?? {}) },
+    nav: mergedNav,
     visibility: { ...DEFAULT_CONTENT.visibility, ...(stored.visibility ?? {}) },
     customLogo: stored.customLogo ?? DEFAULT_CONTENT.customLogo,
     formConfig: { ...DEFAULT_CONTENT.formConfig, ...(stored.formConfig ?? {}) },
