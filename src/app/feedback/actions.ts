@@ -88,8 +88,8 @@ export async function submitFeedback(
   if (!gatheringReflection) missing.push("what stayed with you");
   if (!deepestLine) missing.push("the line that struck you most");
   if (!oneChange) missing.push("one change for this week");
-  if (!advisorRating) missing.push("Advisor delivery rating");
-  if (!advisorReflection) missing.push("thoughts on the Advisor's delivery");
+  if (!advisorRating) missing.push("Speaker delivery rating");
+  if (!advisorReflection) missing.push("thoughts on the Speaker's delivery");
   if (!questions) missing.push("your questions");
   if (!preferredChannel) missing.push("preferred response channel");
   if (preferredChannel === "whatsapp" && !whatsapp) {

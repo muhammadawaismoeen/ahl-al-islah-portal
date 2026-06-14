@@ -104,7 +104,7 @@ export function FeedbackForm({ sessions }: { sessions: SessionOption[] }) {
           <p className="font-semibold text-emerald-deep">This form is anonymous.</p>
           <p className="mt-0.5">
             Only your <strong>name</strong> is optional — leave it blank to stay
-            fully anonymous. The remaining questions are required so the Advisor
+            fully anonymous. The remaining questions are required so the Speaker
             receives complete reflections.
           </p>
         </div>
@@ -255,11 +255,11 @@ export function FeedbackForm({ sessions }: { sessions: SessionOption[] }) {
         </div>
       </section>
 
-      {/* ── The Advisor's Delivery ─────────────────────────────── */}
+      {/* ── The Speaker's Delivery ─────────────────────────────── */}
       <section className="space-y-5 pt-2 border-t border-cream-muted">
         <div>
           <h3 className="heading-serif text-lg font-semibold text-emerald-deep">
-            The Advisor&apos;s Delivery
+            The Speaker&apos;s Delivery
           </h3>
           <p className="text-xs text-ink/55 mt-0.5">
             Be honest — it helps the work mature.
@@ -268,7 +268,7 @@ export function FeedbackForm({ sessions }: { sessions: SessionOption[] }) {
 
         <div>
           <label className="label-field">
-            How was the Advisor in this session? *
+            How was the Speaker in this session? *
           </label>
           <div className="flex flex-wrap gap-2 mt-1">
             {RATING_ORDER.map((r) => (
@@ -365,13 +365,13 @@ export function FeedbackForm({ sessions }: { sessions: SessionOption[] }) {
                 maxLength={30}
               />
               <p className="help-text !mt-1">
-                The Advisor will reply privately on this number.
+                The Speaker will reply privately on this number.
               </p>
             </div>
           )}
           {channel === "in-person" && (
             <p className="help-text text-gold-antique mt-3">
-              Reminder: leave your name above so the Advisor can recognise you.
+              Reminder: leave your name above so the Speaker can recognise you.
             </p>
           )}
           {channel === "other" && (
@@ -426,7 +426,7 @@ export function FeedbackForm({ sessions }: { sessions: SessionOption[] }) {
       </button>
 
       <p className="text-center text-xs text-ink/40">
-        Your feedback goes directly and privately to the Advisor.
+        Your feedback goes directly and privately to the Speaker.
       </p>
     </form>
   );

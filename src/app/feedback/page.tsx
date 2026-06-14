@@ -9,7 +9,7 @@ import { FeedbackForm } from "./FeedbackForm";
 export const metadata: Metadata = {
   title: "Anonymous Feedback — Ahl Al-Islah",
   description:
-    "Share your honest reflections on any Ahl Al-Islah session — the experience, the Advisor, your questions. Stay anonymous, or leave a name.",
+    "Share your honest reflections on any Ahl Al-Islah session — the experience, the Speaker, your questions. Stay anonymous, or leave a name.",
   robots: { index: false, follow: false },
 };
 
