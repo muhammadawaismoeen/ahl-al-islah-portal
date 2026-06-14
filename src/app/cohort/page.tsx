@@ -37,6 +37,18 @@ const WING_CONFIG = {
     dot: "bg-emerald-deep",
     badge: "bg-emerald-deep/10 text-emerald-deep",
   },
+  "deputy-male": {
+    label: "Brothers' Core Members · Deputy View",
+    arabic: "نائب رئيس الإخوة",
+    dot: "bg-emerald-deep",
+    badge: "bg-emerald-deep/10 text-emerald-deep",
+  },
+  "deputy-female": {
+    label: "Sisters' Core Members · Deputy View",
+    arabic: "نائبة رئيسة الأخوات",
+    dot: "bg-gold-antique",
+    badge: "bg-gold-antique/10 text-gold-antique",
+  },
 } as const;
 
 export default async function CohortPage({
@@ -88,14 +100,58 @@ export default async function CohortPage({
 
   // Show only applications that belong to this head's wing,
   // submitted on or after the cohort portal launch date (hide pre-existing test/old entries).
-  // The "male-core" role sees only Core Member (brothers) applications.
+  //
+  // Role scoping:
+  //   - "male"           → all Brothers' applications
+  //   - "female"         → all Sisters' applications
+  //   - "male-core"      → Brothers' Core Member applications only
+  //   - "deputy-male"    → Brothers' Core Member applications only,
+  //                        excluding the Head (Ammar Amjad) and the Deputy himself (Muhammad Ahmed)
+  //   - "deputy-female"  → Sisters'  Core Member applications only,
+  //                        excluding the Head (Hajrah Noor) and the Deputy herself (Syeda Fatima Bukhari)
   const COHORT_VISIBLE_FROM = "2026-04-26";
-  const CORE_MEMBER_SLUGS = new Set(["core-member-male"]);
-  const wingFilter = role === "male-core" ? "male" : role;
+  const CORE_MEMBER_MALE_SLUGS = new Set(["core-member-male"]);
+  const CORE_MEMBER_FEMALE_SLUGS = new Set(["core-member-female"]);
+
+  const isCoreOnlyRole =
+    role === "male-core" || role === "deputy-male" || role === "deputy-female";
+
+  // Map each role to the wing it sees.
+  const wingFilter: "male" | "female" =
+    role === "male" || role === "male-core" || role === "deputy-male"
+      ? "male"
+      : "female";
+
+  // Name fragments to exclude for deputy roles (case-insensitive substring match
+  // against the applicant's fullName / name — keeps the deputy from seeing the
+  // Head's application and their own).
+  const DEPUTY_EXCLUSIONS: Record<"deputy-male" | "deputy-female", string[]> = {
+    "deputy-male": ["ammar amjad", "muhammad ahmed"],
+    "deputy-female": ["hajrah noor", "syeda fatima bukhari"],
+  };
+  const excludedFragments =
+    role === "deputy-male" || role === "deputy-female"
+      ? DEPUTY_EXCLUSIONS[role]
+      : null;
+
+  const normaliseName = (s: Submission) =>
+    (((s.data.fullName as string) ?? (s.data.name as string) ?? "") + "")
+      .toLowerCase()
+      .replace(/\s+/g, " ")
+      .trim();
+
   const submissions = allSubmissions
     .filter((s) => {
       if (s.wing !== wingFilter) return false;
-      if (role === "male-core" && !CORE_MEMBER_SLUGS.has(s.positionSlug)) return false;
+      if (isCoreOnlyRole) {
+        const allowedSlugs =
+          wingFilter === "male" ? CORE_MEMBER_MALE_SLUGS : CORE_MEMBER_FEMALE_SLUGS;
+        if (!allowedSlugs.has(s.positionSlug)) return false;
+      }
+      if (excludedFragments) {
+        const name = normaliseName(s);
+        if (excludedFragments.some((frag) => name.includes(frag))) return false;
+      }
       return s.submittedAt.slice(0, 10) >= COHORT_VISIBLE_FROM;
     })
     .sort((a, b) => b.submittedAt.localeCompare(a.submittedAt));

@@ -6,11 +6,24 @@ import { redirect } from "next/navigation";
 const COOKIE = "ahl_head_role";
 const MAX_AGE = 60 * 60 * 8; // 8 hours
 
-export type HeadRole = "male" | "female" | "male-core";
+export type HeadRole =
+  | "male"
+  | "female"
+  | "male-core"
+  | "deputy-male"
+  | "deputy-female";
 
 export async function getHeadRole(): Promise<HeadRole | null> {
   const val = (await cookies()).get(COOKIE)?.value;
-  if (val === "male" || val === "female" || val === "male-core") return val;
+  if (
+    val === "male" ||
+    val === "female" ||
+    val === "male-core" ||
+    val === "deputy-male" ||
+    val === "deputy-female"
+  ) {
+    return val;
+  }
   return null;
 }
 
@@ -26,6 +39,14 @@ export async function loginHead(
   const femalePass = process.env.HEAD_FEMALE_PASSWORD ?? "";
   const maleCoreEmail = (process.env.HEAD_MALE_CORE_EMAIL ?? "").toLowerCase();
   const maleCorePass = process.env.HEAD_MALE_CORE_PASSWORD ?? "";
+  const deputyMaleEmail = (
+    process.env.HEAD_DEPUTY_MALE_EMAIL ?? ""
+  ).toLowerCase();
+  const deputyMalePass = process.env.HEAD_DEPUTY_MALE_PASSWORD ?? "";
+  const deputyFemaleEmail = (
+    process.env.HEAD_DEPUTY_FEMALE_EMAIL ?? ""
+  ).toLowerCase();
+  const deputyFemalePass = process.env.HEAD_DEPUTY_FEMALE_PASSWORD ?? "";
 
   let role: HeadRole | null = null;
 
@@ -45,6 +66,20 @@ export async function loginHead(
     password === maleCorePass
   ) {
     role = "male-core";
+  } else if (
+    deputyMaleEmail &&
+    deputyMalePass &&
+    email === deputyMaleEmail &&
+    password === deputyMalePass
+  ) {
+    role = "deputy-male";
+  } else if (
+    deputyFemaleEmail &&
+    deputyFemalePass &&
+    email === deputyFemaleEmail &&
+    password === deputyFemalePass
+  ) {
+    role = "deputy-female";
   }
 
   if (!role) {
