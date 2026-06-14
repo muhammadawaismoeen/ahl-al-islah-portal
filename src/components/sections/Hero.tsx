@@ -70,11 +70,11 @@ export function Hero({ content, customLogo }: { content: HeroContent; customLogo
             className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4"
           >
             <Link
-              href="/join"
+              href="/become-a-member"
               className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-gold-gradient text-ink font-semibold tracking-wide shadow-xl hover:shadow-gold-warm/40 hover:scale-[1.03] transition-all"
             >
               <Sparkles className="h-4 w-4" />
-              Join as Core Member
+              Become a Member
             </Link>
             <Link href="#about" className="btn-secondary">
               {content.secondaryCtaLabel}
