@@ -79,6 +79,26 @@ export default async function NewSessionPage() {
               required
               defaultValue={new Date().toISOString().slice(0, 10)}
             />
+            <div className="grid grid-cols-2 gap-4">
+              <Field
+                label="Start time (PKT)"
+                name="startTime"
+                type="time"
+                placeholder="16:00"
+              />
+              <Field
+                label="End time (PKT)"
+                name="endTime"
+                type="time"
+                placeholder="17:15"
+              />
+            </div>
+            <Field
+              label="Meeting link (optional)"
+              name="meetingLink"
+              type="url"
+              placeholder="https://meet.google.com/… or https://zoom.us/j/…"
+            />
             <FieldArea
               label="One-line description (optional)"
               name="description"

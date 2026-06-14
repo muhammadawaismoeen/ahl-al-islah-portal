@@ -186,6 +186,9 @@ export async function createSession(
     arabicTitle: input.arabicTitle,
     date: input.date,
     description: input.description,
+    startTime: input.startTime,
+    endTime: input.endTime,
+    meetingLink: input.meetingLink,
     activities: [],
     createdAt: now,
     updatedAt: now,
@@ -200,7 +203,18 @@ export async function createSession(
 
 export async function updateSession(
   id: string,
-  patch: Partial<Pick<Session, "title" | "arabicTitle" | "date" | "description">>
+  patch: Partial<
+    Pick<
+      Session,
+      | "title"
+      | "arabicTitle"
+      | "date"
+      | "description"
+      | "startTime"
+      | "endTime"
+      | "meetingLink"
+    >
+  >
 ): Promise<Session | null> {
   const existing = await getSession(id);
   if (!existing) return null;

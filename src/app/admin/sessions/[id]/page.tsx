@@ -116,6 +116,27 @@ export default async function EditSessionPage({ params }: Props) {
                 defaultValue={session.date}
                 required
               />
+              <div className="grid grid-cols-2 gap-4">
+                <Field
+                  label="Start time (PKT)"
+                  name="startTime"
+                  type="time"
+                  defaultValue={session.startTime ?? ""}
+                />
+                <Field
+                  label="End time (PKT)"
+                  name="endTime"
+                  type="time"
+                  defaultValue={session.endTime ?? ""}
+                />
+              </div>
+              <Field
+                label="Meeting link"
+                name="meetingLink"
+                type="url"
+                placeholder="https://meet.google.com/… or https://zoom.us/j/…"
+                defaultValue={session.meetingLink ?? ""}
+              />
               <FieldArea
                 label="One-line description"
                 name="description"

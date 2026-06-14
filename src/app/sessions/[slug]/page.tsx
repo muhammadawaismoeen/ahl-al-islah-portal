@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, CalendarDays, Clock, Timer } from "lucide-react";
+import { ArrowLeft, CalendarDays, Clock, Timer, Video } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { getSessionBySlug, sortActivities } from "@/lib/sessions-store";
 import { getContent } from "@/lib/content-store";
 import { ActivityBody } from "@/components/ActivityBody";
-import { formatDate } from "@/lib/utils";
+import { formatDate, formatSessionTime } from "@/lib/utils";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -50,10 +50,21 @@ export default async function SessionDetailPage({ params }: Props) {
 
           {/* Session header */}
           <header className="mb-12">
-            <span className="text-xs uppercase tracking-widest text-gold-antique inline-flex items-center gap-1.5">
-              <CalendarDays className="h-3.5 w-3.5" />
-              {formatDate(session.date)}
-            </span>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
+              <span className="text-xs uppercase tracking-widest text-gold-antique inline-flex items-center gap-1.5">
+                <CalendarDays className="h-3.5 w-3.5" />
+                {formatDate(session.date)}
+              </span>
+              {(() => {
+                const t = formatSessionTime(session.startTime, session.endTime);
+                return t ? (
+                  <span className="text-xs uppercase tracking-widest text-emerald-deep/80 inline-flex items-center gap-1.5 font-medium">
+                    <Clock className="h-3.5 w-3.5" />
+                    {t}
+                  </span>
+                ) : null;
+              })()}
+            </div>
             {session.arabicTitle && (
               <p className="arabic-text text-2xl text-gold-antique mt-3 mb-1">
                 {session.arabicTitle}
@@ -66,6 +77,22 @@ export default async function SessionDetailPage({ params }: Props) {
               <p className="mt-4 text-lg text-ink/70 leading-relaxed">
                 {session.description}
               </p>
+            )}
+            {session.meetingLink && (
+              <div className="mt-6">
+                <a
+                  href={session.meetingLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-primary inline-flex"
+                >
+                  <Video className="h-4 w-4" />
+                  Join the session
+                </a>
+                <p className="mt-2 text-xs text-ink/50">
+                  Opens the live meeting in a new tab.
+                </p>
+              </div>
             )}
           </header>
 

@@ -28,6 +28,11 @@ export interface Session {
   arabicTitle?: string;
   date: string; // ISO date YYYY-MM-DD
   description?: string;
+  // Optional schedule + join link. Times are HH:MM, 24h, treated as PKT
+  // (the org runs in Pakistan); the public UI labels them with PKT.
+  startTime?: string;
+  endTime?: string;
+  meetingLink?: string;
   activities: Activity[];
   createdAt: string;
   updatedAt: string;

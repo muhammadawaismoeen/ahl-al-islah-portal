@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CalendarDays, ListChecks, ArrowRight } from "lucide-react";
+import { CalendarDays, ListChecks, ArrowRight, Clock, Video } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { listSessions } from "@/lib/sessions-store";
 import { getContent } from "@/lib/content-store";
-import { formatDate } from "@/lib/utils";
+import { formatDate, formatSessionTime } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Sessions — Ahl Al-Islah",
@@ -45,43 +45,67 @@ export default async function SessionsPage() {
             </div>
           ) : (
             <ul className="space-y-5">
-              {sessions.map((s) => (
-                <li key={s.id}>
-                  <Link
-                    href={`/sessions/${s.slug}`}
-                    className="ornate-card p-6 sm:p-8 block group hover:shadow-lg transition"
-                  >
-                    <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 mb-2">
-                      <span className="text-xs uppercase tracking-widest text-gold-antique inline-flex items-center gap-1.5">
-                        <CalendarDays className="h-3.5 w-3.5" />
-                        {formatDate(s.date)}
-                      </span>
-                      <span className="text-xs text-ink/45 inline-flex items-center gap-1.5">
-                        <ListChecks className="h-3.5 w-3.5" />
-                        {s.activities.length} activit
-                        {s.activities.length === 1 ? "y" : "ies"}
-                      </span>
+              {sessions.map((s) => {
+                const timeRange = formatSessionTime(s.startTime, s.endTime);
+                return (
+                  <li key={s.id}>
+                    <div className="ornate-card p-6 sm:p-8 group">
+                      <Link href={`/sessions/${s.slug}`} className="block">
+                        <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 mb-2">
+                          <span className="text-xs uppercase tracking-widest text-gold-antique inline-flex items-center gap-1.5">
+                            <CalendarDays className="h-3.5 w-3.5" />
+                            {formatDate(s.date)}
+                          </span>
+                          {timeRange && (
+                            <span className="text-xs text-emerald-deep/80 inline-flex items-center gap-1.5 font-medium">
+                              <Clock className="h-3.5 w-3.5" />
+                              {timeRange}
+                            </span>
+                          )}
+                          <span className="text-xs text-ink/45 inline-flex items-center gap-1.5">
+                            <ListChecks className="h-3.5 w-3.5" />
+                            {s.activities.length} activit
+                            {s.activities.length === 1 ? "y" : "ies"}
+                          </span>
+                        </div>
+                        {s.arabicTitle && (
+                          <p className="arabic-text text-lg text-gold-antique mb-1">
+                            {s.arabicTitle}
+                          </p>
+                        )}
+                        <h2 className="heading-serif text-2xl sm:text-3xl font-semibold text-emerald-deep leading-tight group-hover:text-emerald-rich transition">
+                          {s.title}
+                        </h2>
+                        {s.description && (
+                          <p className="mt-3 text-ink/70 leading-relaxed">
+                            {s.description}
+                          </p>
+                        )}
+                      </Link>
+                      <div className="mt-5 flex flex-wrap items-center gap-3">
+                        {s.meetingLink && (
+                          <a
+                            href={s.meetingLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="btn-primary inline-flex !py-2 !px-4 text-sm"
+                          >
+                            <Video className="h-4 w-4" />
+                            Join the session
+                          </a>
+                        )}
+                        <Link
+                          href={`/sessions/${s.slug}`}
+                          className="inline-flex items-center gap-1.5 text-sm font-medium text-emerald-deep group-hover:gap-2 transition-all"
+                        >
+                          Read the session
+                          <ArrowRight className="h-4 w-4" />
+                        </Link>
+                      </div>
                     </div>
-                    {s.arabicTitle && (
-                      <p className="arabic-text text-lg text-gold-antique mb-1">
-                        {s.arabicTitle}
-                      </p>
-                    )}
-                    <h2 className="heading-serif text-2xl sm:text-3xl font-semibold text-emerald-deep leading-tight group-hover:text-emerald-rich transition">
-                      {s.title}
-                    </h2>
-                    {s.description && (
-                      <p className="mt-3 text-ink/70 leading-relaxed">
-                        {s.description}
-                      </p>
-                    )}
-                    <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-emerald-deep group-hover:gap-2 transition-all">
-                      Read the session
-                      <ArrowRight className="h-4 w-4" />
-                    </span>
-                  </Link>
-                </li>
-              ))}
+                  </li>
+                );
+              })}
             </ul>
           )}
         </div>

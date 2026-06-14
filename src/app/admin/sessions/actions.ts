@@ -24,6 +24,9 @@ export async function createSessionAction(formData: FormData): Promise<void> {
   const arabicTitle = String(formData.get("arabicTitle") ?? "").trim();
   const date = String(formData.get("date") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
+  const startTime = String(formData.get("startTime") ?? "").trim();
+  const endTime = String(formData.get("endTime") ?? "").trim();
+  const meetingLink = String(formData.get("meetingLink") ?? "").trim();
 
   if (!title || !date) redirect("/admin/sessions/new");
 
@@ -32,6 +35,9 @@ export async function createSessionAction(formData: FormData): Promise<void> {
     arabicTitle: arabicTitle || undefined,
     date,
     description: description || undefined,
+    startTime: startTime || undefined,
+    endTime: endTime || undefined,
+    meetingLink: meetingLink || undefined,
   });
 
   revalidatePath("/admin/sessions");
@@ -50,6 +56,9 @@ export async function updateSessionAction(
   const arabicTitle = String(formData.get("arabicTitle") ?? "").trim();
   const date = String(formData.get("date") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
+  const startTime = String(formData.get("startTime") ?? "").trim();
+  const endTime = String(formData.get("endTime") ?? "").trim();
+  const meetingLink = String(formData.get("meetingLink") ?? "").trim();
 
   if (!title || !date) redirect(`/admin/sessions/${sessionId}`);
 
@@ -58,6 +67,9 @@ export async function updateSessionAction(
     arabicTitle: arabicTitle || undefined,
     date,
     description: description || undefined,
+    startTime: startTime || undefined,
+    endTime: endTime || undefined,
+    meetingLink: meetingLink || undefined,
   });
 
   if (!result) redirect("/admin/sessions");
