@@ -39,11 +39,14 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# local data (applications, uploads, content overrides)
+# local data (applications, uploads, content overrides, fallback stores)
 /data/submissions/*.json
 !/data/submissions/.gitkeep
 /data/content.json
 /data/uploads
+/data/sessions
+/data/feedback
+/data/activity-submissions
 
 # editor / agent tooling
 /.claude

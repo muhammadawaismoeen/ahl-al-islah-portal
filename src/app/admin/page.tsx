@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { LogOut, Mail, Phone, Download, Pencil, MessageCircle, MessageSquareHeart, CalendarDays } from "lucide-react";
+import { LogOut, Mail, Phone, Download, Pencil, MessageCircle, MessageSquareHeart, CalendarDays, ClipboardList } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { isAuthenticated, login, logout } from "./actions";
 import { listSubmissions } from "@/lib/storage";
 import { listMessages } from "@/lib/message-store";
 import { listFeedback } from "@/lib/feedback-store";
+import { listSubmissions as listActivitySubmissions } from "@/lib/activity-submissions-store";
 import { getPositionBySlug } from "@/lib/positions";
 import { getQuestionSet } from "@/lib/questions";
 import { LoginForm } from "./LoginForm";
@@ -53,13 +54,15 @@ export default async function AdminPage({
     );
   }
 
-  const [submissions, messages, feedback] = await Promise.all([
+  const [submissions, messages, feedback, activitySubmissions] = await Promise.all([
     listSubmissions(),
     listMessages(),
     listFeedback(),
+    listActivitySubmissions(),
   ]);
   const unreadMessages = messages.filter((m) => m.status === "unread").length;
   const unreadFeedback = feedback.filter((f) => f.status === "unread").length;
+  const unreadActivities = activitySubmissions.filter((a) => a.status === "unread").length;
   const { id: selectedId, wing: wingFilter, position: positionFilter } = await searchParams;
 
   // Apply filters
@@ -124,6 +127,18 @@ export default async function AdminPage({
                 {unreadFeedback > 0 && (
                   <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-gold-antique text-white text-[9px] font-bold flex items-center justify-center">
                     {unreadFeedback}
+                  </span>
+                )}
+              </Link>
+              <Link
+                href="/admin/activity-submissions"
+                className="btn-ghost !py-2 !px-4 text-xs relative"
+              >
+                <ClipboardList className="h-3.5 w-3.5" />
+                Audits
+                {unreadActivities > 0 && (
+                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-gold-antique text-white text-[9px] font-bold flex items-center justify-center">
+                    {unreadActivities}
                   </span>
                 )}
               </Link>

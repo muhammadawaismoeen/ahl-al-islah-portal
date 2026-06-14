@@ -1,0 +1,411 @@
+"use client";
+
+import { useState, useRef } from "react";
+import {
+  Send,
+  Loader2,
+  CheckCircle,
+  Shield,
+  Printer,
+  RefreshCw,
+} from "lucide-react";
+import { submitIdentityPillars } from "./actions";
+import { PILLAR_TYPE_LABELS } from "@/lib/activity-submissions-types";
+import type {
+  IdentityPillar,
+  PillarType,
+} from "@/lib/activity-submissions-types";
+
+interface Props {
+  sessionId?: string;
+  sessionTitle?: string;
+  sessionDate?: string;
+}
+
+interface CompletedRecord {
+  name?: string;
+  pillar1: IdentityPillar;
+  pillar2: IdentityPillar;
+  pillar3: IdentityPillar;
+  reflection?: string;
+  sessionTitle?: string;
+  sessionDate?: string;
+  submittedAt: string;
+}
+
+const PILLARS: Array<{ index: 1 | 2 | 3; label: string }> = [
+  { index: 1, label: "Pillar One" },
+  { index: 2, label: "Pillar Two" },
+  { index: 3, label: "Pillar Three" },
+];
+
+export function IdentityPillarsForm({
+  sessionId,
+  sessionTitle,
+  sessionDate,
+}: Props) {
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [completed, setCompleted] = useState<CompletedRecord | null>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setPending(true);
+    setError(null);
+
+    const formEl = e.currentTarget;
+    const data = new FormData(formEl);
+
+    const snapshot: CompletedRecord = {
+      name: (data.get("name") as string | null)?.trim() || undefined,
+      pillar1: {
+        text: ((data.get("pillar1_text") as string | null) ?? "").trim(),
+        type: ((data.get("pillar1_type") as string | null) ?? "") as PillarType,
+      },
+      pillar2: {
+        text: ((data.get("pillar2_text") as string | null) ?? "").trim(),
+        type: ((data.get("pillar2_type") as string | null) ?? "") as PillarType,
+      },
+      pillar3: {
+        text: ((data.get("pillar3_text") as string | null) ?? "").trim(),
+        type: ((data.get("pillar3_type") as string | null) ?? "") as PillarType,
+      },
+      reflection:
+        ((data.get("reflection") as string | null) ?? "").trim() || undefined,
+      sessionTitle,
+      sessionDate,
+      submittedAt: new Date().toISOString(),
+    };
+
+    const res = await submitIdentityPillars(data);
+    setPending(false);
+
+    if (res.ok) {
+      setCompleted(snapshot);
+      formEl.reset();
+    } else {
+      setError(res.error ?? "Could not save your submission.");
+    }
+  }
+
+  if (completed) {
+    return <CompletedView record={completed} onReset={() => setCompleted(null)} />;
+  }
+
+  return (
+    <form
+      ref={formRef}
+      onSubmit={handleSubmit}
+      className="ornate-card p-6 sm:p-8 space-y-8"
+    >
+      {sessionId && <input type="hidden" name="sessionId" value={sessionId} />}
+
+      {/* Anonymity banner */}
+      <div className="flex items-start gap-3 p-4 bg-emerald-deep/5 rounded-xl border border-emerald-deep/15">
+        <Shield className="h-5 w-5 text-emerald-deep shrink-0 mt-0.5" />
+        <div className="text-xs text-ink/75 leading-relaxed">
+          <p className="font-semibold text-emerald-deep">
+            This audit is anonymous.
+          </p>
+          <p className="mt-0.5">
+            Your name is optional — leave it blank to stay fully anonymous.
+            After submitting you can print or save your own pillars as a PDF.
+          </p>
+        </div>
+      </div>
+
+      {/* Optional name */}
+      <section className="space-y-3">
+        <label className="label-field">
+          Your name{" "}
+          <span className="text-xs font-normal text-ink/40">(optional)</span>
+        </label>
+        <input
+          type="text"
+          name="name"
+          maxLength={100}
+          className="input-field"
+          placeholder="Leave blank to stay anonymous"
+        />
+      </section>
+
+      {/* Pillars */}
+      <section className="space-y-6 pt-2 border-t border-cream-muted">
+        <div>
+          <h3 className="heading-serif text-lg font-semibold text-emerald-deep">
+            Your Three Pillars
+          </h3>
+          <p className="text-xs text-ink/55 mt-0.5 leading-relaxed">
+            Not what you wish they were — what they actually are. The three
+            non-negotiables your decisions currently rest on. Next to each, mark
+            <strong className="text-emerald-deep"> A</strong> if it would hold
+            even if everyone around you withdrew their approval, or{" "}
+            <strong className="text-gold-antique">B</strong> if it depends on
+            that approval to stay standing.
+          </p>
+        </div>
+
+        {PILLARS.map((p) => (
+          <PillarRow key={p.index} index={p.index} label={p.label} />
+        ))}
+      </section>
+
+      {/* Reflection */}
+      <section className="space-y-3 pt-2 border-t border-cream-muted">
+        <div>
+          <h3 className="heading-serif text-lg font-semibold text-emerald-deep">
+            One Honest Sentence{" "}
+            <span className="text-xs font-normal text-ink/40">(optional)</span>
+          </h3>
+          <p className="text-xs text-ink/55 mt-0.5">
+            What did this audit show you about yourself?
+          </p>
+        </div>
+        <textarea
+          name="reflection"
+          rows={4}
+          maxLength={2000}
+          className="input-field resize-y"
+          placeholder="A single honest sentence. No one will read it but you and the Speaker."
+        />
+      </section>
+
+      {error && (
+        <p className="text-sm text-red-500 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+          {error}
+        </p>
+      )}
+
+      <button type="submit" disabled={pending} className="btn-primary w-full">
+        {pending ? (
+          <>
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Saving…
+          </>
+        ) : (
+          <>
+            <Send className="h-4 w-4" />
+            Submit Audit
+          </>
+        )}
+      </button>
+
+      <p className="text-center text-xs text-ink/40">
+        Your audit goes privately to the Speaker. You will see a printable copy
+        on the next screen.
+      </p>
+    </form>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  PillarRow                                                          */
+/* ------------------------------------------------------------------ */
+
+function PillarRow({
+  index,
+  label,
+}: {
+  index: 1 | 2 | 3;
+  label: string;
+}) {
+  return (
+    <div className="space-y-2">
+      <label className="label-field">{label} *</label>
+      <textarea
+        name={`pillar${index}_text`}
+        required
+        rows={2}
+        maxLength={500}
+        className="input-field resize-y"
+        placeholder="A non-negotiable you currently build your decisions on."
+      />
+      <div className="flex flex-wrap gap-2 pt-1">
+        <PillarTypeChoice index={index} value="A" />
+        <PillarTypeChoice index={index} value="B" />
+      </div>
+    </div>
+  );
+}
+
+function PillarTypeChoice({
+  index,
+  value,
+}: {
+  index: 1 | 2 | 3;
+  value: "A" | "B";
+}) {
+  return (
+    <label
+      className={`flex items-start gap-2 px-4 py-2.5 rounded-xl border cursor-pointer transition flex-1 min-w-[14rem] ${
+        value === "A"
+          ? "border-cream-muted bg-cream-warm/40 hover:bg-emerald-deep/5 hover:border-emerald-deep/30 has-[:checked]:bg-emerald-deep/10 has-[:checked]:border-emerald-deep"
+          : "border-cream-muted bg-cream-warm/40 hover:bg-gold-antique/5 hover:border-gold-antique/30 has-[:checked]:bg-gold-antique/10 has-[:checked]:border-gold-antique"
+      }`}
+    >
+      <input
+        type="radio"
+        name={`pillar${index}_type`}
+        value={value}
+        required
+        className="h-4 w-4 mt-0.5 accent-emerald-deep shrink-0"
+      />
+      <div className="text-xs leading-snug">
+        <div className="font-semibold text-emerald-deep">
+          {value} — {PILLAR_TYPE_LABELS[value]}
+        </div>
+        <div className="text-ink/55 mt-0.5">
+          {value === "A"
+            ? "Holds even if everyone around me disagrees."
+            : "Depends on approval from people around me."}
+        </div>
+      </div>
+    </label>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  CompletedView — shown after submit, printable                      */
+/* ------------------------------------------------------------------ */
+
+function CompletedView({
+  record,
+  onReset,
+}: {
+  record: CompletedRecord;
+  onReset: () => void;
+}) {
+  const formattedDate = new Date(record.submittedAt).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
+  function handlePrint() {
+    window.print();
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Confirmation — hidden in print */}
+      <div className="ornate-card p-6 text-center space-y-4 no-print">
+        <CheckCircle className="h-12 w-12 text-emerald-deep mx-auto" />
+        <div>
+          <h2 className="heading-serif text-2xl font-semibold text-emerald-deep">
+            Audit Saved
+          </h2>
+          <p className="mt-2 text-sm text-ink/70 max-w-md mx-auto">
+            JazakAllāhu khayran. Your pillars have been recorded privately for
+            the Speaker. Below is your own copy — print it, save it as a PDF, or
+            keep it as a screenshot for yourself.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2 justify-center">
+          <button
+            type="button"
+            onClick={handlePrint}
+            className="btn-primary inline-flex"
+          >
+            <Printer className="h-4 w-4" />
+            Print / Save as PDF
+          </button>
+          <button
+            type="button"
+            onClick={onReset}
+            className="btn-ghost inline-flex"
+          >
+            <RefreshCw className="h-4 w-4" />
+            Submit another
+          </button>
+        </div>
+      </div>
+
+      {/* Printable card */}
+      <div
+        id="printable-audit"
+        className="ornate-card p-6 sm:p-10 space-y-6 print-card"
+      >
+        <header className="text-center pb-5 border-b border-cream-muted">
+          <span className="arabic-text block text-gold-antique text-lg mb-1">
+            ركائز الهوية
+          </span>
+          <h2 className="heading-serif text-2xl sm:text-3xl font-semibold text-emerald-deep">
+            Identity Pillars Audit
+          </h2>
+          {record.sessionTitle && (
+            <p className="mt-2 text-sm text-ink/65">
+              {record.sessionTitle}
+              {record.sessionDate ? ` · ${record.sessionDate}` : ""}
+            </p>
+          )}
+          <p className="mt-2 text-xs text-ink/45">
+            {record.name ? `By ${record.name} · ` : ""}
+            Completed {formattedDate}
+          </p>
+        </header>
+
+        <div className="space-y-5">
+          <PrintablePillar number={1} pillar={record.pillar1} />
+          <PrintablePillar number={2} pillar={record.pillar2} />
+          <PrintablePillar number={3} pillar={record.pillar3} />
+        </div>
+
+        {record.reflection && (
+          <div className="pt-5 border-t border-cream-muted">
+            <h3 className="text-xs uppercase tracking-wider text-gold-antique font-semibold mb-2">
+              One Honest Sentence
+            </h3>
+            <p className="text-sm text-ink/85 leading-relaxed whitespace-pre-wrap bg-cream-warm rounded-xl p-4 border border-cream-muted print:bg-transparent print:border-ink/15">
+              {record.reflection}
+            </p>
+          </div>
+        )}
+
+        <footer className="pt-5 border-t border-cream-muted text-center">
+          <p className="arabic-text text-gold-antique text-lg">
+            لَآ إِلَٰهَ إِلَّا ٱللَّٰهُ
+          </p>
+          <p className="text-xs text-ink/45 mt-1 italic">
+            Ibrahim عليه السلام held one pillar. Every test was the same
+            question: will you hold this pillar even now?
+          </p>
+        </footer>
+      </div>
+    </div>
+  );
+}
+
+function PrintablePillar({
+  number,
+  pillar,
+}: {
+  number: number;
+  pillar: IdentityPillar;
+}) {
+  const typeLabel = pillar.type ? PILLAR_TYPE_LABELS[pillar.type] : "";
+  const isA = pillar.type === "A";
+  return (
+    <div className="rounded-xl p-4 border border-cream-muted bg-cream-warm/40 print:bg-transparent print:border-ink/15">
+      <div className="flex items-baseline justify-between gap-3 mb-2">
+        <span className="text-[10px] uppercase tracking-widest text-gold-antique font-medium">
+          Pillar {number}
+        </span>
+        {pillar.type && (
+          <span
+            className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+              isA
+                ? "bg-emerald-deep text-white"
+                : "bg-gold-antique/15 text-gold-antique"
+            } print:bg-transparent print:border print:border-ink/30 print:text-ink`}
+          >
+            {pillar.type} · {typeLabel}
+          </span>
+        )}
+      </div>
+      <p className="text-sm sm:text-base text-ink leading-relaxed whitespace-pre-wrap">
+        {pillar.text}
+      </p>
+    </div>
+  );
+}

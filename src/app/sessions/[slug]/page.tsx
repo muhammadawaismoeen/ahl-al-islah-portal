@@ -7,6 +7,7 @@ import { Footer } from "@/components/Footer";
 import { getSessionBySlug, sortActivities } from "@/lib/sessions-store";
 import { getContent } from "@/lib/content-store";
 import { ActivityBody } from "@/components/ActivityBody";
+import { ClassActivityButton } from "./ClassActivityButton";
 import { formatDate, formatSessionTime } from "@/lib/utils";
 
 interface Props {
@@ -78,21 +79,33 @@ export default async function SessionDetailPage({ params }: Props) {
                 {session.description}
               </p>
             )}
-            {session.meetingLink && (
-              <div className="mt-6">
-                <a
-                  href={session.meetingLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn-primary inline-flex"
-                >
-                  <Video className="h-4 w-4" />
-                  Join the session
-                </a>
-                <p className="mt-2 text-xs text-ink/50">
-                  Opens the live meeting in a new tab.
-                </p>
+            {(session.meetingLink || session.startTime) && (
+              <div className="mt-6 flex flex-wrap gap-3">
+                {session.meetingLink && (
+                  <a
+                    href={session.meetingLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-primary inline-flex"
+                  >
+                    <Video className="h-4 w-4" />
+                    Join the session
+                  </a>
+                )}
+                {session.startTime && (
+                  <ClassActivityButton
+                    sessionId={session.id}
+                    date={session.date}
+                    startTime={session.startTime}
+                  />
+                )}
               </div>
+            )}
+            {session.meetingLink && (
+              <p className="mt-2 text-xs text-ink/50">
+                Join opens the meeting in a new tab. The class activity unlocks
+                40 minutes into the session.
+              </p>
             )}
           </header>
 

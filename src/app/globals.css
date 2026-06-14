@@ -207,3 +207,24 @@
     text-wrap: pretty;
   }
 }
+
+/* Print rules for activity audit PDFs */
+@media print {
+  body {
+    background: white !important;
+    background-image: none !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-card {
+    box-shadow: none !important;
+    border: 1px solid rgba(0, 0, 0, 0.15) !important;
+    background: white !important;
+    page-break-inside: avoid;
+  }
+  main {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+}
