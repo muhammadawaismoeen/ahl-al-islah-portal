@@ -11,6 +11,7 @@ import {
   sortActivities,
 } from "@/lib/sessions-store";
 import { updateSessionAction } from "../actions";
+import { SessionForm } from "../SessionForm";
 import {
   DeleteSessionButton,
   DeleteActivityButton,
@@ -57,6 +58,7 @@ export default async function EditSessionPage({ params }: Props) {
 
   const activities = sortActivities(session.activities);
   const updateBound = updateSessionAction.bind(null, session.id);
+  const hasBlobUpload = !!process.env.BLOB_READ_WRITE_TOKEN;
 
   return (
     <>
@@ -96,95 +98,23 @@ export default async function EditSessionPage({ params }: Props) {
                 {session.slug}
               </code>
             </p>
-            <form
+            <SessionForm
+              mode="edit"
               action={updateBound}
-              encType="multipart/form-data"
-              className="space-y-5"
-            >
-              <Field
-                label="Session title *"
-                name="title"
-                defaultValue={session.title}
-                required
-              />
-              <Field
-                label="Arabic title"
-                name="arabicTitle"
-                defaultValue={session.arabicTitle ?? ""}
-                dir="rtl"
-              />
-              <Field
-                label="Date *"
-                name="date"
-                type="date"
-                defaultValue={session.date}
-                required
-              />
-              <div className="grid grid-cols-2 gap-4">
-                <Field
-                  label="Start time (PKT)"
-                  name="startTime"
-                  type="time"
-                  defaultValue={session.startTime ?? ""}
-                />
-                <Field
-                  label="End time (PKT)"
-                  name="endTime"
-                  type="time"
-                  defaultValue={session.endTime ?? ""}
-                />
-              </div>
-              <Field
-                label="Meeting link"
-                name="meetingLink"
-                type="url"
-                placeholder="https://meet.google.com/… or https://zoom.us/j/…"
-                defaultValue={session.meetingLink ?? ""}
-              />
-              <FieldArea
-                label="One-line description"
-                name="description"
-                rows={3}
-                defaultValue={session.description ?? ""}
-              />
-              <div>
-                <span className="text-xs uppercase tracking-wider text-ink/55 font-medium block mb-1.5">
-                  Poster image
-                </span>
-                {session.posterUrl && (
-                  <div className="mb-3 flex items-start gap-4 rounded-lg border border-cream-muted bg-cream-warm/40 p-3">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={session.posterUrl}
-                      alt="Current poster"
-                      className="h-28 w-auto rounded-md border border-cream-muted object-cover"
-                    />
-                    <label className="text-xs text-ink/70 inline-flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        name="removePoster"
-                        className="h-3.5 w-3.5"
-                      />
-                      Remove the current poster
-                    </label>
-                  </div>
-                )}
-                <input
-                  type="file"
-                  name="poster"
-                  accept="image/png,image/jpeg,image/webp,image/gif"
-                  className="block w-full text-sm text-ink file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-emerald-deep file:text-white file:font-medium hover:file:bg-emerald-rich file:cursor-pointer cursor-pointer"
-                />
-                <span className="text-[11px] text-ink/45 mt-1.5 block">
-                  Upload to replace the current poster. JPG, PNG, WebP, or GIF — up to 16 MB.
-                </span>
-              </div>
-              <div className="pt-3 flex justify-end">
-                <button type="submit" className="btn-primary">
-                  Save changes
-                </button>
-              </div>
-            </form>
+              defaults={{
+                title: session.title,
+                arabicTitle: session.arabicTitle ?? "",
+                date: session.date,
+                startTime: session.startTime ?? "",
+                endTime: session.endTime ?? "",
+                meetingLink: session.meetingLink ?? "",
+                description: session.description ?? "",
+              }}
+              currentPosterUrl={session.posterUrl}
+              hasBlobUpload={hasBlobUpload}
+              cancelHref="/admin/sessions"
+              submitLabel="Save changes"
+            />
           </section>
 
           {/* Activities list */}
@@ -263,66 +193,3 @@ export default async function EditSessionPage({ params }: Props) {
   );
 }
 
-function Field({
-  label,
-  name,
-  type = "text",
-  placeholder,
-  required,
-  dir,
-  defaultValue,
-}: {
-  label: string;
-  name: string;
-  type?: string;
-  placeholder?: string;
-  required?: boolean;
-  dir?: "rtl" | "ltr";
-  defaultValue?: string;
-}) {
-  return (
-    <label className="block">
-      <span className="text-xs uppercase tracking-wider text-ink/55 font-medium block mb-1.5">
-        {label}
-      </span>
-      <input
-        type={type}
-        name={name}
-        placeholder={placeholder}
-        required={required}
-        dir={dir}
-        defaultValue={defaultValue}
-        className="w-full px-3 py-2.5 rounded-lg border border-cream-muted bg-white text-sm text-ink focus:outline-none focus:ring-2 focus:ring-emerald-deep/30 focus:border-emerald-deep transition"
-      />
-    </label>
-  );
-}
-
-function FieldArea({
-  label,
-  name,
-  placeholder,
-  rows = 4,
-  defaultValue,
-}: {
-  label: string;
-  name: string;
-  placeholder?: string;
-  rows?: number;
-  defaultValue?: string;
-}) {
-  return (
-    <label className="block">
-      <span className="text-xs uppercase tracking-wider text-ink/55 font-medium block mb-1.5">
-        {label}
-      </span>
-      <textarea
-        name={name}
-        placeholder={placeholder}
-        rows={rows}
-        defaultValue={defaultValue}
-        className="w-full px-3 py-2.5 rounded-lg border border-cream-muted bg-white text-sm text-ink focus:outline-none focus:ring-2 focus:ring-emerald-deep/30 focus:border-emerald-deep transition resize-y"
-      />
-    </label>
-  );
-}

@@ -35,8 +35,10 @@ export async function createSessionAction(formData: FormData): Promise<void> {
 
   if (!title || !date) redirect("/admin/sessions/new");
 
+  const posterUrlField = String(formData.get("posterUrl") ?? "").trim();
   const posterFile = formData.get("poster") as File | null;
-  const posterUrl = await uploadSessionPoster(posterFile);
+  const posterUrl =
+    posterUrlField || (await uploadSessionPoster(posterFile)) || undefined;
 
   const record = await createSession({
     title,
@@ -52,6 +54,10 @@ export async function createSessionAction(formData: FormData): Promise<void> {
   revalidatePath("/admin/sessions");
   revalidatePath("/sessions");
   redirect(`/admin/sessions/${record.id}`);
+}
+
+function asString(v: FormDataEntryValue | null): string {
+  return (typeof v === "string" ? v : "").trim();
 }
 
 export async function updateSessionAction(
@@ -72,8 +78,10 @@ export async function updateSessionAction(
   if (!title || !date) redirect(`/admin/sessions/${sessionId}`);
 
   const removePoster = formData.get("removePoster") === "on";
+  const posterUrlField = asString(formData.get("posterUrl"));
   const posterFile = formData.get("poster") as File | null;
-  const newPosterUrl = await uploadSessionPoster(posterFile);
+  const newPosterUrl =
+    posterUrlField || (await uploadSessionPoster(posterFile));
 
   const existing = await getSession(sessionId);
   let posterUrl = existing?.posterUrl;
