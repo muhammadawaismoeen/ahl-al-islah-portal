@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, CalendarDays, Clock, Timer, Video } from "lucide-react";
+import { ArrowLeft, CalendarDays, Clock, Timer } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { getSessionBySlug, sortActivities } from "@/lib/sessions-store";
 import { getContent } from "@/lib/content-store";
 import { ActivityBody } from "@/components/ActivityBody";
 import { ClassActivityButton } from "./ClassActivityButton";
+import { JoinSessionButton } from "../JoinSessionButton";
 import { formatDate, formatSessionTime } from "@/lib/utils";
 
 interface Props {
@@ -82,15 +83,12 @@ export default async function SessionDetailPage({ params }: Props) {
             {(session.meetingLink || session.startTime) && (
               <div className="mt-6 flex flex-wrap gap-3">
                 {session.meetingLink && (
-                  <a
-                    href={session.meetingLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn-primary inline-flex"
-                  >
-                    <Video className="h-4 w-4" />
-                    Join the session
-                  </a>
+                  <JoinSessionButton
+                    meetingLink={session.meetingLink}
+                    date={session.date}
+                    startTime={session.startTime}
+                    endTime={session.endTime}
+                  />
                 )}
                 {session.startTime && (
                   <ClassActivityButton
