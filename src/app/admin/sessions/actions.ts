@@ -7,10 +7,15 @@ import {
   createSession,
   updateSession,
   deleteSession,
+  getSession,
   addActivity,
   updateActivity,
   removeActivity,
 } from "@/lib/sessions-store";
+import {
+  uploadSessionPoster,
+  deleteSessionPoster,
+} from "@/lib/poster-upload";
 
 /* ------------------------------------------------------------------ */
 /*  Session CRUD                                                       */
@@ -30,6 +35,9 @@ export async function createSessionAction(formData: FormData): Promise<void> {
 
   if (!title || !date) redirect("/admin/sessions/new");
 
+  const posterFile = formData.get("poster") as File | null;
+  const posterUrl = await uploadSessionPoster(posterFile);
+
   const record = await createSession({
     title,
     arabicTitle: arabicTitle || undefined,
@@ -38,6 +46,7 @@ export async function createSessionAction(formData: FormData): Promise<void> {
     startTime: startTime || undefined,
     endTime: endTime || undefined,
     meetingLink: meetingLink || undefined,
+    posterUrl: posterUrl ?? undefined,
   });
 
   revalidatePath("/admin/sessions");
@@ -62,6 +71,20 @@ export async function updateSessionAction(
 
   if (!title || !date) redirect(`/admin/sessions/${sessionId}`);
 
+  const removePoster = formData.get("removePoster") === "on";
+  const posterFile = formData.get("poster") as File | null;
+  const newPosterUrl = await uploadSessionPoster(posterFile);
+
+  const existing = await getSession(sessionId);
+  let posterUrl = existing?.posterUrl;
+  if (newPosterUrl) {
+    await deleteSessionPoster(posterUrl);
+    posterUrl = newPosterUrl;
+  } else if (removePoster) {
+    await deleteSessionPoster(posterUrl);
+    posterUrl = undefined;
+  }
+
   const result = await updateSession(sessionId, {
     title,
     arabicTitle: arabicTitle || undefined,
@@ -70,6 +93,7 @@ export async function updateSessionAction(
     startTime: startTime || undefined,
     endTime: endTime || undefined,
     meetingLink: meetingLink || undefined,
+    posterUrl,
   });
 
   if (!result) redirect("/admin/sessions");

@@ -189,6 +189,7 @@ export async function createSession(
     startTime: input.startTime,
     endTime: input.endTime,
     meetingLink: input.meetingLink,
+    posterUrl: input.posterUrl,
     activities: [],
     createdAt: now,
     updatedAt: now,
@@ -213,6 +214,7 @@ export async function updateSession(
       | "startTime"
       | "endTime"
       | "meetingLink"
+      | "posterUrl"
     >
   >
 ): Promise<Session | null> {

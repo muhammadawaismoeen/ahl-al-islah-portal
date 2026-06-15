@@ -96,7 +96,11 @@ export default async function EditSessionPage({ params }: Props) {
                 {session.slug}
               </code>
             </p>
-            <form action={updateBound} className="space-y-5">
+            <form
+              action={updateBound}
+              encType="multipart/form-data"
+              className="space-y-5"
+            >
               <Field
                 label="Session title *"
                 name="title"
@@ -143,6 +147,38 @@ export default async function EditSessionPage({ params }: Props) {
                 rows={3}
                 defaultValue={session.description ?? ""}
               />
+              <div>
+                <span className="text-xs uppercase tracking-wider text-ink/55 font-medium block mb-1.5">
+                  Poster image
+                </span>
+                {session.posterUrl && (
+                  <div className="mb-3 flex items-start gap-4 rounded-lg border border-cream-muted bg-cream-warm/40 p-3">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={session.posterUrl}
+                      alt="Current poster"
+                      className="h-28 w-auto rounded-md border border-cream-muted object-cover"
+                    />
+                    <label className="text-xs text-ink/70 inline-flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        name="removePoster"
+                        className="h-3.5 w-3.5"
+                      />
+                      Remove the current poster
+                    </label>
+                  </div>
+                )}
+                <input
+                  type="file"
+                  name="poster"
+                  accept="image/png,image/jpeg,image/webp,image/gif"
+                  className="block w-full text-sm text-ink file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-emerald-deep file:text-white file:font-medium hover:file:bg-emerald-rich file:cursor-pointer cursor-pointer"
+                />
+                <span className="text-[11px] text-ink/45 mt-1.5 block">
+                  Upload to replace the current poster. JPG, PNG, WebP, or GIF — up to 8 MB.
+                </span>
+              </div>
               <div className="pt-3 flex justify-end">
                 <button type="submit" className="btn-primary">
                   Save changes

@@ -52,6 +52,16 @@ export default async function SessionDetailPage({ params }: Props) {
 
           {/* Session header */}
           <header className="mb-12">
+            {session.posterUrl && (
+              <div className="mb-6 flex justify-center">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={session.posterUrl}
+                  alt={`Poster — ${session.title}`}
+                  className="max-h-[28rem] w-auto rounded-xl border border-cream-muted shadow-md"
+                />
+              </div>
+            )}
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
               <span className="text-xs uppercase tracking-widest text-gold-antique inline-flex items-center gap-1.5">
                 <CalendarDays className="h-3.5 w-3.5" />

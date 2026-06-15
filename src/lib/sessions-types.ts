@@ -33,6 +33,10 @@ export interface Session {
   startTime?: string;
   endTime?: string;
   meetingLink?: string;
+  // Optional flyer / poster image — shown above the title on the public detail
+  // page and as a thumbnail on the list. URL points to Vercel Blob in prod
+  // or /uploads/... served from public/ in dev.
+  posterUrl?: string;
   activities: Activity[];
   createdAt: string;
   updatedAt: string;

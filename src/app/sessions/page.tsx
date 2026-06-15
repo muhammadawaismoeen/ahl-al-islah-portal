@@ -52,7 +52,22 @@ export default async function SessionsPage() {
                 return (
                   <li key={s.id}>
                     <div className="ornate-card p-6 sm:p-8 group">
-                      <Link href={`/sessions/${s.slug}`} className="block">
+                      <Link
+                        href={`/sessions/${s.slug}`}
+                        className="block sm:flex sm:items-start sm:gap-6"
+                      >
+                        {s.posterUrl && (
+                          <div className="mb-4 sm:mb-0 sm:shrink-0">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={s.posterUrl}
+                              alt={`Poster — ${s.title}`}
+                              className="w-full sm:w-32 md:w-36 aspect-[3/4] object-cover rounded-lg border border-cream-muted shadow-sm"
+                              loading="lazy"
+                            />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
                         <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 mb-2">
                           <span className="text-xs uppercase tracking-widest text-gold-antique inline-flex items-center gap-1.5">
                             <CalendarDays className="h-3.5 w-3.5" />
@@ -83,6 +98,7 @@ export default async function SessionsPage() {
                             {s.description}
                           </p>
                         )}
+                        </div>
                       </Link>
                       {(s.meetingLink || s.startTime) && (
                         <div className="mt-5 flex flex-wrap gap-2">

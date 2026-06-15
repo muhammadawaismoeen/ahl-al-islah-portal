@@ -48,6 +48,9 @@ next-env.d.ts
 /data/feedback
 /data/activity-submissions
 
+# uploaded poster images (dev fallback when no Vercel Blob token)
+/public/uploads
+
 # editor / agent tooling
 /.claude
 /.vscode

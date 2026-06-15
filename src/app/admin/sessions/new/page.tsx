@@ -58,6 +58,7 @@ export default async function NewSessionPage() {
 
           <form
             action={createSessionAction}
+            encType="multipart/form-data"
             className="ornate-card p-6 sm:p-8 space-y-5"
           >
             <Field
@@ -105,6 +106,20 @@ export default async function NewSessionPage() {
               placeholder="What this session was about — visible on the public Sessions page."
               rows={3}
             />
+            <label className="block">
+              <span className="text-xs uppercase tracking-wider text-ink/55 font-medium block mb-1.5">
+                Poster image (optional)
+              </span>
+              <input
+                type="file"
+                name="poster"
+                accept="image/png,image/jpeg,image/webp,image/gif"
+                className="block w-full text-sm text-ink file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-emerald-deep file:text-white file:font-medium hover:file:bg-emerald-rich file:cursor-pointer cursor-pointer"
+              />
+              <span className="text-[11px] text-ink/45 mt-1.5 block">
+                JPG, PNG, WebP, or GIF — up to 8 MB.
+              </span>
+            </label>
             <div className="pt-4 flex items-center justify-between">
               <Link href="/admin/sessions" className="btn-ghost text-sm">
                 Cancel
