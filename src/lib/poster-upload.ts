@@ -3,7 +3,7 @@ import path from "path";
 import crypto from "crypto";
 
 const ALLOWED_EXT = new Set(["jpg", "jpeg", "png", "webp", "gif"]);
-const MAX_BYTES = 8 * 1024 * 1024; // 8 MB
+const MAX_BYTES = 16 * 1024 * 1024; // 16 MB
 
 function isBlobStore(): boolean {
   return !!process.env.BLOB_READ_WRITE_TOKEN;

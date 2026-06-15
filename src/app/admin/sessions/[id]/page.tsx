@@ -176,7 +176,7 @@ export default async function EditSessionPage({ params }: Props) {
                   className="block w-full text-sm text-ink file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-emerald-deep file:text-white file:font-medium hover:file:bg-emerald-rich file:cursor-pointer cursor-pointer"
                 />
                 <span className="text-[11px] text-ink/45 mt-1.5 block">
-                  Upload to replace the current poster. JPG, PNG, WebP, or GIF — up to 8 MB.
+                  Upload to replace the current poster. JPG, PNG, WebP, or GIF — up to 16 MB.
                 </span>
               </div>
               <div className="pt-3 flex justify-end">

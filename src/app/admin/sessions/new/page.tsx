@@ -117,7 +117,7 @@ export default async function NewSessionPage() {
                 className="block w-full text-sm text-ink file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-emerald-deep file:text-white file:font-medium hover:file:bg-emerald-rich file:cursor-pointer cursor-pointer"
               />
               <span className="text-[11px] text-ink/45 mt-1.5 block">
-                JPG, PNG, WebP, or GIF — up to 8 MB.
+                JPG, PNG, WebP, or GIF — up to 16 MB.
               </span>
             </label>
             <div className="pt-4 flex items-center justify-between">
