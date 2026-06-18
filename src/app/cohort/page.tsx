@@ -175,29 +175,31 @@ export default async function CohortPage({
       <main className="pt-28 pb-20">
         <div className="container-prose">
 
-          {/* Tabs — only Hajrah (female head) sees Feedback + Audits */}
-          {role === "female" && (
-            <div className="mb-6 flex flex-wrap gap-2 border-b border-cream-muted">
-              <span className="inline-flex items-center gap-1.5 px-4 py-2 text-sm text-emerald-deep font-medium border-b-2 border-emerald-deep">
-                <Users className="h-3.5 w-3.5" />
-                Applications
-              </span>
-              <Link
-                href="/cohort/feedback"
-                className="inline-flex items-center gap-1.5 px-4 py-2 text-sm text-ink/60 hover:text-emerald-deep transition border-b-2 border-transparent"
-              >
-                <MessageSquareHeart className="h-3.5 w-3.5" />
-                Feedback
-              </Link>
-              <Link
-                href="/cohort/activity-submissions"
-                className="inline-flex items-center gap-1.5 px-4 py-2 text-sm text-ink/60 hover:text-emerald-deep transition border-b-2 border-transparent"
-              >
-                <ClipboardList className="h-3.5 w-3.5" />
-                Identity Pillars Audits
-              </Link>
-            </div>
-          )}
+          {/* Tabs — every role sees Membership applicants; female head also sees Feedback + Audits */}
+          <div className="mb-6 flex flex-wrap gap-2 border-b border-cream-muted">
+            <span className="inline-flex items-center gap-1.5 px-4 py-2 text-sm text-emerald-deep font-medium border-b-2 border-emerald-deep">
+              <Users className="h-3.5 w-3.5" />
+              Membership applicants
+            </span>
+            {role === "female" && (
+              <>
+                <Link
+                  href="/cohort/feedback"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 text-sm text-ink/60 hover:text-emerald-deep transition border-b-2 border-transparent"
+                >
+                  <MessageSquareHeart className="h-3.5 w-3.5" />
+                  Feedback
+                </Link>
+                <Link
+                  href="/cohort/activity-submissions"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 text-sm text-ink/60 hover:text-emerald-deep transition border-b-2 border-transparent"
+                >
+                  <ClipboardList className="h-3.5 w-3.5" />
+                  Identity Pillars Audits
+                </Link>
+              </>
+            )}
+          </div>
 
           {/* Header */}
           <div className="flex flex-wrap items-end justify-between gap-4 mb-8">

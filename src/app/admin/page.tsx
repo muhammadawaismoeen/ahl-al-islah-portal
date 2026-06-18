@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { LogOut, Mail, Phone, Download, Pencil, MessageCircle, MessageSquareHeart, CalendarDays, ClipboardList } from "lucide-react";
+import { LogOut, Mail, Phone, Download, Pencil, MessageCircle, MessageSquareHeart, CalendarDays, ClipboardList, Users } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { isAuthenticated, login, logout } from "./actions";
@@ -14,7 +14,7 @@ import { LoginForm } from "./LoginForm";
 import { formatDate } from "@/lib/utils";
 
 export const metadata: Metadata = {
-  title: "Admin · Applications",
+  title: "Admin · Membership applicants",
   robots: { index: false, follow: false },
 };
 
@@ -98,7 +98,7 @@ export default async function AdminPage({
             <div>
               <span className="arabic-text text-gold-antique">لوحة الإدارة</span>
               <h1 className="heading-serif text-4xl font-semibold text-emerald-deep">
-                Applications
+                Membership applicants
               </h1>
               <p className="text-sm text-ink/60 mt-1">
                 {filtered.length} of {countAll} submission
@@ -106,6 +106,13 @@ export default async function AdminPage({
               </p>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
+              <span
+                className="btn-primary !py-2 !px-4 text-xs cursor-default"
+                aria-current="page"
+              >
+                <Users className="h-3.5 w-3.5" />
+                Membership applicants
+              </span>
               <Link
                 href="/admin/messages"
                 className="btn-ghost !py-2 !px-4 text-xs relative"
@@ -151,7 +158,7 @@ export default async function AdminPage({
               </Link>
               <Link
                 href="/admin/content"
-                className="btn-primary !py-2 !px-4 text-xs"
+                className="btn-ghost !py-2 !px-4 text-xs"
               >
                 <Pencil className="h-3.5 w-3.5" />
                 Content Editor
