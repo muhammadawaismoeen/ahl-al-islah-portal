@@ -211,11 +211,11 @@ export default async function CohortPage({
       <main className="pt-28 pb-20">
         <div className="container-prose">
 
-          {/* Tabs — every role sees Membership applicants; female head also sees Feedback + Audits */}
+          {/* Tabs — every role sees Core Members; female head also sees Feedback + Audits */}
           <div className="mb-6 flex flex-wrap gap-2 border-b border-cream-muted">
             <span className="inline-flex items-center gap-1.5 px-4 py-2 text-sm text-emerald-deep font-medium border-b-2 border-emerald-deep">
               <Users className="h-3.5 w-3.5" />
-              Membership applicants
+              Core Members
             </span>
             {role === "female" && (
               <>

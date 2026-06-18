@@ -83,7 +83,7 @@ export default async function ActivitySubmissionsPage({
                 href="/admin"
                 className="inline-flex items-center gap-1.5 text-xs text-ink/50 hover:text-emerald-deep mb-2 transition"
               >
-                <ArrowLeft className="h-3.5 w-3.5" /> Back to Membership applicants
+                <ArrowLeft className="h-3.5 w-3.5" /> Back to Core Members
               </Link>
               <span className="arabic-text block text-gold-antique">ركائز الهوية</span>
               <h1 className="heading-serif text-4xl font-semibold text-emerald-deep">

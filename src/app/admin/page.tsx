@@ -26,7 +26,7 @@ import { LoginForm } from "./LoginForm";
 import { formatDate } from "@/lib/utils";
 
 export const metadata: Metadata = {
-  title: "Admin · Membership applicants",
+  title: "Admin · Core Members",
   robots: { index: false, follow: false },
 };
 
@@ -98,7 +98,7 @@ export default async function AdminPage({
       ? "general"
       : "all";
 
-  // Membership applicants page covers Core Members + General Members only.
+  // Core Members page covers Core Members + General Members only.
   // Head applications live on the separate admin-only /admin/heads page.
   const membershipSubmissions = submissions.filter(
     (s) => !isHeadSlug(s.positionSlug)
@@ -150,7 +150,7 @@ export default async function AdminPage({
             <div>
               <span className="arabic-text text-gold-antique">لوحة الإدارة</span>
               <h1 className="heading-serif text-4xl font-semibold text-emerald-deep">
-                Membership applicants
+                Core Members
               </h1>
               <p className="text-sm text-ink/60 mt-1">
                 {filtered.length} of {countAllInWing} submission
@@ -164,7 +164,7 @@ export default async function AdminPage({
                 aria-current="page"
               >
                 <Users className="h-3.5 w-3.5" />
-                Membership applicants
+                Core Members
               </span>
               <Link
                 href="/admin/heads"

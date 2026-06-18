@@ -52,7 +52,7 @@ export default async function ContentPage() {
                 className="inline-flex items-center gap-1.5 text-xs text-ink/50 hover:text-emerald-deep transition"
               >
                 <ArrowLeft className="h-3.5 w-3.5" />
-                Membership applicants
+                Core Members
               </Link>
             </div>
             <span className="arabic-text text-gold-antique">تحرير المحتوى</span>

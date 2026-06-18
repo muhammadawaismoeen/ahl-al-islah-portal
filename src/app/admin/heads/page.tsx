@@ -116,7 +116,7 @@ export default async function AdminHeadsPage({
                 href="/admin"
                 className="inline-flex items-center gap-1.5 text-xs text-ink/50 hover:text-emerald-deep mb-2 transition"
               >
-                <ArrowLeft className="h-3.5 w-3.5" /> Membership applicants
+                <ArrowLeft className="h-3.5 w-3.5" /> Core Members
               </Link>
               <span className="arabic-text text-gold-antique">رؤساء</span>
               <h1 className="heading-serif text-4xl font-semibold text-emerald-deep">
@@ -133,7 +133,7 @@ export default async function AdminHeadsPage({
                 className="btn-ghost !py-2 !px-4 text-xs"
               >
                 <Users className="h-3.5 w-3.5" />
-                Membership applicants
+                Core Members
               </Link>
               <span
                 className="btn-primary !py-2 !px-4 text-xs cursor-default"
