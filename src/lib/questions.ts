@@ -194,13 +194,13 @@ const HEAD_APPLICATION: QuestionSet = {
         "Ahl Al-Islah runs two parallel cohorts — brothers' and sisters' — each led by its own Head, with the Advisor as the unifying coordinator across both.",
       fields: [
         {
-          id: "wingConfirm",
+          id: "gender",
           type: "radio",
-          label: "I am applying as a:",
+          label: "Which cohort are you applying to lead?",
           required: true,
           options: [
-            { label: "Brother (applying for Head, Brothers' Cohort)", value: "male" },
-            { label: "Sister (applying for Head, Sisters' Cohort)", value: "female" },
+            { label: "Brothers' Cohort", value: "male" },
+            { label: "Sisters' Cohort", value: "female" },
           ],
         },
         {
@@ -666,6 +666,25 @@ const CORE_MEMBER_APPLICATION: QuestionSet = {
       fields: CORE_MEMBER_PERSONAL_FIELDS,
     },
     {
+      id: "cohort",
+      title: "Your Cohort",
+      arabicTitle: "كوهورتك",
+      description:
+        "Ahl Al-Islah runs two dedicated cohorts so each one has its own space and programming.",
+      fields: [
+        {
+          id: "gender",
+          type: "radio",
+          label: "Which cohort are you applying to?",
+          required: true,
+          options: [
+            { label: "Brothers' Cohort", value: "male" },
+            { label: "Sisters' Cohort", value: "female" },
+          ],
+        },
+      ],
+    },
+    {
       id: "motivation",
       title: "Motivation & Availability",
       arabicTitle: "الدوافع والإتاحة",
@@ -711,6 +730,25 @@ const CORE_MEMBER_BROTHERS_APPLICATION: QuestionSet = {
       title: "Personal Information",
       arabicTitle: "المعلومات الشخصية",
       fields: CORE_MEMBER_PERSONAL_FIELDS,
+    },
+    {
+      id: "cohort",
+      title: "Your Cohort",
+      arabicTitle: "كوهورتك",
+      description:
+        "Ahl Al-Islah runs two dedicated cohorts so each one has its own space and programming.",
+      fields: [
+        {
+          id: "gender",
+          type: "radio",
+          label: "Which cohort are you applying to?",
+          required: true,
+          options: [
+            { label: "Brothers' Cohort", value: "male" },
+            { label: "Sisters' Cohort", value: "female" },
+          ],
+        },
+      ],
     },
     {
       id: "motivation",

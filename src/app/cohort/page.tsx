@@ -62,7 +62,7 @@ const WING_CONFIG = {
 export default async function CohortPage({
   searchParams,
 }: {
-  searchParams: Promise<{ id?: string }>;
+  searchParams: Promise<{ id?: string; position?: string }>;
 }) {
   const content = await getContent();
   const role = await getHeadRole();
@@ -148,7 +148,9 @@ export default async function CohortPage({
       .replace(/\s+/g, " ")
       .trim();
 
-  const submissions = allSubmissions
+  const { id: selectedId, position: positionFilter } = await searchParams;
+
+  const wingFiltered = allSubmissions
     .filter((s) => {
       if (s.wing !== wingFilter) return false;
       if (isCoreOnlyRole) {
@@ -164,10 +166,44 @@ export default async function CohortPage({
     })
     .sort((a, b) => b.submittedAt.localeCompare(a.submittedAt));
 
-  const { id: selectedId } = await searchParams;
+  const showPositionFilter = role === "male" || role === "female";
+
+  const countWingAll = wingFiltered.length;
+  const countWingGeneral = wingFiltered.filter((s) =>
+    s.positionSlug.startsWith("general-member")
+  ).length;
+  const countWingCore = wingFiltered.filter((s) =>
+    s.positionSlug.startsWith("core-member")
+  ).length;
+  const countWingHead = wingFiltered.filter((s) =>
+    s.positionSlug.endsWith("-head")
+  ).length;
+
+  const submissions = showPositionFilter && positionFilter
+    ? wingFiltered.filter((s) => {
+        if (positionFilter === "general-member") {
+          return s.positionSlug.startsWith("general-member");
+        }
+        if (positionFilter === "core-member") {
+          return s.positionSlug.startsWith("core-member");
+        }
+        if (positionFilter === "head") {
+          return s.positionSlug.endsWith("-head");
+        }
+        return true;
+      })
+    : wingFiltered;
+
   const selected = selectedId
     ? submissions.find((s) => s.id === selectedId)
     : null;
+
+  function cohortFilterUrl(params: { position?: string }) {
+    const q = new URLSearchParams();
+    if (params.position) q.set("position", params.position);
+    const s = q.toString();
+    return `/cohort${s ? `?${s}` : ""}`;
+  }
 
   return (
     <>
@@ -209,8 +245,8 @@ export default async function CohortPage({
                 {wing.label}
               </h1>
               <p className="text-sm text-ink/60 mt-1">
-                {submissions.length} application
-                {submissions.length === 1 ? "" : "s"} received
+                {submissions.length} of {countWingAll} application
+                {countWingAll === 1 ? "" : "s"}
               </p>
             </div>
             <form action={logoutHead}>
@@ -223,6 +259,52 @@ export default async function CohortPage({
               </button>
             </form>
           </div>
+
+          {/* Position filter — heads only */}
+          {showPositionFilter && (
+            <div className="flex flex-wrap gap-2 mb-4">
+              <Link
+                href={cohortFilterUrl({})}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
+                  !positionFilter
+                    ? "bg-emerald-deep text-white"
+                    : "bg-cream-muted text-ink/60 hover:bg-emerald-deep/10 hover:text-emerald-deep"
+                }`}
+              >
+                All ({countWingAll})
+              </Link>
+              <Link
+                href={cohortFilterUrl({ position: "general-member" })}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
+                  positionFilter === "general-member"
+                    ? "bg-emerald-deep text-white"
+                    : "bg-cream-muted text-ink/60 hover:bg-emerald-deep/10 hover:text-emerald-deep"
+                }`}
+              >
+                General Members ({countWingGeneral})
+              </Link>
+              <Link
+                href={cohortFilterUrl({ position: "core-member" })}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
+                  positionFilter === "core-member"
+                    ? "bg-ink text-white"
+                    : "bg-cream-muted text-ink/60 hover:bg-ink/10 hover:text-ink"
+                }`}
+              >
+                Core Members ({countWingCore})
+              </Link>
+              <Link
+                href={cohortFilterUrl({ position: "head" })}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
+                  positionFilter === "head"
+                    ? "bg-gold-antique text-white"
+                    : "bg-cream-muted text-ink/60 hover:bg-gold-antique/10 hover:text-gold-antique"
+                }`}
+              >
+                Head ({countWingHead})
+              </Link>
+            </div>
+          )}
 
           <div className="grid lg:grid-cols-[1fr_1.4fr] gap-6">
             {/* Application list */}
@@ -244,10 +326,13 @@ export default async function CohortPage({
                       (s.data.name as string) ??
                       "Unnamed";
                     const isSelected = s.id === selectedId;
+                    const selectionParams = new URLSearchParams();
+                    selectionParams.set("id", s.id);
+                    if (positionFilter) selectionParams.set("position", positionFilter);
                     return (
                       <li key={s.id}>
                         <Link
-                          href={`/cohort?id=${s.id}`}
+                          href={`/cohort?${selectionParams.toString()}`}
                           className={`block p-4 rounded-xl transition ${
                             isSelected
                               ? "bg-emerald-deep/5"

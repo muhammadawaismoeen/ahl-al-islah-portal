@@ -79,6 +79,7 @@ export default async function AdminPage({
   const countMale = submissions.filter((s) => s.wing === "male").length;
   const countFemale = submissions.filter((s) => s.wing === "female").length;
   const countCore = submissions.filter((s) => s.positionSlug.startsWith("core-member")).length;
+  const countGeneral = submissions.filter((s) => s.positionSlug.startsWith("general-member")).length;
 
   // Build filter URL helper
   function filterUrl(params: Record<string, string | undefined>) {
@@ -213,6 +214,16 @@ export default async function AdminPage({
               }`}
             >
               Core Members ({countCore})
+            </Link>
+            <Link
+              href={filterUrl({ position: "general-member" })}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
+                positionFilter === "general-member"
+                  ? "bg-emerald-deep text-white"
+                  : "bg-cream-muted text-ink/60 hover:bg-emerald-deep/10 hover:text-emerald-deep"
+              }`}
+            >
+              General Members ({countGeneral})
             </Link>
           </div>
 
