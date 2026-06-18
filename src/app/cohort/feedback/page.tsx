@@ -14,6 +14,7 @@ import {
   Target,
   LogOut,
   Users,
+  UserPlus,
   ClipboardList,
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
@@ -97,6 +98,13 @@ export default async function CohortFeedbackPage({
             >
               <Users className="h-3.5 w-3.5" />
               Membership applicants
+            </Link>
+            <Link
+              href="/cohort/general-members"
+              className="inline-flex items-center gap-1.5 px-4 py-2 text-sm text-ink/60 hover:text-emerald-deep transition border-b-2 border-transparent"
+            >
+              <UserPlus className="h-3.5 w-3.5" />
+              Ahl Al-Islah Membership
             </Link>
             <span className="inline-flex items-center gap-1.5 px-4 py-2 text-sm text-emerald-deep font-medium border-b-2 border-emerald-deep">
               <MessageSquareHeart className="h-3.5 w-3.5" />

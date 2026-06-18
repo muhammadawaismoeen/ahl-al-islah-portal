@@ -1,26 +1,39 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { LogOut, Mail, Phone, Download, Pencil, MessageCircle, MessageSquareHeart, CalendarDays, ClipboardList, Users, UserPlus } from "lucide-react";
+import {
+  LogOut,
+  Mail,
+  Phone,
+  Download,
+  Pencil,
+  MessageCircle,
+  MessageSquareHeart,
+  CalendarDays,
+  ClipboardList,
+  Users,
+  UserPlus,
+  ArrowLeft,
+} from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { isAuthenticated, login, logout } from "./actions";
+import { isAuthenticated, login, logout } from "@/app/admin/actions";
 import { listSubmissions } from "@/lib/storage";
 import { listMessages } from "@/lib/message-store";
 import { listFeedback } from "@/lib/feedback-store";
 import { listSubmissions as listActivitySubmissions } from "@/lib/activity-submissions-store";
 import { getPositionBySlug } from "@/lib/positions";
 import { getQuestionSet } from "@/lib/questions";
-import { LoginForm } from "./LoginForm";
+import { LoginForm } from "@/app/admin/LoginForm";
 import { formatDate } from "@/lib/utils";
 
 export const metadata: Metadata = {
-  title: "Admin · Membership applicants",
+  title: "Admin · Ahl Al-Islah Membership",
   robots: { index: false, follow: false },
 };
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminPage({
+export default async function AdminGeneralMembersPage({
   searchParams,
 }: {
   searchParams: Promise<{ id?: string; wing?: string }>;
@@ -54,7 +67,7 @@ export default async function AdminPage({
     );
   }
 
-  const [submissions, messages, feedback, activitySubmissions] = await Promise.all([
+  const [allSubmissions, messages, feedback, activitySubmissions] = await Promise.all([
     listSubmissions(),
     listMessages(),
     listFeedback(),
@@ -63,33 +76,28 @@ export default async function AdminPage({
   const unreadMessages = messages.filter((m) => m.status === "unread").length;
   const unreadFeedback = feedback.filter((f) => f.status === "unread").length;
   const unreadActivities = activitySubmissions.filter((a) => a.status === "unread").length;
+
+  const submissions = allSubmissions.filter((s) =>
+    s.positionSlug.startsWith("general-member")
+  );
+
   const { id: selectedId, wing: wingFilter } = await searchParams;
 
-  // Membership applicants tab = Head + Core Member applications.
-  // General-member applications live on the separate "Ahl Al-Islah Membership" tab (/admin/general-members).
-  const membershipSubmissions = submissions.filter(
-    (s) => !s.positionSlug.startsWith("general-member")
-  );
-
-  const filtered = membershipSubmissions.filter(
-    (s) => !wingFilter || s.wing === wingFilter
-  );
+  const filtered = submissions.filter((s) => !wingFilter || s.wing === wingFilter);
 
   const selected = selectedId
-    ? membershipSubmissions.find((s) => s.id === selectedId)
+    ? submissions.find((s) => s.id === selectedId)
     : null;
 
-  // Counts for filter tabs
-  const countAll = membershipSubmissions.length;
-  const countMale = membershipSubmissions.filter((s) => s.wing === "male").length;
-  const countFemale = membershipSubmissions.filter((s) => s.wing === "female").length;
+  const countAll = submissions.length;
+  const countMale = submissions.filter((s) => s.wing === "male").length;
+  const countFemale = submissions.filter((s) => s.wing === "female").length;
 
-  // Build filter URL helper
   function filterUrl(params: { wing?: string }) {
     const q = new URLSearchParams();
     if (params.wing) q.set("wing", params.wing);
     const s = q.toString();
-    return `/admin${s ? `?${s}` : ""}`;
+    return `/admin/general-members${s ? `?${s}` : ""}`;
   }
 
   return (
@@ -99,30 +107,38 @@ export default async function AdminPage({
         <div className="container-prose">
           <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
             <div>
-              <span className="arabic-text text-gold-antique">لوحة الإدارة</span>
+              <Link
+                href="/admin"
+                className="inline-flex items-center gap-1.5 text-xs text-ink/50 hover:text-emerald-deep mb-2 transition"
+              >
+                <ArrowLeft className="h-3.5 w-3.5" /> Membership applicants
+              </Link>
+              <span className="arabic-text text-gold-antique">
+                عضوية أهل الإصلاح
+              </span>
               <h1 className="heading-serif text-4xl font-semibold text-emerald-deep">
-                Membership applicants
+                Ahl Al-Islah Membership
               </h1>
               <p className="text-sm text-ink/60 mt-1">
-                {filtered.length} of {countAll} submission
+                {filtered.length} of {countAll} general-member application
                 {countAll === 1 ? "" : "s"}
               </p>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
+              <Link
+                href="/admin"
+                className="btn-ghost !py-2 !px-4 text-xs"
+              >
+                <Users className="h-3.5 w-3.5" />
+                Membership applicants
+              </Link>
               <span
                 className="btn-primary !py-2 !px-4 text-xs cursor-default"
                 aria-current="page"
               >
-                <Users className="h-3.5 w-3.5" />
-                Membership applicants
-              </span>
-              <Link
-                href="/admin/general-members"
-                className="btn-ghost !py-2 !px-4 text-xs"
-              >
                 <UserPlus className="h-3.5 w-3.5" />
                 Ahl Al-Islah Membership
-              </Link>
+              </span>
               <Link
                 href="/admin/messages"
                 className="btn-ghost !py-2 !px-4 text-xs relative"
@@ -221,7 +237,9 @@ export default async function AdminPage({
             <div className="ornate-card p-2 max-h-[calc(100vh-16rem)] overflow-y-auto">
               {filtered.length === 0 ? (
                 <p className="p-8 text-sm text-ink/60 text-center">
-                  {submissions.length === 0 ? "No applications yet." : "No applications match this filter."}
+                  {submissions.length === 0
+                    ? "No general-member applications yet."
+                    : "No applications match this filter."}
                 </p>
               ) : (
                 <ul className="divide-y divide-cream-muted">
@@ -232,14 +250,13 @@ export default async function AdminPage({
                       (s.data.name as string) ??
                       "Unnamed";
                     const isSelected = s.id === selectedId;
-                    // Preserve active filters in the selection URL
                     const selectionParams = new URLSearchParams();
                     selectionParams.set("id", s.id);
                     if (wingFilter) selectionParams.set("wing", wingFilter);
                     return (
                       <li key={s.id}>
                         <Link
-                          href={`/admin?${selectionParams.toString()}`}
+                          href={`/admin/general-members?${selectionParams.toString()}`}
                           className={`block p-4 rounded-xl transition ${
                             isSelected
                               ? "bg-emerald-deep/5"
@@ -269,12 +286,11 @@ export default async function AdminPage({
             {/* Detail */}
             <div className="ornate-card p-6 sm:p-8">
               {selected ? (
-                <SubmissionDetail
-                  submission={selected}
-                />
+                <SubmissionDetail submission={selected} />
               ) : (
                 <div className="h-full flex items-center justify-center text-center py-20">
                   <div>
+                    <UserPlus className="h-10 w-10 text-ink/20 mx-auto mb-3" />
                     <p className="text-sm text-ink/60">
                       Select a submission to view its details.
                     </p>

@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import {
-  LogOut,
+  ArrowLeft,
   Download,
   Mail,
   Phone,
@@ -9,19 +10,19 @@ import {
   UserPlus,
   MessageSquareHeart,
   ClipboardList,
+  LogOut,
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { getContent } from "@/lib/content-store";
-import { getHeadRole, logoutHead } from "./actions";
-import { CohortLoginForm } from "./LoginForm";
+import { getHeadRole, logoutHead } from "@/app/cohort/actions";
 import { listSubmissions } from "@/lib/storage";
 import { getPositionBySlug } from "@/lib/positions";
 import { getQuestionSet } from "@/lib/questions";
 import { formatDate } from "@/lib/utils";
 
 export const metadata: Metadata = {
-  title: "Cohort Portal — Ahl Al-Islah",
+  title: "Ahl Al-Islah Membership — Cohort Portal",
   robots: { index: false, follow: false },
 };
 
@@ -31,169 +32,69 @@ const WING_CONFIG = {
   male: {
     label: "Brothers' Cohort",
     arabic: "جناح الإخوة",
-    dot: "bg-emerald-deep",
     badge: "bg-emerald-deep/10 text-emerald-deep",
   },
   female: {
     label: "Sisters' Cohort",
     arabic: "جناح الأخوات",
-    dot: "bg-gold-antique",
-    badge: "bg-gold-antique/10 text-gold-antique",
-  },
-  "male-core": {
-    label: "Brothers' Core Members",
-    arabic: "أعضاء الإخوة",
-    dot: "bg-emerald-deep",
-    badge: "bg-emerald-deep/10 text-emerald-deep",
-  },
-  "deputy-male": {
-    label: "Brothers' Core Members · Deputy View",
-    arabic: "نائب رئيس الإخوة",
-    dot: "bg-emerald-deep",
-    badge: "bg-emerald-deep/10 text-emerald-deep",
-  },
-  "deputy-female": {
-    label: "Sisters' Core Members · Deputy View",
-    arabic: "نائبة رئيسة الأخوات",
-    dot: "bg-gold-antique",
     badge: "bg-gold-antique/10 text-gold-antique",
   },
 } as const;
 
-export default async function CohortPage({
+const COHORT_VISIBLE_FROM = "2026-04-26";
+
+export default async function CohortGeneralMembersPage({
   searchParams,
 }: {
   searchParams: Promise<{ id?: string }>;
 }) {
-  const content = await getContent();
   const role = await getHeadRole();
+  const content = await getContent();
 
-  /* ── Not logged in ───────────────────────────────────────────── */
-  if (!role) {
-    return (
-      <>
-        <Navbar content={content.nav} customLogo={content.customLogo} />
-        <main className="pt-32 pb-20">
-          <div className="container-prose max-w-md mx-auto">
-            <div className="ornate-card p-8">
-              <div className="text-center mb-6">
-                <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-emerald-deep/10 flex items-center justify-center">
-                  <Users className="h-6 w-6 text-emerald-deep" />
-                </div>
-                <span className="arabic-text text-gold-antique block mb-1">
-                  بوابة الرأس
-                </span>
-                <h1 className="heading-serif text-3xl font-semibold text-emerald-deep">
-                  Cohort Portal
-                </h1>
-                <p className="text-sm text-ink/60 mt-2">
-                  Sign in with the credentials provided by the Advisor.
-                </p>
-              </div>
-              <CohortLoginForm />
-            </div>
-          </div>
-        </main>
-        <Footer
-          content={content.footer}
-          navContent={content.nav}
-          customLogo={content.customLogo}
-        />
-      </>
-    );
-  }
+  if (!role) redirect("/cohort");
 
-  /* ── Authenticated ───────────────────────────────────────────── */
-  const wing = WING_CONFIG[role];
-  const allSubmissions = await listSubmissions();
-
-  // Show only applications that belong to this head's wing,
-  // submitted on or after the cohort portal launch date (hide pre-existing test/old entries).
-  //
-  // Role scoping:
-  //   - "male"           → all Brothers' applications
-  //   - "female"         → all Sisters' applications
-  //   - "male-core"      → Brothers' Core Member applications only
-  //   - "deputy-male"    → Brothers' Core Member applications only,
-  //                        excluding the Head (Ammar Amjad) and the Deputy himself (Muhammad Ahmed)
-  //   - "deputy-female"  → Sisters'  Core Member applications only,
-  //                        excluding the Head (Hajrah Noor) and the Deputy herself (Syeda Fatima Bukhari)
-  const COHORT_VISIBLE_FROM = "2026-04-26";
-  const CORE_MEMBER_MALE_SLUGS = new Set(["core-member-male"]);
-  const CORE_MEMBER_FEMALE_SLUGS = new Set(["core-member-female"]);
-
-  const isCoreOnlyRole =
-    role === "male-core" || role === "deputy-male" || role === "deputy-female";
-
-  // Map each role to the wing it sees.
-  const wingFilter: "male" | "female" =
+  const wing: "male" | "female" =
     role === "male" || role === "male-core" || role === "deputy-male"
       ? "male"
       : "female";
 
-  // Name fragments to exclude for deputy roles (case-insensitive substring match
-  // against the applicant's fullName / name — keeps the deputy from seeing the
-  // Head's application and their own).
-  const DEPUTY_EXCLUSIONS: Record<"deputy-male" | "deputy-female", string[]> = {
-    "deputy-male": ["ammar amjad", "muhammad ahmed"],
-    "deputy-female": ["hajrah noor", "syeda fatima bukhari"],
-  };
-  const excludedFragments =
-    role === "deputy-male" || role === "deputy-female"
-      ? DEPUTY_EXCLUSIONS[role]
-      : null;
+  const wingConfig = WING_CONFIG[wing];
+  const allSubmissions = await listSubmissions();
 
-  const normaliseName = (s: Submission) =>
-    (((s.data.fullName as string) ?? (s.data.name as string) ?? "") + "")
-      .toLowerCase()
-      .replace(/\s+/g, " ")
-      .trim();
-
-  const { id: selectedId } = await searchParams;
-
-  // The Membership applicants tab shows Head + Core Member applications.
-  // General-member applications live on the separate "Ahl Al-Islah Membership" tab.
   const submissions = allSubmissions
     .filter((s) => {
-      if (s.wing !== wingFilter) return false;
-      if (s.positionSlug.startsWith("general-member")) return false;
-      if (isCoreOnlyRole) {
-        const allowedSlugs =
-          wingFilter === "male" ? CORE_MEMBER_MALE_SLUGS : CORE_MEMBER_FEMALE_SLUGS;
-        if (!allowedSlugs.has(s.positionSlug)) return false;
-      }
-      if (excludedFragments) {
-        const name = normaliseName(s);
-        if (excludedFragments.some((frag) => name.includes(frag))) return false;
-      }
+      if (!s.positionSlug.startsWith("general-member")) return false;
+      if (s.wing !== wing) return false;
       return s.submittedAt.slice(0, 10) >= COHORT_VISIBLE_FROM;
     })
     .sort((a, b) => b.submittedAt.localeCompare(a.submittedAt));
 
+  const { id: selectedId } = await searchParams;
   const selected = selectedId
     ? submissions.find((s) => s.id === selectedId)
     : null;
+
+  const showFeedbackTabs = role === "female";
 
   return (
     <>
       <Navbar content={content.nav} customLogo={content.customLogo} />
       <main className="pt-28 pb-20">
         <div className="container-prose">
-
-          {/* Tabs — every role sees Membership applicants + Ahl Al-Islah Membership; female head also sees Feedback + Audits */}
+          {/* Tabs */}
           <div className="mb-6 flex flex-wrap gap-2 border-b border-cream-muted">
-            <span className="inline-flex items-center gap-1.5 px-4 py-2 text-sm text-emerald-deep font-medium border-b-2 border-emerald-deep">
-              <Users className="h-3.5 w-3.5" />
-              Membership applicants
-            </span>
             <Link
-              href="/cohort/general-members"
+              href="/cohort"
               className="inline-flex items-center gap-1.5 px-4 py-2 text-sm text-ink/60 hover:text-emerald-deep transition border-b-2 border-transparent"
             >
+              <Users className="h-3.5 w-3.5" />
+              Membership applicants
+            </Link>
+            <span className="inline-flex items-center gap-1.5 px-4 py-2 text-sm text-emerald-deep font-medium border-b-2 border-emerald-deep">
               <UserPlus className="h-3.5 w-3.5" />
               Ahl Al-Islah Membership
-            </Link>
-            {role === "female" && (
+            </span>
+            {showFeedbackTabs && (
               <>
                 <Link
                   href="/cohort/feedback"
@@ -216,20 +117,25 @@ export default async function CohortPage({
           {/* Header */}
           <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
             <div>
-              <span className="arabic-text text-gold-antique">{wing.arabic}</span>
+              <Link
+                href="/cohort"
+                className="inline-flex items-center gap-1.5 text-xs text-ink/50 hover:text-emerald-deep mb-2 transition"
+              >
+                <ArrowLeft className="h-3.5 w-3.5" /> Back to Membership applicants
+              </Link>
+              <span className="arabic-text text-gold-antique">
+                {wingConfig.arabic}
+              </span>
               <h1 className="heading-serif text-4xl font-semibold text-emerald-deep">
-                {wing.label}
+                Ahl Al-Islah Membership · {wingConfig.label}
               </h1>
               <p className="text-sm text-ink/60 mt-1">
-                {submissions.length} application
+                {submissions.length} general-member application
                 {submissions.length === 1 ? "" : "s"}
               </p>
             </div>
             <form action={logoutHead}>
-              <button
-                type="submit"
-                className="btn-secondary !py-2 !px-4 text-xs"
-              >
+              <button type="submit" className="btn-secondary !py-2 !px-4 text-xs">
                 <LogOut className="h-3.5 w-3.5" />
                 Sign out
               </button>
@@ -237,14 +143,13 @@ export default async function CohortPage({
           </div>
 
           <div className="grid lg:grid-cols-[1fr_1.4fr] gap-6">
-            {/* Application list */}
+            {/* List */}
             <div className="ornate-card p-2 max-h-[calc(100vh-16rem)] overflow-y-auto">
               {submissions.length === 0 ? (
                 <div className="p-10 text-center">
-                  <Users className="h-10 w-10 text-ink/20 mx-auto mb-3" />
-                  <p className="text-sm text-ink/60">No applications yet.</p>
-                  <p className="text-xs text-ink/40 mt-1">
-                    Check back after recruitment opens.
+                  <UserPlus className="h-10 w-10 text-ink/20 mx-auto mb-3" />
+                  <p className="text-sm text-ink/60">
+                    No general-member applications yet.
                   </p>
                 </div>
               ) : (
@@ -256,12 +161,10 @@ export default async function CohortPage({
                       (s.data.name as string) ??
                       "Unnamed";
                     const isSelected = s.id === selectedId;
-                    const selectionParams = new URLSearchParams();
-                    selectionParams.set("id", s.id);
                     return (
                       <li key={s.id}>
                         <Link
-                          href={`/cohort?${selectionParams.toString()}`}
+                          href={`/cohort/general-members?id=${s.id}`}
                           className={`block p-4 rounded-xl transition ${
                             isSelected
                               ? "bg-emerald-deep/5"
@@ -273,7 +176,7 @@ export default async function CohortPage({
                               {name}
                             </span>
                             <span
-                              className={`text-[10px] font-medium px-2 py-0.5 rounded-full shrink-0 ${wing.badge}`}
+                              className={`text-[10px] font-medium px-2 py-0.5 rounded-full shrink-0 ${wingConfig.badge}`}
                             >
                               {s.wing === "male" ? "Brother" : "Sister"}
                             </span>
@@ -292,14 +195,14 @@ export default async function CohortPage({
               )}
             </div>
 
-            {/* Detail panel */}
+            {/* Detail */}
             <div className="ornate-card p-6 sm:p-8">
               {selected ? (
                 <ApplicationDetail submission={selected} />
               ) : (
                 <div className="h-full flex items-center justify-center py-20 text-center">
                   <div>
-                    <Users className="h-10 w-10 text-ink/20 mx-auto mb-3" />
+                    <UserPlus className="h-10 w-10 text-ink/20 mx-auto mb-3" />
                     <p className="text-sm text-ink/60">
                       Select an application to review it.
                     </p>
@@ -318,8 +221,6 @@ export default async function CohortPage({
     </>
   );
 }
-
-/* ── Application detail ──────────────────────────────────────── */
 
 type Submission = Awaited<ReturnType<typeof listSubmissions>>[number];
 
