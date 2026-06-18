@@ -6,7 +6,6 @@ import {
   Mail,
   Phone,
   Users,
-  UserPlus,
   MessageSquareHeart,
   ClipboardList,
 } from "lucide-react";
@@ -33,37 +32,55 @@ const WING_CONFIG = {
     arabic: "جناح الإخوة",
     dot: "bg-emerald-deep",
     badge: "bg-emerald-deep/10 text-emerald-deep",
+    accent: "bg-emerald-deep text-white",
+    hover: "hover:bg-emerald-deep/10 hover:text-emerald-deep",
   },
   female: {
     label: "Sisters' Cohort",
     arabic: "جناح الأخوات",
     dot: "bg-gold-antique",
     badge: "bg-gold-antique/10 text-gold-antique",
+    accent: "bg-gold-antique text-white",
+    hover: "hover:bg-gold-antique/10 hover:text-gold-antique",
   },
   "male-core": {
-    label: "Brothers' Core Members",
+    label: "Brothers' Cohort",
     arabic: "أعضاء الإخوة",
     dot: "bg-emerald-deep",
     badge: "bg-emerald-deep/10 text-emerald-deep",
+    accent: "bg-emerald-deep text-white",
+    hover: "hover:bg-emerald-deep/10 hover:text-emerald-deep",
   },
   "deputy-male": {
-    label: "Brothers' Core Members · Deputy View",
+    label: "Brothers' Cohort · Deputy View",
     arabic: "نائب رئيس الإخوة",
     dot: "bg-emerald-deep",
     badge: "bg-emerald-deep/10 text-emerald-deep",
+    accent: "bg-emerald-deep text-white",
+    hover: "hover:bg-emerald-deep/10 hover:text-emerald-deep",
   },
   "deputy-female": {
-    label: "Sisters' Core Members · Deputy View",
+    label: "Sisters' Cohort · Deputy View",
     arabic: "نائبة رئيسة الأخوات",
     dot: "bg-gold-antique",
     badge: "bg-gold-antique/10 text-gold-antique",
+    accent: "bg-gold-antique text-white",
+    hover: "hover:bg-gold-antique/10 hover:text-gold-antique",
   },
 } as const;
+
+const isHeadSlug = (slug: string) =>
+  slug === "male-head" || slug === "female-head";
+const isCoreSlug = (slug: string) =>
+  slug === "core-member-male" || slug === "core-member-female";
+const isGeneralSlug = (slug: string) => slug.startsWith("general-member");
+
+type PositionFilter = "all" | "core" | "general";
 
 export default async function CohortPage({
   searchParams,
 }: {
-  searchParams: Promise<{ id?: string }>;
+  searchParams: Promise<{ id?: string; position?: string }>;
 }) {
   const content = await getContent();
   const role = await getHeadRole();
@@ -107,33 +124,22 @@ export default async function CohortPage({
   const wing = WING_CONFIG[role];
   const allSubmissions = await listSubmissions();
 
-  // Show only applications that belong to this head's wing,
-  // submitted on or after the cohort portal launch date (hide pre-existing test/old entries).
-  //
   // Role scoping:
-  //   - "male"           → all Brothers' applications
-  //   - "female"         → all Sisters' applications
-  //   - "male-core"      → Brothers' Core Member applications only
-  //   - "deputy-male"    → Brothers' Core Member applications only,
-  //                        excluding the Head (Ammar Amjad) and the Deputy himself (Muhammad Ahmed)
-  //   - "deputy-female"  → Sisters'  Core Member applications only,
-  //                        excluding the Head (Hajrah Noor) and the Deputy herself (Syeda Fatima Bukhari)
+  //   - "male"           → Brothers' Cohort (Core + General)
+  //   - "female"         → Sisters'  Cohort (Core + General)
+  //   - "male-core"      → Brothers' Cohort (Core + General, no deputy exclusions)
+  //   - "deputy-male"    → Brothers' Cohort; deputy exclusions applied to Core only
+  //   - "deputy-female"  → Sisters'  Cohort; deputy exclusions applied to Core only
+  // Heads are always admin-only — never shown in the cohort portal.
   const COHORT_VISIBLE_FROM = "2026-04-26";
-  const CORE_MEMBER_MALE_SLUGS = new Set(["core-member-male"]);
-  const CORE_MEMBER_FEMALE_SLUGS = new Set(["core-member-female"]);
 
-  const isCoreOnlyRole =
-    role === "male-core" || role === "deputy-male" || role === "deputy-female";
-
-  // Map each role to the wing it sees.
   const wingFilter: "male" | "female" =
     role === "male" || role === "male-core" || role === "deputy-male"
       ? "male"
       : "female";
 
-  // Name fragments to exclude for deputy roles (case-insensitive substring match
-  // against the applicant's fullName / name — keeps the deputy from seeing the
-  // Head's application and their own).
+  // Name fragments to exclude for deputy roles — applied to Core Members only
+  // (keeps the deputy from seeing the Head's core app and their own).
   const DEPUTY_EXCLUSIONS: Record<"deputy-male" | "deputy-female", string[]> = {
     "deputy-male": ["ammar amjad", "muhammad ahmed"],
     "deputy-female": ["hajrah noor", "syeda fatima bukhari"],
@@ -149,30 +155,55 @@ export default async function CohortPage({
       .replace(/\s+/g, " ")
       .trim();
 
-  const { id: selectedId } = await searchParams;
+  const { id: selectedId, position: positionParam } = await searchParams;
+  const positionFilter: PositionFilter =
+    positionParam === "core"
+      ? "core"
+      : positionParam === "general"
+      ? "general"
+      : "all";
 
-  // The Membership applicants tab shows Head + Core Member applications.
-  // General-member applications live on the separate "Ahl Al-Islah Membership" tab.
-  const submissions = allSubmissions
+  // Apply wing + visibility-window + head-exclusion once.
+  const wingScopedAll = allSubmissions.filter((s) => {
+    if (s.wing !== wingFilter) return false;
+    if (isHeadSlug(s.positionSlug)) return false;
+    if (s.submittedAt.slice(0, 10) < COHORT_VISIBLE_FROM) return false;
+    return true;
+  });
+
+  // Deputy exclusions apply ONLY to Core. General Members are never name-filtered.
+  const passesDeputyExclusion = (s: Submission) => {
+    if (!excludedFragments) return true;
+    if (!isCoreSlug(s.positionSlug)) return true;
+    const name = normaliseName(s);
+    return !excludedFragments.some((frag) => name.includes(frag));
+  };
+
+  const visibleSubmissions = wingScopedAll
+    .filter(passesDeputyExclusion)
     .filter((s) => {
-      if (s.wing !== wingFilter) return false;
-      if (s.positionSlug.startsWith("general-member")) return false;
-      if (isCoreOnlyRole) {
-        const allowedSlugs =
-          wingFilter === "male" ? CORE_MEMBER_MALE_SLUGS : CORE_MEMBER_FEMALE_SLUGS;
-        if (!allowedSlugs.has(s.positionSlug)) return false;
-      }
-      if (excludedFragments) {
-        const name = normaliseName(s);
-        if (excludedFragments.some((frag) => name.includes(frag))) return false;
-      }
-      return s.submittedAt.slice(0, 10) >= COHORT_VISIBLE_FROM;
+      if (positionFilter === "core") return isCoreSlug(s.positionSlug);
+      if (positionFilter === "general") return isGeneralSlug(s.positionSlug);
+      return true;
     })
     .sort((a, b) => b.submittedAt.localeCompare(a.submittedAt));
 
+  // Counts (post-deputy-exclusion, wing-scoped) for sub-pill labels
+  const wingScopedVisible = wingScopedAll.filter(passesDeputyExclusion);
+  const countAll = wingScopedVisible.length;
+  const countCore = wingScopedVisible.filter((s) => isCoreSlug(s.positionSlug)).length;
+  const countGeneral = wingScopedVisible.filter((s) => isGeneralSlug(s.positionSlug)).length;
+
   const selected = selectedId
-    ? submissions.find((s) => s.id === selectedId)
+    ? wingScopedAll.find((s) => s.id === selectedId)
     : null;
+
+  function filterUrl(nextPosition: PositionFilter) {
+    const q = new URLSearchParams();
+    if (nextPosition !== "all") q.set("position", nextPosition);
+    const s = q.toString();
+    return `/cohort${s ? `?${s}` : ""}`;
+  }
 
   return (
     <>
@@ -180,19 +211,12 @@ export default async function CohortPage({
       <main className="pt-28 pb-20">
         <div className="container-prose">
 
-          {/* Tabs — every role sees Membership applicants + Ahl Al-Islah Membership; female head also sees Feedback + Audits */}
+          {/* Tabs — every role sees Membership applicants; female head also sees Feedback + Audits */}
           <div className="mb-6 flex flex-wrap gap-2 border-b border-cream-muted">
             <span className="inline-flex items-center gap-1.5 px-4 py-2 text-sm text-emerald-deep font-medium border-b-2 border-emerald-deep">
               <Users className="h-3.5 w-3.5" />
               Membership applicants
             </span>
-            <Link
-              href="/cohort/general-members"
-              className="inline-flex items-center gap-1.5 px-4 py-2 text-sm text-ink/60 hover:text-emerald-deep transition border-b-2 border-transparent"
-            >
-              <UserPlus className="h-3.5 w-3.5" />
-              Ahl Al-Islah Membership
-            </Link>
             {role === "female" && (
               <>
                 <Link
@@ -221,8 +245,8 @@ export default async function CohortPage({
                 {wing.label}
               </h1>
               <p className="text-sm text-ink/60 mt-1">
-                {submissions.length} application
-                {submissions.length === 1 ? "" : "s"}
+                {visibleSubmissions.length} of {countAll} application
+                {countAll === 1 ? "" : "s"}
               </p>
             </div>
             <form action={logoutHead}>
@@ -236,10 +260,44 @@ export default async function CohortPage({
             </form>
           </div>
 
+          {/* Position filter — Core / General sub-pills */}
+          <div className="flex flex-wrap gap-2 mb-4">
+            <Link
+              href={filterUrl("all")}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
+                positionFilter === "all"
+                  ? wing.accent
+                  : `bg-cream-muted text-ink/60 ${wing.hover}`
+              }`}
+            >
+              All ({countAll})
+            </Link>
+            <Link
+              href={filterUrl("core")}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
+                positionFilter === "core"
+                  ? wing.accent
+                  : `bg-cream-muted text-ink/60 ${wing.hover}`
+              }`}
+            >
+              Core Members ({countCore})
+            </Link>
+            <Link
+              href={filterUrl("general")}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
+                positionFilter === "general"
+                  ? wing.accent
+                  : `bg-cream-muted text-ink/60 ${wing.hover}`
+              }`}
+            >
+              General Members ({countGeneral})
+            </Link>
+          </div>
+
           <div className="grid lg:grid-cols-[1fr_1.4fr] gap-6">
             {/* Application list */}
             <div className="ornate-card p-2 max-h-[calc(100vh-16rem)] overflow-y-auto">
-              {submissions.length === 0 ? (
+              {visibleSubmissions.length === 0 ? (
                 <div className="p-10 text-center">
                   <Users className="h-10 w-10 text-ink/20 mx-auto mb-3" />
                   <p className="text-sm text-ink/60">No applications yet.</p>
@@ -249,7 +307,7 @@ export default async function CohortPage({
                 </div>
               ) : (
                 <ul className="divide-y divide-cream-muted">
-                  {submissions.map((s) => {
+                  {visibleSubmissions.map((s) => {
                     const position = getPositionBySlug(s.positionSlug);
                     const name =
                       (s.data.fullName as string) ??
@@ -258,6 +316,8 @@ export default async function CohortPage({
                     const isSelected = s.id === selectedId;
                     const selectionParams = new URLSearchParams();
                     selectionParams.set("id", s.id);
+                    if (positionFilter !== "all")
+                      selectionParams.set("position", positionFilter);
                     return (
                       <li key={s.id}>
                         <Link

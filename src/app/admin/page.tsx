@@ -1,6 +1,18 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { LogOut, Mail, Phone, Download, Pencil, MessageCircle, MessageSquareHeart, CalendarDays, ClipboardList, Users, UserPlus } from "lucide-react";
+import {
+  LogOut,
+  Mail,
+  Phone,
+  Download,
+  Pencil,
+  MessageCircle,
+  MessageSquareHeart,
+  CalendarDays,
+  ClipboardList,
+  Users,
+  Crown,
+} from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { isAuthenticated, login, logout } from "./actions";
@@ -20,10 +32,18 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
+const isHeadSlug = (slug: string) => slug === "male-head" || slug === "female-head";
+const isCoreSlug = (slug: string) =>
+  slug === "core-member-male" || slug === "core-member-female";
+const isGeneralSlug = (slug: string) => slug.startsWith("general-member");
+
+type PositionFilter = "all" | "core" | "general";
+type WingFilter = "male" | "female";
+
 export default async function AdminPage({
   searchParams,
 }: {
-  searchParams: Promise<{ id?: string; wing?: string }>;
+  searchParams: Promise<{ id?: string; wing?: string; position?: string }>;
 }) {
   const authed = await isAuthenticated();
 
@@ -63,34 +83,63 @@ export default async function AdminPage({
   const unreadMessages = messages.filter((m) => m.status === "unread").length;
   const unreadFeedback = feedback.filter((f) => f.status === "unread").length;
   const unreadActivities = activitySubmissions.filter((a) => a.status === "unread").length;
-  const { id: selectedId, wing: wingFilter } = await searchParams;
 
-  // Membership applicants tab = Head + Core Member applications.
-  // General-member applications live on the separate "Ahl Al-Islah Membership" tab (/admin/general-members).
+  const {
+    id: selectedId,
+    wing: wingParam,
+    position: positionParam,
+  } = await searchParams;
+
+  const wing: WingFilter = wingParam === "female" ? "female" : "male";
+  const positionFilter: PositionFilter =
+    positionParam === "core"
+      ? "core"
+      : positionParam === "general"
+      ? "general"
+      : "all";
+
+  // Membership applicants page covers Core Members + General Members only.
+  // Head applications live on the separate admin-only /admin/heads page.
   const membershipSubmissions = submissions.filter(
-    (s) => !s.positionSlug.startsWith("general-member")
+    (s) => !isHeadSlug(s.positionSlug)
   );
 
-  const filtered = membershipSubmissions.filter(
-    (s) => !wingFilter || s.wing === wingFilter
-  );
+  const wingScoped = membershipSubmissions.filter((s) => s.wing === wing);
+
+  const filtered = wingScoped.filter((s) => {
+    if (positionFilter === "core") return isCoreSlug(s.positionSlug);
+    if (positionFilter === "general") return isGeneralSlug(s.positionSlug);
+    return true;
+  });
 
   const selected = selectedId
     ? membershipSubmissions.find((s) => s.id === selectedId)
     : null;
 
-  // Counts for filter tabs
-  const countAll = membershipSubmissions.length;
-  const countMale = membershipSubmissions.filter((s) => s.wing === "male").length;
-  const countFemale = membershipSubmissions.filter((s) => s.wing === "female").length;
+  // Counts
+  const countBrothers = membershipSubmissions.filter((s) => s.wing === "male").length;
+  const countSisters = membershipSubmissions.filter((s) => s.wing === "female").length;
+  const countAllInWing = wingScoped.length;
+  const countCoreInWing = wingScoped.filter((s) => isCoreSlug(s.positionSlug)).length;
+  const countGeneralInWing = wingScoped.filter((s) => isGeneralSlug(s.positionSlug)).length;
 
-  // Build filter URL helper
-  function filterUrl(params: { wing?: string }) {
+  function filterUrl(params: { wing?: WingFilter; position?: PositionFilter }) {
+    const nextWing = params.wing ?? wing;
+    const nextPosition = params.position ?? positionFilter;
     const q = new URLSearchParams();
-    if (params.wing) q.set("wing", params.wing);
-    const s = q.toString();
-    return `/admin${s ? `?${s}` : ""}`;
+    q.set("wing", nextWing);
+    if (nextPosition !== "all") q.set("position", nextPosition);
+    return `/admin?${q.toString()}`;
   }
+
+  const wingAccent =
+    wing === "male"
+      ? "bg-emerald-deep text-white"
+      : "bg-gold-antique text-white";
+  const wingHover =
+    wing === "male"
+      ? "hover:bg-emerald-deep/10 hover:text-emerald-deep"
+      : "hover:bg-gold-antique/10 hover:text-gold-antique";
 
   return (
     <>
@@ -104,8 +153,9 @@ export default async function AdminPage({
                 Membership applicants
               </h1>
               <p className="text-sm text-ink/60 mt-1">
-                {filtered.length} of {countAll} submission
-                {countAll === 1 ? "" : "s"}
+                {filtered.length} of {countAllInWing} submission
+                {countAllInWing === 1 ? "" : "s"} in{" "}
+                {wing === "male" ? "Brothers" : "Sisters"}
               </p>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
@@ -117,11 +167,11 @@ export default async function AdminPage({
                 Membership applicants
               </span>
               <Link
-                href="/admin/general-members"
+                href="/admin/heads"
                 className="btn-ghost !py-2 !px-4 text-xs"
               >
-                <UserPlus className="h-3.5 w-3.5" />
-                Ahl Al-Islah Membership
+                <Crown className="h-3.5 w-3.5" />
+                Heads
               </Link>
               <Link
                 href="/admin/messages"
@@ -182,37 +232,61 @@ export default async function AdminPage({
             </div>
           </div>
 
-          {/* Wing filter */}
-          <div className="flex flex-wrap gap-2 mb-4">
-            <Link
-              href={filterUrl({})}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
-                !wingFilter
-                  ? "bg-emerald-deep text-white"
-                  : "bg-cream-muted text-ink/60 hover:bg-emerald-deep/10 hover:text-emerald-deep"
-              }`}
-            >
-              All ({countAll})
-            </Link>
+          {/* Cohort filter (top row) */}
+          <div className="flex flex-wrap gap-2 mb-3">
             <Link
               href={filterUrl({ wing: "male" })}
               className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
-                wingFilter === "male"
+                wing === "male"
                   ? "bg-emerald-deep text-white"
                   : "bg-cream-muted text-ink/60 hover:bg-emerald-deep/10 hover:text-emerald-deep"
               }`}
             >
-              Brothers ({countMale})
+              Brothers ({countBrothers})
             </Link>
             <Link
               href={filterUrl({ wing: "female" })}
               className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
-                wingFilter === "female"
+                wing === "female"
                   ? "bg-gold-antique text-white"
                   : "bg-cream-muted text-ink/60 hover:bg-gold-antique/10 hover:text-gold-antique"
               }`}
             >
-              Sisters ({countFemale})
+              Sisters ({countSisters})
+            </Link>
+          </div>
+
+          {/* Position filter (sub-row, wing-scoped) */}
+          <div className="flex flex-wrap gap-2 mb-4">
+            <Link
+              href={filterUrl({ position: "all" })}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
+                positionFilter === "all"
+                  ? wingAccent
+                  : `bg-cream-muted text-ink/60 ${wingHover}`
+              }`}
+            >
+              All ({countAllInWing})
+            </Link>
+            <Link
+              href={filterUrl({ position: "core" })}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
+                positionFilter === "core"
+                  ? wingAccent
+                  : `bg-cream-muted text-ink/60 ${wingHover}`
+              }`}
+            >
+              Core Members ({countCoreInWing})
+            </Link>
+            <Link
+              href={filterUrl({ position: "general" })}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
+                positionFilter === "general"
+                  ? wingAccent
+                  : `bg-cream-muted text-ink/60 ${wingHover}`
+              }`}
+            >
+              General Members ({countGeneralInWing})
             </Link>
           </div>
 
@@ -221,7 +295,9 @@ export default async function AdminPage({
             <div className="ornate-card p-2 max-h-[calc(100vh-16rem)] overflow-y-auto">
               {filtered.length === 0 ? (
                 <p className="p-8 text-sm text-ink/60 text-center">
-                  {submissions.length === 0 ? "No applications yet." : "No applications match this filter."}
+                  {membershipSubmissions.length === 0
+                    ? "No applications yet."
+                    : "No applications match this filter."}
                 </p>
               ) : (
                 <ul className="divide-y divide-cream-muted">
@@ -232,10 +308,11 @@ export default async function AdminPage({
                       (s.data.name as string) ??
                       "Unnamed";
                     const isSelected = s.id === selectedId;
-                    // Preserve active filters in the selection URL
                     const selectionParams = new URLSearchParams();
                     selectionParams.set("id", s.id);
-                    if (wingFilter) selectionParams.set("wing", wingFilter);
+                    selectionParams.set("wing", wing);
+                    if (positionFilter !== "all")
+                      selectionParams.set("position", positionFilter);
                     return (
                       <li key={s.id}>
                         <Link

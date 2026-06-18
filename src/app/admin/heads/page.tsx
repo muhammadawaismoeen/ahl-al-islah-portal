@@ -11,7 +11,7 @@ import {
   CalendarDays,
   ClipboardList,
   Users,
-  UserPlus,
+  Crown,
   ArrowLeft,
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
@@ -27,13 +27,15 @@ import { LoginForm } from "@/app/admin/LoginForm";
 import { formatDate } from "@/lib/utils";
 
 export const metadata: Metadata = {
-  title: "Admin · Ahl Al-Islah Membership",
+  title: "Admin · Heads",
   robots: { index: false, follow: false },
 };
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminGeneralMembersPage({
+const isHeadSlug = (slug: string) => slug === "male-head" || slug === "female-head";
+
+export default async function AdminHeadsPage({
   searchParams,
 }: {
   searchParams: Promise<{ id?: string; wing?: string }>;
@@ -77,27 +79,30 @@ export default async function AdminGeneralMembersPage({
   const unreadFeedback = feedback.filter((f) => f.status === "unread").length;
   const unreadActivities = activitySubmissions.filter((a) => a.status === "unread").length;
 
-  const submissions = allSubmissions.filter((s) =>
-    s.positionSlug.startsWith("general-member")
-  );
+  const headSubmissions = allSubmissions.filter((s) => isHeadSlug(s.positionSlug));
 
-  const { id: selectedId, wing: wingFilter } = await searchParams;
+  const { id: selectedId, wing: wingParam } = await searchParams;
+  const wingFilter =
+    wingParam === "male" || wingParam === "female" ? wingParam : undefined;
 
-  const filtered = submissions.filter((s) => !wingFilter || s.wing === wingFilter);
+  const filtered = wingFilter
+    ? headSubmissions.filter((s) => s.wing === wingFilter)
+    : headSubmissions;
 
   const selected = selectedId
-    ? submissions.find((s) => s.id === selectedId)
+    ? headSubmissions.find((s) => s.id === selectedId)
     : null;
 
-  const countAll = submissions.length;
-  const countMale = submissions.filter((s) => s.wing === "male").length;
-  const countFemale = submissions.filter((s) => s.wing === "female").length;
+  const countAll = headSubmissions.length;
+  const countBrothers = headSubmissions.filter((s) => s.wing === "male").length;
+  const countSisters = headSubmissions.filter((s) => s.wing === "female").length;
 
-  function filterUrl(params: { wing?: string }) {
+  function filterUrl(params: { wing?: "male" | "female" | null }) {
     const q = new URLSearchParams();
-    if (params.wing) q.set("wing", params.wing);
+    const nextWing = params.wing === undefined ? wingFilter : params.wing;
+    if (nextWing) q.set("wing", nextWing);
     const s = q.toString();
-    return `/admin/general-members${s ? `?${s}` : ""}`;
+    return `/admin/heads${s ? `?${s}` : ""}`;
   }
 
   return (
@@ -113,14 +118,12 @@ export default async function AdminGeneralMembersPage({
               >
                 <ArrowLeft className="h-3.5 w-3.5" /> Membership applicants
               </Link>
-              <span className="arabic-text text-gold-antique">
-                عضوية أهل الإصلاح
-              </span>
+              <span className="arabic-text text-gold-antique">رؤساء</span>
               <h1 className="heading-serif text-4xl font-semibold text-emerald-deep">
-                Ahl Al-Islah Membership
+                Heads
               </h1>
               <p className="text-sm text-ink/60 mt-1">
-                {filtered.length} of {countAll} general-member application
+                {filtered.length} of {countAll} head application
                 {countAll === 1 ? "" : "s"}
               </p>
             </div>
@@ -136,8 +139,8 @@ export default async function AdminGeneralMembersPage({
                 className="btn-primary !py-2 !px-4 text-xs cursor-default"
                 aria-current="page"
               >
-                <UserPlus className="h-3.5 w-3.5" />
-                Ahl Al-Islah Membership
+                <Crown className="h-3.5 w-3.5" />
+                Heads
               </span>
               <Link
                 href="/admin/messages"
@@ -198,10 +201,10 @@ export default async function AdminGeneralMembersPage({
             </div>
           </div>
 
-          {/* Wing filter */}
+          {/* Cohort filter */}
           <div className="flex flex-wrap gap-2 mb-4">
             <Link
-              href={filterUrl({})}
+              href={filterUrl({ wing: null })}
               className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
                 !wingFilter
                   ? "bg-emerald-deep text-white"
@@ -218,7 +221,7 @@ export default async function AdminGeneralMembersPage({
                   : "bg-cream-muted text-ink/60 hover:bg-emerald-deep/10 hover:text-emerald-deep"
               }`}
             >
-              Brothers ({countMale})
+              Brothers ({countBrothers})
             </Link>
             <Link
               href={filterUrl({ wing: "female" })}
@@ -228,7 +231,7 @@ export default async function AdminGeneralMembersPage({
                   : "bg-cream-muted text-ink/60 hover:bg-gold-antique/10 hover:text-gold-antique"
               }`}
             >
-              Sisters ({countFemale})
+              Sisters ({countSisters})
             </Link>
           </div>
 
@@ -237,8 +240,8 @@ export default async function AdminGeneralMembersPage({
             <div className="ornate-card p-2 max-h-[calc(100vh-16rem)] overflow-y-auto">
               {filtered.length === 0 ? (
                 <p className="p-8 text-sm text-ink/60 text-center">
-                  {submissions.length === 0
-                    ? "No general-member applications yet."
+                  {headSubmissions.length === 0
+                    ? "No head applications yet."
                     : "No applications match this filter."}
                 </p>
               ) : (
@@ -256,7 +259,7 @@ export default async function AdminGeneralMembersPage({
                     return (
                       <li key={s.id}>
                         <Link
-                          href={`/admin/general-members?${selectionParams.toString()}`}
+                          href={`/admin/heads?${selectionParams.toString()}`}
                           className={`block p-4 rounded-xl transition ${
                             isSelected
                               ? "bg-emerald-deep/5"
@@ -290,9 +293,9 @@ export default async function AdminGeneralMembersPage({
               ) : (
                 <div className="h-full flex items-center justify-center text-center py-20">
                   <div>
-                    <UserPlus className="h-10 w-10 text-ink/20 mx-auto mb-3" />
+                    <Crown className="h-10 w-10 text-ink/20 mx-auto mb-3" />
                     <p className="text-sm text-ink/60">
-                      Select a submission to view its details.
+                      Select an application to view its details.
                     </p>
                   </div>
                 </div>
