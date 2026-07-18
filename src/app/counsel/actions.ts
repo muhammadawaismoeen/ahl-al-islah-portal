@@ -63,21 +63,29 @@ export async function startCounselThread(
   }
   const cohort: CounselCohort = cohortRaw;
 
-  const claimCode = generateClaimCode();
-  const { thread, blobUrl } = await createThread({
-    firstMessage: body,
-    cohort,
-    claimCode,
-  });
+  try {
+    const claimCode = generateClaimCode();
+    const { thread, blobUrl } = await createThread({
+      firstMessage: body,
+      cohort,
+      claimCode,
+    });
 
-  // Recognise this device immediately — no post-create lookup. On Vercel Blob
-  // the index is eventually consistent, so looking the thread up right after
-  // creating it (the old claim-code round trip) silently failed in prod.
-  await setThreadCookies(thread.id, blobUrl);
+    // Recognise this device immediately — no post-create lookup. On Vercel Blob
+    // the index is eventually consistent, so looking the thread up right after
+    // creating it (the old claim-code round trip) silently failed in prod.
+    await setThreadCookies(thread.id, blobUrl);
 
-  revalidatePath("/counsel");
-  revalidatePath("/admin/counsel");
-  return { ok: true, claimCode };
+    revalidatePath("/counsel");
+    revalidatePath("/admin/counsel");
+    return { ok: true, claimCode };
+  } catch (err) {
+    // Surface the failure in the form instead of an opaque 500 — an unhandled
+    // throw here leaves the seeker with a dead button and no explanation.
+    console.error("[counsel] startCounselThread failed:", err);
+    const detail = err instanceof Error ? err.message : String(err);
+    return { ok: false, error: `Couldn't start your thread: ${detail}` };
+  }
 }
 
 export async function postSeekerMessage(
@@ -106,7 +114,13 @@ export async function postSeekerMessage(
     return { ok: false, error: "This thread has been closed by the Advisor." };
   }
 
-  await addMessage(threadId, "seeker", trimmed, thread);
+  try {
+    await addMessage(threadId, "seeker", trimmed, thread);
+  } catch (err) {
+    console.error("[counsel] postSeekerMessage failed:", err);
+    const detail = err instanceof Error ? err.message : String(err);
+    return { ok: false, error: `Couldn't send: ${detail}` };
+  }
   revalidatePath("/counsel");
   revalidatePath("/admin/counsel");
   return { ok: true };

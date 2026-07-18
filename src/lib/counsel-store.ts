@@ -76,12 +76,13 @@ async function writeThread(thread: CounselThread): Promise<string | null> {
   const payload = JSON.stringify(thread, null, 2);
   if (isBlobStore()) {
     const { put } = await import("@vercel/blob");
+    // No cacheControlMaxAge here: reads always cache-bust with a unique query
+    // param, so the default CDN TTL never serves us stale content anyway.
     const { url } = await put(`${BLOB_PREFIX}${thread.id}.json`, payload, {
       access: "public",
       addRandomSuffix: false,
       allowOverwrite: true,
       contentType: "application/json",
-      cacheControlMaxAge: 60,
     });
     return url;
   }
