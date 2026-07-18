@@ -4,7 +4,6 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import {
   Send,
-  Loader2,
   Trash2,
   Sparkles,
   UserRound,
@@ -56,7 +55,7 @@ export function ThreadView({ thread }: { thread: CounselThread }) {
     }
   }, [thread.messages, optimistic]);
 
-  async function handleSend() {
+  function handleSend() {
     const trimmed = reply.trim();
     if (!trimmed) return;
     const optimisticMsg: OptimisticMessage = {
@@ -68,17 +67,16 @@ export function ThreadView({ thread }: { thread: CounselThread }) {
     };
     setOptimistic((prev) => [...prev, optimisticMsg]);
     setReply("");
-    setPending(true);
     setError(null);
-    const res = await postSeekerMessage(trimmed);
-    setPending(false);
-    if (res.ok) {
-      router.refresh();
-    } else {
-      setOptimistic((prev) => prev.filter((m) => m.id !== optimisticMsg.id));
-      setReply(trimmed);
-      setError(res.error ?? "Couldn't send.");
-    }
+    void postSeekerMessage(trimmed).then((res) => {
+      if (res.ok) {
+        router.refresh();
+      } else {
+        setOptimistic((prev) => prev.filter((m) => m.id !== optimisticMsg.id));
+        setReply((cur) => cur || trimmed);
+        setError(res.error ?? "Couldn't send.");
+      }
+    });
   }
 
   async function handleEnd() {
@@ -144,8 +142,8 @@ export function ThreadView({ thread }: { thread: CounselThread }) {
 
       {/* Messages */}
       <div className="ornate-card p-4 sm:p-6 space-y-4 max-h-[60vh] overflow-y-auto">
-        {thread.messages.map((m) => (
-          <MessageBubble key={m.id} message={m} />
+        {messages.map((m) => (
+          <MessageBubble key={m.id} message={m} pending={m.pending} />
         ))}
         <div ref={bottomRef} />
       </div>
@@ -177,14 +175,10 @@ export function ThreadView({ thread }: { thread: CounselThread }) {
           <button
             type="button"
             onClick={handleSend}
-            disabled={pending || !reply.trim()}
+            disabled={!reply.trim()}
             className="btn-primary w-full sm:w-auto"
           >
-            {pending ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Send className="h-4 w-4" />
-            )}
+            <Send className="h-4 w-4" />
             Send
           </button>
         </div>
@@ -193,11 +187,19 @@ export function ThreadView({ thread }: { thread: CounselThread }) {
   );
 }
 
-function MessageBubble({ message }: { message: CounselMessage }) {
+function MessageBubble({
+  message,
+  pending,
+}: {
+  message: CounselMessage;
+  pending?: boolean;
+}) {
   const isSeeker = message.from === "seeker";
   return (
     <div
-      className={`flex gap-3 ${isSeeker ? "flex-row" : "flex-row-reverse"}`}
+      className={`flex gap-3 ${isSeeker ? "flex-row" : "flex-row-reverse"} ${
+        pending ? "opacity-60" : ""
+      }`}
     >
       <div
         className={`h-8 w-8 rounded-full flex items-center justify-center shrink-0 ${
