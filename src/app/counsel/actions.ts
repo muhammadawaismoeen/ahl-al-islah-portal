@@ -12,23 +12,34 @@ import {
   generateClaimCode,
 } from "@/lib/counsel-store";
 import type { CounselCohort } from "@/lib/counsel-types";
+import {
+  COUNSEL_THREAD_COOKIE as COOKIE,
+  COUNSEL_BLOB_COOKIE as BLOB_COOKIE,
+} from "@/lib/counsel-types";
 
-const COOKIE = "ahl_counsel_thread";
 const MAX_AGE = 60 * 60 * 24 * 90; // 90 days
+
+const COOKIE_OPTS = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "lax" as const,
+  path: "/",
+  maxAge: MAX_AGE,
+};
 
 export async function getCurrentThreadId(): Promise<string | null> {
   const val = (await cookies()).get(COOKIE)?.value;
   return val ?? null;
 }
 
-async function setThreadCookie(threadId: string) {
-  (await cookies()).set(COOKIE, threadId, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/",
-    maxAge: MAX_AGE,
-  });
+async function setThreadCookies(threadId: string, blobUrl?: string | null) {
+  const jar = await cookies();
+  jar.set(COOKIE, threadId, COOKIE_OPTS);
+  if (blobUrl) {
+    jar.set(BLOB_COOKIE, blobUrl, COOKIE_OPTS);
+  } else {
+    jar.delete(BLOB_COOKIE);
+  }
 }
 
 export async function startCounselThread(
@@ -53,12 +64,18 @@ export async function startCounselThread(
   const cohort: CounselCohort = cohortRaw;
 
   const claimCode = generateClaimCode();
-  await createThread({
+  const { thread, blobUrl } = await createThread({
     firstMessage: body,
     cohort,
     claimCode,
   });
 
+  // Recognise this device immediately — no post-create lookup. On Vercel Blob
+  // the index is eventually consistent, so looking the thread up right after
+  // creating it (the old claim-code round trip) silently failed in prod.
+  await setThreadCookies(thread.id, blobUrl);
+
+  revalidatePath("/counsel");
   revalidatePath("/admin/counsel");
   return { ok: true, claimCode };
 }
@@ -70,13 +87,19 @@ export async function postSeekerMessage(
   if (trimmed.length < 1) return { ok: false, error: "Message is empty." };
   if (trimmed.length > 5000) return { ok: false, error: "Message is too long." };
 
-  const threadId = await getCurrentThreadId();
+  const jar = await cookies();
+  const threadId = jar.get(COOKIE)?.value ?? null;
   if (!threadId) return { ok: false, error: "No active thread. Please start a new one." };
 
-  const thread = await getThread(threadId);
+  const hintUrl = jar.get(BLOB_COOKIE)?.value ?? null;
+  const thread = await getThread(threadId, hintUrl);
   if (!thread) {
-    (await cookies()).delete(COOKIE);
-    return { ok: false, error: "Thread was not found. It may have been deleted." };
+    // Don't clear the cookie here — a miss can be a transient storage-index
+    // lag, and dropping the cookie would lock the seeker out of a live thread.
+    return {
+      ok: false,
+      error: "Couldn't reach your thread just now. Please try again.",
+    };
   }
 
   if (thread.status === "closed") {
@@ -104,7 +127,9 @@ export async function claimThreadByCode(
     };
   }
 
-  await setThreadCookie(thread.id);
+  // No direct blob URL is known on this path (thread found via the index);
+  // clear any stale hint from a previous thread on this device.
+  await setThreadCookies(thread.id, null);
   revalidatePath("/counsel");
   return { ok: true };
 }
@@ -120,13 +145,17 @@ export async function endMyThread(): Promise<{ ok: boolean }> {
   const threadId = await getCurrentThreadId();
   if (!threadId) return { ok: false };
   await deleteThread(threadId);
-  (await cookies()).delete(COOKIE);
+  const jar = await cookies();
+  jar.delete(COOKIE);
+  jar.delete(BLOB_COOKIE);
   revalidatePath("/counsel");
   revalidatePath("/admin/counsel");
   return { ok: true };
 }
 
 export async function forgetThreadOnThisDevice(): Promise<void> {
-  (await cookies()).delete(COOKIE);
+  const jar = await cookies();
+  jar.delete(COOKIE);
+  jar.delete(BLOB_COOKIE);
   revalidatePath("/counsel");
 }

@@ -51,24 +51,47 @@ export function hashClaimCode(code: string): string {
 /*  Persistence primitives                                             */
 /* ------------------------------------------------------------------ */
 
-async function writeThread(thread: CounselThread): Promise<void> {
+/** Blob content is CDN-cached (stale up to ~60s after overwrite) and the blob
+ *  index is eventually consistent. Reads must bust the cache; reads of brand-new
+ *  threads must go through the direct URL captured at write time. */
+function withCacheBust(url: string): string {
+  return `${url}${url.includes("?") ? "&" : "?"}cb=${Date.now()}`;
+}
+
+function isSafeBlobUrl(url: string, threadId: string): boolean {
+  try {
+    const u = new URL(url);
+    return (
+      u.protocol === "https:" &&
+      u.hostname.endsWith(".public.blob.vercel-storage.com") &&
+      u.pathname === `/${BLOB_PREFIX}${threadId}.json`
+    );
+  } catch {
+    return false;
+  }
+}
+
+/** Returns the blob's direct URL in prod, null with the local file store. */
+async function writeThread(thread: CounselThread): Promise<string | null> {
   const payload = JSON.stringify(thread, null, 2);
   if (isBlobStore()) {
     const { put } = await import("@vercel/blob");
-    await put(`${BLOB_PREFIX}${thread.id}.json`, payload, {
+    const { url } = await put(`${BLOB_PREFIX}${thread.id}.json`, payload, {
       access: "public",
       addRandomSuffix: false,
       allowOverwrite: true,
       contentType: "application/json",
+      cacheControlMaxAge: 60,
     });
-  } else {
-    await ensureDir();
-    await fs.writeFile(
-      path.join(DATA_DIR, `${thread.id}.json`),
-      payload,
-      "utf8"
-    );
+    return url;
   }
+  await ensureDir();
+  await fs.writeFile(
+    path.join(DATA_DIR, `${thread.id}.json`),
+    payload,
+    "utf8"
+  );
+  return null;
 }
 
 /* ------------------------------------------------------------------ */
@@ -79,7 +102,7 @@ export async function createThread(input: {
   firstMessage: string;
   cohort?: CounselCohort;
   claimCode: string;
-}): Promise<CounselThread> {
+}): Promise<{ thread: CounselThread; blobUrl: string | null }> {
   const now = new Date().toISOString();
   const threadId = `ct-${Date.now().toString(36)}-${crypto
     .randomBytes(4)
@@ -101,8 +124,8 @@ export async function createThread(input: {
     seekerHasUnread: false,
     messages: [firstMessage],
   };
-  await writeThread(thread);
-  return thread;
+  const blobUrl = await writeThread(thread);
+  return { thread, blobUrl };
 }
 
 /* ------------------------------------------------------------------ */
@@ -139,8 +162,11 @@ export async function addMessage(
 /*  markSeekerRead / markAdvisorRead                                   */
 /* ------------------------------------------------------------------ */
 
-export async function markSeekerRead(threadId: string): Promise<boolean> {
-  const thread = await getThread(threadId);
+export async function markSeekerRead(
+  threadId: string,
+  preloaded?: CounselThread
+): Promise<boolean> {
+  const thread = preloaded ?? (await getThread(threadId));
   if (!thread) return false;
   if (!thread.seekerHasUnread) return true;
   await writeThread({ ...thread, seekerHasUnread: false });
@@ -193,7 +219,9 @@ export async function listThreads(): Promise<CounselThread[]> {
         });
         const fetches = result.blobs.map(async (blob) => {
           try {
-            const res = await fetch(blob.url, { cache: "no-store" });
+            const res = await fetch(withCacheBust(blob.url), {
+              cache: "no-store",
+            });
             return (await res.json()) as CounselThread;
           } catch {
             return null;
@@ -235,10 +263,26 @@ export async function listThreads(): Promise<CounselThread[]> {
 /*  getThread                                                          */
 /* ------------------------------------------------------------------ */
 
-export async function getThread(id: string): Promise<CounselThread | null> {
+export async function getThread(
+  id: string,
+  hintUrl?: string | null
+): Promise<CounselThread | null> {
   noStore();
 
   if (isBlobStore()) {
+    // Direct URL (from the cookie set at creation): skips the eventually-
+    // consistent index entirely, so brand-new threads resolve immediately.
+    if (hintUrl && isSafeBlobUrl(hintUrl, id)) {
+      try {
+        const res = await fetch(withCacheBust(hintUrl), { cache: "no-store" });
+        if (res.ok) {
+          const t = (await res.json()) as CounselThread;
+          if (t?.id === id) return t;
+        }
+      } catch {
+        // fall through to index lookup
+      }
+    }
     try {
       const { list } = await import("@vercel/blob");
       const { blobs } = await list({
@@ -246,7 +290,9 @@ export async function getThread(id: string): Promise<CounselThread | null> {
         limit: 1,
       });
       if (blobs.length === 0) return null;
-      const res = await fetch(blobs[0].url, { cache: "no-store" });
+      const res = await fetch(withCacheBust(blobs[0].url), {
+        cache: "no-store",
+      });
       return (await res.json()) as CounselThread;
     } catch {
       return null;

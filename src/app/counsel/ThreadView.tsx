@@ -9,8 +9,12 @@ import {
   UserRound,
   LogOut,
   Ban,
+  KeyRound,
+  Copy,
+  Check,
 } from "lucide-react";
 import type { CounselThread, CounselMessage } from "@/lib/counsel-types";
+import { CLAIM_CODE_STORAGE_KEY } from "@/lib/counsel-types";
 import {
   postSeekerMessage,
   endMyThread,
@@ -33,7 +37,41 @@ export function ThreadView({ thread }: { thread: CounselThread }) {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [optimistic, setOptimistic] = useState<OptimisticMessage[]>([]);
+  const [savedCode, setSavedCode] = useState<string | null>(null);
+  const [codeCopied, setCodeCopied] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  // The start form drops the claim code into sessionStorage just before the
+  // thread view mounts; show it until the seeker confirms they've saved it.
+  useEffect(() => {
+    const read = () => {
+      try {
+        const code = sessionStorage.getItem(CLAIM_CODE_STORAGE_KEY);
+        if (code) setSavedCode(code);
+      } catch {
+        // storage unavailable — skip the banner
+      }
+    };
+    read();
+    const retry = setTimeout(read, 400);
+    return () => clearTimeout(retry);
+  }, []);
+
+  function dismissClaimCode() {
+    try {
+      sessionStorage.removeItem(CLAIM_CODE_STORAGE_KEY);
+    } catch {
+      // ignore
+    }
+    setSavedCode(null);
+  }
+
+  function copyClaimCode() {
+    if (!savedCode) return;
+    navigator.clipboard.writeText(savedCode);
+    setCodeCopied(true);
+    setTimeout(() => setCodeCopied(false), 2000);
+  }
 
   const messages = useMemo<OptimisticMessage[]>(() => {
     const serverIds = new Set(thread.messages.map((m) => m.body + m.from));
@@ -107,6 +145,47 @@ export function ThreadView({ thread }: { thread: CounselThread }) {
 
   return (
     <div className="space-y-6">
+      {/* One-time claim-code banner */}
+      {savedCode && (
+        <div className="bg-cream-warm rounded-xl p-5 border border-gold-antique/40 space-y-3">
+          <div className="flex items-center gap-2">
+            <KeyRound className="h-4 w-4 text-gold-antique" />
+            <p className="text-xs uppercase tracking-wider text-ink/60 font-semibold">
+              Your Claim Code — save it before dismissing
+            </p>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <code className="font-mono text-base sm:text-lg text-emerald-deep bg-white px-4 py-2 rounded-lg border border-cream-muted select-all">
+              {savedCode}
+            </code>
+            <button
+              type="button"
+              onClick={copyClaimCode}
+              className="p-2 hover:bg-cream-muted rounded-lg transition text-ink/50 hover:text-emerald-deep"
+              aria-label="Copy claim code"
+            >
+              {codeCopied ? (
+                <Check className="h-5 w-5 text-emerald-deep" />
+              ) : (
+                <Copy className="h-5 w-5" />
+              )}
+            </button>
+          </div>
+          <p className="text-xs text-ink/60 leading-relaxed">
+            This code is the only way to reach this thread from a different
+            device (phone, another browser). Once dismissed, it won&apos;t be
+            shown again — store it somewhere private.
+          </p>
+          <button
+            type="button"
+            onClick={dismissClaimCode}
+            className="btn-secondary !py-2 !px-4 text-xs"
+          >
+            I&apos;ve saved it — dismiss
+          </button>
+        </div>
+      )}
+
       {/* Thread meta bar */}
       <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-ink/60">
         <div className="flex items-center gap-2">
