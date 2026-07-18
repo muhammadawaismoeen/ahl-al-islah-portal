@@ -12,6 +12,7 @@ import {
   ClipboardList,
   Users,
   Crown,
+  LifeBuoy,
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -20,6 +21,7 @@ import { listSubmissions } from "@/lib/storage";
 import { listMessages } from "@/lib/message-store";
 import { listFeedback } from "@/lib/feedback-store";
 import { listSubmissions as listActivitySubmissions } from "@/lib/activity-submissions-store";
+import { listThreads as listCounselThreads } from "@/lib/counsel-store";
 import { getPositionBySlug } from "@/lib/positions";
 import { getQuestionSet } from "@/lib/questions";
 import { LoginForm } from "./LoginForm";
@@ -74,15 +76,17 @@ export default async function AdminPage({
     );
   }
 
-  const [submissions, messages, feedback, activitySubmissions] = await Promise.all([
+  const [submissions, messages, feedback, activitySubmissions, counselThreads] = await Promise.all([
     listSubmissions(),
     listMessages(),
     listFeedback(),
     listActivitySubmissions(),
+    listCounselThreads(),
   ]);
   const unreadMessages = messages.filter((m) => m.status === "unread").length;
   const unreadFeedback = feedback.filter((f) => f.status === "unread").length;
   const unreadActivities = activitySubmissions.filter((a) => a.status === "unread").length;
+  const unreadCounsel = counselThreads.filter((t) => t.advisorHasUnread).length;
 
   const {
     id: selectedId,
@@ -194,6 +198,18 @@ export default async function AdminPage({
                 {unreadFeedback > 0 && (
                   <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-gold-antique text-white text-[9px] font-bold flex items-center justify-center">
                     {unreadFeedback}
+                  </span>
+                )}
+              </Link>
+              <Link
+                href="/admin/counsel"
+                className="btn-ghost !py-2 !px-4 text-xs relative"
+              >
+                <LifeBuoy className="h-3.5 w-3.5" />
+                Counsel
+                {unreadCounsel > 0 && (
+                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-gold-antique text-white text-[9px] font-bold flex items-center justify-center">
+                    {unreadCounsel}
                   </span>
                 )}
               </Link>

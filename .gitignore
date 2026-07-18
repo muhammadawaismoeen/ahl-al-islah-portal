@@ -47,6 +47,7 @@ next-env.d.ts
 /data/sessions
 /data/feedback
 /data/activity-submissions
+/data/counsel
 
 # uploaded poster images (dev fallback when no Vercel Blob token)
 /public/uploads

@@ -1,0 +1,34 @@
+/**
+ * Shared counsel types and constants — safe to import from client components.
+ * All I/O and hashing helpers live in counsel-store.ts (server-only).
+ */
+
+export type CounselCohort = "brothers" | "sisters";
+
+export const COHORT_LABELS: Record<CounselCohort, string> = {
+  brothers: "Brothers",
+  sisters: "Sisters",
+};
+
+export type CounselMessageAuthor = "seeker" | "advisor";
+
+export interface CounselMessage {
+  id: string;
+  from: CounselMessageAuthor;
+  body: string;
+  submittedAt: string;
+}
+
+export type CounselThreadStatus = "open" | "closed";
+
+export interface CounselThread {
+  id: string;
+  claimCodeHash: string;
+  cohort?: CounselCohort;
+  createdAt: string;
+  updatedAt: string;
+  status: CounselThreadStatus;
+  advisorHasUnread: boolean;
+  seekerHasUnread: boolean;
+  messages: CounselMessage[];
+}
