@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import {
   Send,
@@ -26,27 +26,57 @@ function formatShort(iso: string): string {
   });
 }
 
+type OptimisticMessage = CounselMessage & { pending?: boolean };
+
 export function ThreadView({ thread }: { thread: CounselThread }) {
   const router = useRouter();
   const [reply, setReply] = useState("");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [optimistic, setOptimistic] = useState<OptimisticMessage[]>([]);
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  const messages = useMemo<OptimisticMessage[]>(() => {
+    const serverIds = new Set(thread.messages.map((m) => m.body + m.from));
+    const stillPending = optimistic.filter(
+      (m) => !serverIds.has(m.body + m.from)
+    );
+    return [...thread.messages, ...stillPending];
+  }, [thread.messages, optimistic]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [thread.messages.length]);
+  }, [messages.length]);
+
+  useEffect(() => {
+    if (optimistic.length > 0 && optimistic.every((m) =>
+      thread.messages.some((s) => s.body === m.body && s.from === m.from)
+    )) {
+      setOptimistic([]);
+    }
+  }, [thread.messages, optimistic]);
 
   async function handleSend() {
-    if (!reply.trim()) return;
+    const trimmed = reply.trim();
+    if (!trimmed) return;
+    const optimisticMsg: OptimisticMessage = {
+      id: `pending-${Date.now()}`,
+      from: "seeker",
+      body: trimmed,
+      submittedAt: new Date().toISOString(),
+      pending: true,
+    };
+    setOptimistic((prev) => [...prev, optimisticMsg]);
+    setReply("");
     setPending(true);
     setError(null);
-    const res = await postSeekerMessage(reply);
+    const res = await postSeekerMessage(trimmed);
     setPending(false);
     if (res.ok) {
-      setReply("");
       router.refresh();
     } else {
+      setOptimistic((prev) => prev.filter((m) => m.id !== optimisticMsg.id));
+      setReply(trimmed);
       setError(res.error ?? "Couldn't send.");
     }
   }

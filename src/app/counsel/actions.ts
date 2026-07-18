@@ -83,7 +83,7 @@ export async function postSeekerMessage(
     return { ok: false, error: "This thread has been closed by the Advisor." };
   }
 
-  await addMessage(threadId, "seeker", trimmed);
+  await addMessage(threadId, "seeker", trimmed, thread);
   revalidatePath("/counsel");
   revalidatePath("/admin/counsel");
   return { ok: true };

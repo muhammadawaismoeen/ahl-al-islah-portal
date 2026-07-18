@@ -112,9 +112,10 @@ export async function createThread(input: {
 export async function addMessage(
   threadId: string,
   from: CounselMessageAuthor,
-  body: string
+  body: string,
+  preloaded?: CounselThread
 ): Promise<boolean> {
-  const thread = await getThread(threadId);
+  const thread = preloaded ?? (await getThread(threadId));
   if (!thread) return false;
   const now = new Date().toISOString();
   const msg: CounselMessage = {
