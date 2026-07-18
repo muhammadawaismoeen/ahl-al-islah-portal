@@ -108,25 +108,14 @@ export function StartCounselForm() {
   return (
     <form ref={formRef} onSubmit={handleSubmit} className="ornate-card p-8 space-y-6">
       <div>
-        <label className="label-field">Which cohort are you from? (optional)</label>
-        <div className="grid grid-cols-3 gap-2 mt-1">
-          <label className="cursor-pointer">
-            <input
-              type="radio"
-              name="cohort"
-              value=""
-              defaultChecked
-              className="peer sr-only"
-            />
-            <span className="block text-center text-sm px-3 py-2.5 rounded-xl border border-cream-muted bg-cream-warm peer-checked:bg-emerald-deep peer-checked:text-white peer-checked:border-emerald-deep transition">
-              Prefer not to say
-            </span>
-          </label>
+        <label className="label-field">Which cohort are you from? *</label>
+        <div className="grid grid-cols-2 gap-2 mt-1">
           <label className="cursor-pointer">
             <input
               type="radio"
               name="cohort"
               value="brothers"
+              required
               className="peer sr-only"
             />
             <span className="block text-center text-sm px-3 py-2.5 rounded-xl border border-cream-muted bg-cream-warm peer-checked:bg-emerald-deep peer-checked:text-white peer-checked:border-emerald-deep transition">
@@ -138,6 +127,7 @@ export function StartCounselForm() {
               type="radio"
               name="cohort"
               value="sisters"
+              required
               className="peer sr-only"
             />
             <span className="block text-center text-sm px-3 py-2.5 rounded-xl border border-cream-muted bg-cream-warm peer-checked:bg-gold-antique peer-checked:text-white peer-checked:border-gold-antique transition">
@@ -145,7 +135,7 @@ export function StartCounselForm() {
             </span>
           </label>
         </div>
-        <p className="help-text">Helps the Advisor with context. You can leave it blank.</p>
+        <p className="help-text">Helps the Advisor with context.</p>
       </div>
 
       <div>

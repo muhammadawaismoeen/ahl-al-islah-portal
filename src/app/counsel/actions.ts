@@ -47,8 +47,10 @@ export async function startCounselThread(
     return { ok: false, error: "Message is too long (max 5000 characters)." };
   }
 
-  const cohort: CounselCohort | undefined =
-    cohortRaw === "brothers" || cohortRaw === "sisters" ? cohortRaw : undefined;
+  if (cohortRaw !== "brothers" && cohortRaw !== "sisters") {
+    return { ok: false, error: "Please choose your cohort." };
+  }
+  const cohort: CounselCohort = cohortRaw;
 
   const claimCode = generateClaimCode();
   await createThread({
