@@ -39,8 +39,6 @@ export default async function NewSessionPage() {
     );
   }
 
-  const hasBlobUpload = !!process.env.BLOB_READ_WRITE_TOKEN;
-
   return (
     <>
       <Navbar />
@@ -72,7 +70,6 @@ export default async function NewSessionPage() {
                 meetingLink: "",
                 description: "",
               }}
-              hasBlobUpload={hasBlobUpload}
               cancelHref="/admin/sessions"
               submitLabel="Create session"
             />

@@ -58,7 +58,6 @@ export default async function EditSessionPage({ params }: Props) {
 
   const activities = sortActivities(session.activities);
   const updateBound = updateSessionAction.bind(null, session.id);
-  const hasBlobUpload = !!process.env.BLOB_READ_WRITE_TOKEN;
 
   return (
     <>
@@ -111,7 +110,6 @@ export default async function EditSessionPage({ params }: Props) {
                 description: session.description ?? "",
               }}
               currentPosterUrl={session.posterUrl}
-              hasBlobUpload={hasBlobUpload}
               cancelHref="/admin/sessions"
               submitLabel="Save changes"
             />

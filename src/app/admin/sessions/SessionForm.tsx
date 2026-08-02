@@ -2,7 +2,8 @@
 
 import { useRef, useState } from "react";
 import Link from "next/link";
-import { upload } from "@vercel/blob/client";
+
+const MAX_POSTER_BYTES = 600 * 1024;
 
 interface Defaults {
   title: string;
@@ -19,8 +20,6 @@ interface Props {
   action: (formData: FormData) => void | Promise<void>;
   defaults: Defaults;
   currentPosterUrl?: string;
-  /** True in prod (BLOB_READ_WRITE_TOKEN set) → direct-upload to Blob bypasses Vercel's 4.5 MB body cap. */
-  hasBlobUpload: boolean;
   cancelHref: string;
   submitLabel: string;
 }
@@ -30,66 +29,39 @@ export function SessionForm({
   action,
   defaults,
   currentPosterUrl,
-  hasBlobUpload,
   cancelHref,
   submitLabel,
 }: Props) {
-  const formRef = useRef<HTMLFormElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
-  const posterUrlRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
-  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     if (busy) {
       e.preventDefault();
       return;
     }
     const file = fileRef.current?.files?.[0];
-    if (file && hasBlobUpload) {
+    if (file && file.size > MAX_POSTER_BYTES) {
       e.preventDefault();
-      setBusy(true);
-      setErr(null);
-      try {
-        const rawExt = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
-        const ext = ["jpg", "jpeg", "png", "webp", "gif"].includes(rawExt)
-          ? rawExt
-          : "jpg";
-        const stem = `${Date.now().toString(36)}`;
-        const result = await upload(`sessions/posters/${stem}.${ext}`, file, {
-          access: "public",
-          handleUploadUrl: "/api/sessions/poster-token",
-          contentType: file.type || `image/${ext === "jpg" ? "jpeg" : ext}`,
-        });
-        if (posterUrlRef.current) posterUrlRef.current.value = result.url;
-        if (fileRef.current) fileRef.current.value = "";
-        formRef.current?.requestSubmit();
-      } catch (uploadErr) {
-        const msg =
-          uploadErr instanceof Error ? uploadErr.message : "Upload failed.";
-        setErr(`Poster upload failed: ${msg}`);
-        setBusy(false);
-      }
+      setErr(
+        `Poster is ${Math.round(file.size / 1024)} KB — the maximum is ${Math.round(
+          MAX_POSTER_BYTES / 1024
+        )} KB. Please compress the image and try again.`
+      );
+      return;
     }
-    // Otherwise: dev path (no Blob) or no file → let the form go through the
-    // Server Action with the multipart body as-is.
+    setErr(null);
+    setBusy(true);
   }
 
   return (
     <form
-      ref={formRef}
       action={action}
       onSubmit={onSubmit}
       encType="multipart/form-data"
       className="space-y-5"
     >
-      <input
-        ref={posterUrlRef}
-        type="hidden"
-        name="posterUrl"
-        defaultValue=""
-      />
-
       <Field
         label="Session title *"
         name="title"
@@ -173,8 +145,8 @@ export function SessionForm({
         />
         <span className="text-[11px] text-ink/45 mt-1.5 block">
           {mode === "edit"
-            ? "Upload to replace the current poster. JPG, PNG, WebP, or GIF — up to 16 MB."
-            : "JPG, PNG, WebP, or GIF — up to 16 MB."}
+            ? "Upload to replace the current poster. JPG, PNG, WebP, or GIF — up to 600 KB."
+            : "JPG, PNG, WebP, or GIF — up to 600 KB."}
         </span>
       </div>
 
@@ -197,7 +169,7 @@ export function SessionForm({
           </Link>
         )}
         <button type="submit" className="btn-primary" disabled={busy}>
-          {busy ? "Uploading poster…" : submitLabel}
+          {busy ? "Saving…" : submitLabel}
         </button>
       </div>
     </form>
