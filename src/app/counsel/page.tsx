@@ -5,10 +5,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { getContent } from "@/lib/content-store";
 import { getThread, markSeekerRead } from "@/lib/counsel-store";
-import {
-  COUNSEL_THREAD_COOKIE,
-  COUNSEL_BLOB_COOKIE,
-} from "@/lib/counsel-types";
+import { COUNSEL_THREAD_COOKIE } from "@/lib/counsel-types";
 import { StartCounselForm } from "./StartCounselForm";
 import { ThreadView } from "./ThreadView";
 import { ClaimCodeGate } from "./ClaimCodeGate";
@@ -26,8 +23,7 @@ export default async function CounselPage() {
   const content = await getContent();
   const jar = await cookies();
   const threadId = jar.get(COUNSEL_THREAD_COOKIE)?.value ?? null;
-  const hintUrl = jar.get(COUNSEL_BLOB_COOKIE)?.value ?? null;
-  const thread = threadId ? await getThread(threadId, hintUrl) : null;
+  const thread = threadId ? await getThread(threadId) : null;
 
   if (thread && thread.seekerHasUnread) {
     await markSeekerRead(thread.id, thread);

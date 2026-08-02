@@ -2,6 +2,7 @@ import { promises as fs } from "fs";
 import path from "path";
 import crypto from "crypto";
 import { unstable_noStore as noStore } from "next/cache";
+import { isRedisStore, setDoc, getDoc, listDocs, deleteDoc } from "./redis";
 
 export type {
   CounselCohort,
@@ -13,19 +14,15 @@ export type {
 export { COHORT_LABELS } from "./counsel-types";
 
 import type {
-  CounselCohort,
   CounselMessage,
   CounselMessageAuthor,
   CounselThread,
   CounselThreadStatus,
+  CounselCohort,
 } from "./counsel-types";
 
 const DATA_DIR = path.join(process.cwd(), "data", "counsel");
-const BLOB_PREFIX = "counsel/";
-
-function isBlobStore(): boolean {
-  return !!process.env.BLOB_READ_WRITE_TOKEN;
-}
+const COLLECTION = "counsel";
 
 async function ensureDir() {
   await fs.mkdir(DATA_DIR, { recursive: true });
@@ -51,48 +48,17 @@ export function hashClaimCode(code: string): string {
 /*  Persistence primitives                                             */
 /* ------------------------------------------------------------------ */
 
-/** Blob content is CDN-cached (stale up to ~60s after overwrite) and the blob
- *  index is eventually consistent. Reads must bust the cache; reads of brand-new
- *  threads must go through the direct URL captured at write time. */
-function withCacheBust(url: string): string {
-  return `${url}${url.includes("?") ? "&" : "?"}cb=${Date.now()}`;
-}
-
-function isSafeBlobUrl(url: string, threadId: string): boolean {
-  try {
-    const u = new URL(url);
-    return (
-      u.protocol === "https:" &&
-      u.hostname.endsWith(".public.blob.vercel-storage.com") &&
-      u.pathname === `/${BLOB_PREFIX}${threadId}.json`
-    );
-  } catch {
-    return false;
-  }
-}
-
-/** Returns the blob's direct URL in prod, null with the local file store. */
-async function writeThread(thread: CounselThread): Promise<string | null> {
-  const payload = JSON.stringify(thread, null, 2);
-  if (isBlobStore()) {
-    const { put } = await import("@vercel/blob");
-    // No cacheControlMaxAge here: reads always cache-bust with a unique query
-    // param, so the default CDN TTL never serves us stale content anyway.
-    const { url } = await put(`${BLOB_PREFIX}${thread.id}.json`, payload, {
-      access: "public",
-      addRandomSuffix: false,
-      allowOverwrite: true,
-      contentType: "application/json",
-    });
-    return url;
+async function writeThread(thread: CounselThread): Promise<void> {
+  if (isRedisStore()) {
+    await setDoc(COLLECTION, thread.id, thread);
+    return;
   }
   await ensureDir();
   await fs.writeFile(
     path.join(DATA_DIR, `${thread.id}.json`),
-    payload,
+    JSON.stringify(thread, null, 2),
     "utf8"
   );
-  return null;
 }
 
 /* ------------------------------------------------------------------ */
@@ -103,7 +69,7 @@ export async function createThread(input: {
   firstMessage: string;
   cohort?: CounselCohort;
   claimCode: string;
-}): Promise<{ thread: CounselThread; blobUrl: string | null }> {
+}): Promise<CounselThread> {
   const now = new Date().toISOString();
   const threadId = `ct-${Date.now().toString(36)}-${crypto
     .randomBytes(4)
@@ -125,8 +91,8 @@ export async function createThread(input: {
     seekerHasUnread: false,
     messages: [firstMessage],
   };
-  const blobUrl = await writeThread(thread);
-  return { thread, blobUrl };
+  await writeThread(thread);
+  return thread;
 }
 
 /* ------------------------------------------------------------------ */
@@ -207,36 +173,12 @@ export async function setThreadStatus(
 export async function listThreads(): Promise<CounselThread[]> {
   noStore();
 
-  if (isBlobStore()) {
+  if (isRedisStore()) {
     try {
-      const { list } = await import("@vercel/blob");
-      const records: CounselThread[] = [];
-      let cursor: string | undefined;
-
-      do {
-        const result = await list({
-          prefix: BLOB_PREFIX,
-          ...(cursor ? { cursor } : {}),
-        });
-        const fetches = result.blobs.map(async (blob) => {
-          try {
-            const res = await fetch(withCacheBust(blob.url), {
-              cache: "no-store",
-            });
-            return (await res.json()) as CounselThread;
-          } catch {
-            return null;
-          }
-        });
-        const batch = await Promise.all(fetches);
-        for (const r of batch) {
-          if (r) records.push(r);
-        }
-        cursor = result.hasMore ? result.cursor : undefined;
-      } while (cursor);
-
+      const records = await listDocs<CounselThread>(COLLECTION);
       return records.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
-    } catch {
+    } catch (err) {
+      console.error("[counsel-store] listThreads failed:", err);
       return [];
     }
   }
@@ -264,38 +206,14 @@ export async function listThreads(): Promise<CounselThread[]> {
 /*  getThread                                                          */
 /* ------------------------------------------------------------------ */
 
-export async function getThread(
-  id: string,
-  hintUrl?: string | null
-): Promise<CounselThread | null> {
+export async function getThread(id: string): Promise<CounselThread | null> {
   noStore();
 
-  if (isBlobStore()) {
-    // Direct URL (from the cookie set at creation): skips the eventually-
-    // consistent index entirely, so brand-new threads resolve immediately.
-    if (hintUrl && isSafeBlobUrl(hintUrl, id)) {
-      try {
-        const res = await fetch(withCacheBust(hintUrl), { cache: "no-store" });
-        if (res.ok) {
-          const t = (await res.json()) as CounselThread;
-          if (t?.id === id) return t;
-        }
-      } catch {
-        // fall through to index lookup
-      }
-    }
+  if (isRedisStore()) {
     try {
-      const { list } = await import("@vercel/blob");
-      const { blobs } = await list({
-        prefix: `${BLOB_PREFIX}${id}.json`,
-        limit: 1,
-      });
-      if (blobs.length === 0) return null;
-      const res = await fetch(withCacheBust(blobs[0].url), {
-        cache: "no-store",
-      });
-      return (await res.json()) as CounselThread;
-    } catch {
+      return await getDoc<CounselThread>(COLLECTION, id);
+    } catch (err) {
+      console.error("[counsel-store] getThread failed:", err);
       return null;
     }
   }
@@ -326,17 +244,11 @@ export async function findThreadByClaimCode(
 /* ------------------------------------------------------------------ */
 
 export async function deleteThread(id: string): Promise<boolean> {
-  if (isBlobStore()) {
+  if (isRedisStore()) {
     try {
-      const { list, del } = await import("@vercel/blob");
-      const { blobs } = await list({
-        prefix: `${BLOB_PREFIX}${id}.json`,
-        limit: 1,
-      });
-      if (blobs.length === 0) return false;
-      await del(blobs[0].url);
-      return true;
-    } catch {
+      return await deleteDoc(COLLECTION, id);
+    } catch (err) {
+      console.error("[counsel-store] deleteThread failed:", err);
       return false;
     }
   }

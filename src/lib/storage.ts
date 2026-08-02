@@ -2,6 +2,7 @@ import { promises as fs } from "fs";
 import path from "path";
 import crypto from "crypto";
 import { unstable_noStore as noStore } from "next/cache";
+import { isRedisStore, setDoc, getDoc, listDocs, deleteDoc } from "./redis";
 
 export interface StoredSubmission {
   id: string;
@@ -13,16 +14,8 @@ export interface StoredSubmission {
   data: Record<string, unknown>;
 }
 
-/* ------------------------------------------------------------------ */
-/*  Env helpers                                                       */
-/* ------------------------------------------------------------------ */
-
 const DATA_DIR = path.join(process.cwd(), "data", "submissions");
-const BLOB_PREFIX = "submissions/";
-
-function isBlobStore(): boolean {
-  return !!process.env.BLOB_READ_WRITE_TOKEN;
-}
+const COLLECTION = "submissions";
 
 async function ensureDir() {
   await fs.mkdir(DATA_DIR, { recursive: true });
@@ -42,14 +35,8 @@ export async function saveSubmission(
     ...input,
   };
 
-  if (isBlobStore()) {
-    const { put } = await import("@vercel/blob");
-    await put(`${BLOB_PREFIX}${id}.json`, JSON.stringify(record, null, 2), {
-      access: "public",
-      addRandomSuffix: false,
-      allowOverwrite: true,
-      contentType: "application/json",
-    });
+  if (isRedisStore()) {
+    await setDoc(COLLECTION, id, record);
   } else {
     await ensureDir();
     const file = path.join(DATA_DIR, `${id}.json`);
@@ -66,37 +53,12 @@ export async function saveSubmission(
 export async function listSubmissions(): Promise<StoredSubmission[]> {
   noStore();
 
-  if (isBlobStore()) {
+  if (isRedisStore()) {
     try {
-      const { list } = await import("@vercel/blob");
-      const records: StoredSubmission[] = [];
-      let cursor: string | undefined;
-
-      // Paginate through all blobs with the submissions/ prefix
-      do {
-        const result = await list({
-          prefix: BLOB_PREFIX,
-          ...(cursor ? { cursor } : {}),
-        });
-        const fetches = result.blobs.map(async (blob) => {
-          try {
-            const res = await fetch(blob.url, { cache: "no-store" });
-            return (await res.json()) as StoredSubmission;
-          } catch {
-            return null;
-          }
-        });
-        const batch = await Promise.all(fetches);
-        for (const r of batch) {
-          if (r) records.push(r);
-        }
-        cursor = result.hasMore ? result.cursor : undefined;
-      } while (cursor);
-
-      return records.sort((a, b) =>
-        b.submittedAt.localeCompare(a.submittedAt)
-      );
-    } catch {
+      const records = await listDocs<StoredSubmission>(COLLECTION);
+      return records.sort((a, b) => b.submittedAt.localeCompare(a.submittedAt));
+    } catch (err) {
+      console.error("[storage] listSubmissions failed:", err);
       return [];
     }
   }
@@ -129,17 +91,11 @@ export async function getSubmission(
 ): Promise<StoredSubmission | null> {
   noStore();
 
-  if (isBlobStore()) {
+  if (isRedisStore()) {
     try {
-      const { list } = await import("@vercel/blob");
-      const { blobs } = await list({
-        prefix: `${BLOB_PREFIX}${id}.json`,
-        limit: 1,
-      });
-      if (blobs.length === 0) return null;
-      const res = await fetch(blobs[0].url, { cache: "no-store" });
-      return (await res.json()) as StoredSubmission;
-    } catch {
+      return await getDoc<StoredSubmission>(COLLECTION, id);
+    } catch (err) {
+      console.error("[storage] getSubmission failed:", err);
       return null;
     }
   }
@@ -159,17 +115,11 @@ export async function getSubmission(
 /* ------------------------------------------------------------------ */
 
 export async function deleteSubmission(id: string): Promise<boolean> {
-  if (isBlobStore()) {
+  if (isRedisStore()) {
     try {
-      const { list, del } = await import("@vercel/blob");
-      const { blobs } = await list({
-        prefix: `${BLOB_PREFIX}${id}.json`,
-        limit: 1,
-      });
-      if (blobs.length === 0) return false;
-      await del(blobs[0].url);
-      return true;
-    } catch {
+      return await deleteDoc(COLLECTION, id);
+    } catch (err) {
+      console.error("[storage] deleteSubmission failed:", err);
       return false;
     }
   }

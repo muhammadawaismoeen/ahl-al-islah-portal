@@ -2,17 +2,14 @@ import { promises as fs } from "fs";
 import path from "path";
 import crypto from "crypto";
 import { unstable_noStore as noStore } from "next/cache";
+import { isRedisStore, setDoc, getDoc, listDocs, deleteDoc } from "./redis";
 
 export type { MessageRole, AdvisorMessage } from "./message-types";
 export { ROLE_LABELS } from "./message-types";
 import type { AdvisorMessage } from "./message-types";
 
 const DATA_DIR = path.join(process.cwd(), "data", "messages");
-const BLOB_PREFIX = "messages/";
-
-function isBlobStore(): boolean {
-  return !!process.env.BLOB_READ_WRITE_TOKEN;
-}
+const COLLECTION = "messages";
 
 async function ensureDir() {
   await fs.mkdir(DATA_DIR, { recursive: true });
@@ -33,14 +30,8 @@ export async function saveMessage(
     ...input,
   };
 
-  if (isBlobStore()) {
-    const { put } = await import("@vercel/blob");
-    await put(`${BLOB_PREFIX}${id}.json`, JSON.stringify(record, null, 2), {
-      access: "public",
-      addRandomSuffix: false,
-      allowOverwrite: true,
-      contentType: "application/json",
-    });
+  if (isRedisStore()) {
+    await setDoc(COLLECTION, id, record);
   } else {
     await ensureDir();
     await fs.writeFile(
@@ -66,14 +57,8 @@ export async function updateMessage(
 
   const updated: AdvisorMessage = { ...existing, ...patch };
 
-  if (isBlobStore()) {
-    const { put } = await import("@vercel/blob");
-    await put(`${BLOB_PREFIX}${id}.json`, JSON.stringify(updated, null, 2), {
-      access: "public",
-      addRandomSuffix: false,
-      allowOverwrite: true,
-      contentType: "application/json",
-    });
+  if (isRedisStore()) {
+    await setDoc(COLLECTION, id, updated);
   } else {
     await ensureDir();
     await fs.writeFile(
@@ -93,36 +78,12 @@ export async function updateMessage(
 export async function listMessages(): Promise<AdvisorMessage[]> {
   noStore();
 
-  if (isBlobStore()) {
+  if (isRedisStore()) {
     try {
-      const { list } = await import("@vercel/blob");
-      const records: AdvisorMessage[] = [];
-      let cursor: string | undefined;
-
-      do {
-        const result = await list({
-          prefix: BLOB_PREFIX,
-          ...(cursor ? { cursor } : {}),
-        });
-        const fetches = result.blobs.map(async (blob) => {
-          try {
-            const res = await fetch(blob.url, { cache: "no-store" });
-            return (await res.json()) as AdvisorMessage;
-          } catch {
-            return null;
-          }
-        });
-        const batch = await Promise.all(fetches);
-        for (const r of batch) {
-          if (r) records.push(r);
-        }
-        cursor = result.hasMore ? result.cursor : undefined;
-      } while (cursor);
-
-      return records.sort((a, b) =>
-        b.submittedAt.localeCompare(a.submittedAt)
-      );
-    } catch {
+      const records = await listDocs<AdvisorMessage>(COLLECTION);
+      return records.sort((a, b) => b.submittedAt.localeCompare(a.submittedAt));
+    } catch (err) {
+      console.error("[message-store] listMessages failed:", err);
       return [];
     }
   }
@@ -153,17 +114,11 @@ export async function listMessages(): Promise<AdvisorMessage[]> {
 export async function getMessage(id: string): Promise<AdvisorMessage | null> {
   noStore();
 
-  if (isBlobStore()) {
+  if (isRedisStore()) {
     try {
-      const { list } = await import("@vercel/blob");
-      const { blobs } = await list({
-        prefix: `${BLOB_PREFIX}${id}.json`,
-        limit: 1,
-      });
-      if (blobs.length === 0) return null;
-      const res = await fetch(blobs[0].url, { cache: "no-store" });
-      return (await res.json()) as AdvisorMessage;
-    } catch {
+      return await getDoc<AdvisorMessage>(COLLECTION, id);
+    } catch (err) {
+      console.error("[message-store] getMessage failed:", err);
       return null;
     }
   }
@@ -182,17 +137,11 @@ export async function getMessage(id: string): Promise<AdvisorMessage | null> {
 /* ------------------------------------------------------------------ */
 
 export async function deleteMessage(id: string): Promise<boolean> {
-  if (isBlobStore()) {
+  if (isRedisStore()) {
     try {
-      const { list, del } = await import("@vercel/blob");
-      const { blobs } = await list({
-        prefix: `${BLOB_PREFIX}${id}.json`,
-        limit: 1,
-      });
-      if (blobs.length === 0) return false;
-      await del(blobs[0].url);
-      return true;
-    } catch {
+      return await deleteDoc(COLLECTION, id);
+    } catch (err) {
+      console.error("[message-store] deleteMessage failed:", err);
       return false;
     }
   }

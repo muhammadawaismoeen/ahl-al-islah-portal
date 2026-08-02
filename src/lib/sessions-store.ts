@@ -2,16 +2,13 @@ import { promises as fs } from "fs";
 import path from "path";
 import crypto from "crypto";
 import { unstable_noStore as noStore } from "next/cache";
+import { isRedisStore, setDoc, getDoc, listDocs, deleteDoc } from "./redis";
 import type { Session, Activity } from "./sessions-types";
 
 export type { Session, Activity } from "./sessions-types";
 
 const DATA_DIR = path.join(process.cwd(), "data", "sessions");
-const BLOB_PREFIX = "sessions/";
-
-function isBlobStore(): boolean {
-  return !!process.env.BLOB_READ_WRITE_TOKEN;
-}
+const COLLECTION = "sessions";
 
 async function ensureDir() {
   await fs.mkdir(DATA_DIR, { recursive: true });
@@ -35,27 +32,20 @@ export function slugify(title: string): string {
 }
 
 /* ------------------------------------------------------------------ */
-/*  internal: write / read / delete one session                        */
+/*  internal: write one session                                        */
 /* ------------------------------------------------------------------ */
 
 async function writeSession(record: Session): Promise<void> {
-  const payload = JSON.stringify(record, null, 2);
-  if (isBlobStore()) {
-    const { put } = await import("@vercel/blob");
-    await put(`${BLOB_PREFIX}${record.id}.json`, payload, {
-      access: "public",
-      addRandomSuffix: false,
-      allowOverwrite: true,
-      contentType: "application/json",
-    });
-  } else {
-    await ensureDir();
-    await fs.writeFile(
-      path.join(DATA_DIR, `${record.id}.json`),
-      payload,
-      "utf8"
-    );
+  if (isRedisStore()) {
+    await setDoc(COLLECTION, record.id, record);
+    return;
   }
+  await ensureDir();
+  await fs.writeFile(
+    path.join(DATA_DIR, `${record.id}.json`),
+    JSON.stringify(record, null, 2),
+    "utf8"
+  );
 }
 
 /* ------------------------------------------------------------------ */
@@ -65,34 +55,12 @@ async function writeSession(record: Session): Promise<void> {
 export async function listSessions(): Promise<Session[]> {
   noStore();
 
-  if (isBlobStore()) {
+  if (isRedisStore()) {
     try {
-      const { list } = await import("@vercel/blob");
-      const records: Session[] = [];
-      let cursor: string | undefined;
-
-      do {
-        const result = await list({
-          prefix: BLOB_PREFIX,
-          ...(cursor ? { cursor } : {}),
-        });
-        const fetches = result.blobs.map(async (blob) => {
-          try {
-            const res = await fetch(blob.url, { cache: "no-store" });
-            return (await res.json()) as Session;
-          } catch {
-            return null;
-          }
-        });
-        const batch = await Promise.all(fetches);
-        for (const r of batch) {
-          if (r) records.push(r);
-        }
-        cursor = result.hasMore ? result.cursor : undefined;
-      } while (cursor);
-
+      const records = await listDocs<Session>(COLLECTION);
       return records.sort((a, b) => b.date.localeCompare(a.date));
-    } catch {
+    } catch (err) {
+      console.error("[sessions-store] listSessions failed:", err);
       return [];
     }
   }
@@ -128,17 +96,11 @@ export async function listSessions(): Promise<Session[]> {
 export async function getSession(id: string): Promise<Session | null> {
   noStore();
 
-  if (isBlobStore()) {
+  if (isRedisStore()) {
     try {
-      const { list } = await import("@vercel/blob");
-      const { blobs } = await list({
-        prefix: `${BLOB_PREFIX}${id}.json`,
-        limit: 1,
-      });
-      if (blobs.length === 0) return null;
-      const res = await fetch(blobs[0].url, { cache: "no-store" });
-      return (await res.json()) as Session;
-    } catch {
+      return await getDoc<Session>(COLLECTION, id);
+    } catch (err) {
+      console.error("[sessions-store] getSession failed:", err);
       return null;
     }
   }
@@ -234,17 +196,11 @@ export async function updateSession(
 /* ------------------------------------------------------------------ */
 
 export async function deleteSession(id: string): Promise<boolean> {
-  if (isBlobStore()) {
+  if (isRedisStore()) {
     try {
-      const { list, del } = await import("@vercel/blob");
-      const { blobs } = await list({
-        prefix: `${BLOB_PREFIX}${id}.json`,
-        limit: 1,
-      });
-      if (blobs.length === 0) return false;
-      await del(blobs[0].url);
-      return true;
-    } catch {
+      return await deleteDoc(COLLECTION, id);
+    } catch (err) {
+      console.error("[sessions-store] deleteSession failed:", err);
       return false;
     }
   }

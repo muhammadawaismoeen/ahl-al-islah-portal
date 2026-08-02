@@ -5,8 +5,8 @@
 
 /** httpOnly cookie holding the seeker's thread id on this device. */
 export const COUNSEL_THREAD_COOKIE = "ahl_counsel_thread";
-/** httpOnly cookie holding the thread's direct blob URL (prod only) so reads
- *  never depend on the eventually-consistent blob index. */
+/** Legacy httpOnly cookie from the Vercel Blob era (held the thread's direct
+ *  blob URL). No longer written — kept only so existing cookies get cleared. */
 export const COUNSEL_BLOB_COOKIE = "ahl_counsel_blob";
 /** sessionStorage key that carries the claim code from the start form to the
  *  thread view, where it's shown until the seeker dismisses it. */

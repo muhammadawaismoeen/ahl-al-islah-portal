@@ -32,14 +32,11 @@ export async function getCurrentThreadId(): Promise<string | null> {
   return val ?? null;
 }
 
-async function setThreadCookies(threadId: string, blobUrl?: string | null) {
+async function setThreadCookies(threadId: string) {
   const jar = await cookies();
   jar.set(COOKIE, threadId, COOKIE_OPTS);
-  if (blobUrl) {
-    jar.set(BLOB_COOKIE, blobUrl, COOKIE_OPTS);
-  } else {
-    jar.delete(BLOB_COOKIE);
-  }
+  // Clear the legacy blob-URL hint cookie from the Vercel Blob era.
+  jar.delete(BLOB_COOKIE);
 }
 
 export async function startCounselThread(
@@ -65,16 +62,14 @@ export async function startCounselThread(
 
   try {
     const claimCode = generateClaimCode();
-    const { thread, blobUrl } = await createThread({
+    const thread = await createThread({
       firstMessage: body,
       cohort,
       claimCode,
     });
 
-    // Recognise this device immediately — no post-create lookup. On Vercel Blob
-    // the index is eventually consistent, so looking the thread up right after
-    // creating it (the old claim-code round trip) silently failed in prod.
-    await setThreadCookies(thread.id, blobUrl);
+    // Recognise this device immediately — no post-create lookup needed.
+    await setThreadCookies(thread.id);
 
     revalidatePath("/counsel");
     revalidatePath("/admin/counsel");
@@ -99,11 +94,10 @@ export async function postSeekerMessage(
   const threadId = jar.get(COOKIE)?.value ?? null;
   if (!threadId) return { ok: false, error: "No active thread. Please start a new one." };
 
-  const hintUrl = jar.get(BLOB_COOKIE)?.value ?? null;
-  const thread = await getThread(threadId, hintUrl);
+  const thread = await getThread(threadId);
   if (!thread) {
-    // Don't clear the cookie here — a miss can be a transient storage-index
-    // lag, and dropping the cookie would lock the seeker out of a live thread.
+    // Don't clear the cookie here — a miss can be a transient storage
+    // hiccup, and dropping the cookie would lock the seeker out of a live thread.
     return {
       ok: false,
       error: "Couldn't reach your thread just now. Please try again.",
@@ -141,9 +135,7 @@ export async function claimThreadByCode(
     };
   }
 
-  // No direct blob URL is known on this path (thread found via the index);
-  // clear any stale hint from a previous thread on this device.
-  await setThreadCookies(thread.id, null);
+  await setThreadCookies(thread.id);
   revalidatePath("/counsel");
   return { ok: true };
 }

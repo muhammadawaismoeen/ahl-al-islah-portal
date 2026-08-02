@@ -2,6 +2,7 @@ import { promises as fs } from "fs";
 import path from "path";
 import crypto from "crypto";
 import { unstable_noStore as noStore } from "next/cache";
+import { isRedisStore, setDoc, getDoc, listDocs, deleteDoc } from "./redis";
 
 export type { FeedbackEntry, ResponseChannel, Rating } from "./feedback-types";
 export {
@@ -11,11 +12,7 @@ export {
 import type { FeedbackEntry } from "./feedback-types";
 
 const DATA_DIR = path.join(process.cwd(), "data", "feedback");
-const BLOB_PREFIX = "feedback/";
-
-function isBlobStore(): boolean {
-  return !!process.env.BLOB_READ_WRITE_TOKEN;
-}
+const COLLECTION = "feedback";
 
 async function ensureDir() {
   await fs.mkdir(DATA_DIR, { recursive: true });
@@ -36,14 +33,8 @@ export async function saveFeedback(
     ...input,
   };
 
-  if (isBlobStore()) {
-    const { put } = await import("@vercel/blob");
-    await put(`${BLOB_PREFIX}${id}.json`, JSON.stringify(record, null, 2), {
-      access: "public",
-      addRandomSuffix: false,
-      allowOverwrite: true,
-      contentType: "application/json",
-    });
+  if (isRedisStore()) {
+    await setDoc(COLLECTION, id, record);
   } else {
     await ensureDir();
     await fs.writeFile(
@@ -69,14 +60,8 @@ export async function updateFeedback(
 
   const updated: FeedbackEntry = { ...existing, ...patch };
 
-  if (isBlobStore()) {
-    const { put } = await import("@vercel/blob");
-    await put(`${BLOB_PREFIX}${id}.json`, JSON.stringify(updated, null, 2), {
-      access: "public",
-      addRandomSuffix: false,
-      allowOverwrite: true,
-      contentType: "application/json",
-    });
+  if (isRedisStore()) {
+    await setDoc(COLLECTION, id, updated);
   } else {
     await ensureDir();
     await fs.writeFile(
@@ -96,36 +81,12 @@ export async function updateFeedback(
 export async function listFeedback(): Promise<FeedbackEntry[]> {
   noStore();
 
-  if (isBlobStore()) {
+  if (isRedisStore()) {
     try {
-      const { list } = await import("@vercel/blob");
-      const records: FeedbackEntry[] = [];
-      let cursor: string | undefined;
-
-      do {
-        const result = await list({
-          prefix: BLOB_PREFIX,
-          ...(cursor ? { cursor } : {}),
-        });
-        const fetches = result.blobs.map(async (blob) => {
-          try {
-            const res = await fetch(blob.url, { cache: "no-store" });
-            return (await res.json()) as FeedbackEntry;
-          } catch {
-            return null;
-          }
-        });
-        const batch = await Promise.all(fetches);
-        for (const r of batch) {
-          if (r) records.push(r);
-        }
-        cursor = result.hasMore ? result.cursor : undefined;
-      } while (cursor);
-
-      return records.sort((a, b) =>
-        b.submittedAt.localeCompare(a.submittedAt)
-      );
-    } catch {
+      const records = await listDocs<FeedbackEntry>(COLLECTION);
+      return records.sort((a, b) => b.submittedAt.localeCompare(a.submittedAt));
+    } catch (err) {
+      console.error("[feedback-store] listFeedback failed:", err);
       return [];
     }
   }
@@ -156,17 +117,11 @@ export async function listFeedback(): Promise<FeedbackEntry[]> {
 export async function getFeedback(id: string): Promise<FeedbackEntry | null> {
   noStore();
 
-  if (isBlobStore()) {
+  if (isRedisStore()) {
     try {
-      const { list } = await import("@vercel/blob");
-      const { blobs } = await list({
-        prefix: `${BLOB_PREFIX}${id}.json`,
-        limit: 1,
-      });
-      if (blobs.length === 0) return null;
-      const res = await fetch(blobs[0].url, { cache: "no-store" });
-      return (await res.json()) as FeedbackEntry;
-    } catch {
+      return await getDoc<FeedbackEntry>(COLLECTION, id);
+    } catch (err) {
+      console.error("[feedback-store] getFeedback failed:", err);
       return null;
     }
   }
@@ -185,17 +140,11 @@ export async function getFeedback(id: string): Promise<FeedbackEntry | null> {
 /* ------------------------------------------------------------------ */
 
 export async function deleteFeedback(id: string): Promise<boolean> {
-  if (isBlobStore()) {
+  if (isRedisStore()) {
     try {
-      const { list, del } = await import("@vercel/blob");
-      const { blobs } = await list({
-        prefix: `${BLOB_PREFIX}${id}.json`,
-        limit: 1,
-      });
-      if (blobs.length === 0) return false;
-      await del(blobs[0].url);
-      return true;
-    } catch {
+      return await deleteDoc(COLLECTION, id);
+    } catch (err) {
+      console.error("[feedback-store] deleteFeedback failed:", err);
       return false;
     }
   }
