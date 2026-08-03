@@ -14,7 +14,7 @@ export async function login(formData: FormData) {
     return {
       ok: false,
       error:
-        "ADMIN_PASSWORD is not configured on the server. Please set it in .env.local.",
+        "ADMIN_PASSWORD is not set for this deployment. On Vercel: Settings → Environment Variables → add ADMIN_PASSWORD for Production, then redeploy. (Local dev: set it in .env.local.)",
     };
   }
   if (password !== expected) {

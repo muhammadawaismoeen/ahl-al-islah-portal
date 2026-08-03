@@ -23,8 +23,17 @@ export function LoginForm({ action }: Props) {
               setError(result.error ?? "Login failed.");
               toast.error(result.error ?? "Login failed.");
             }
-          } catch {
-            // redirect throws intentionally when login succeeds — no-op
+          } catch (err) {
+            // redirect() throws NEXT_REDIRECT when login succeeds — let the
+            // router take over. Anything else is a real failure: surface it
+            // instead of leaving a dead button.
+            const digest = (err as { digest?: string })?.digest ?? "";
+            if (!digest.startsWith("NEXT_REDIRECT")) {
+              const msg =
+                "Sign-in hit a server error. Please try again — if it persists, check the Vercel function logs.";
+              setError(msg);
+              toast.error(msg);
+            }
           }
         });
       }}
@@ -59,8 +68,8 @@ export function LoginForm({ action }: Props) {
         )}
       </button>
       <p className="text-[11px] text-ink/50 text-center leading-relaxed pt-2">
-        Set <code className="font-mono">ADMIN_PASSWORD</code> in your{" "}
-        <code className="font-mono">.env.local</code> file before first login.
+        Uses the <code className="font-mono">ADMIN_PASSWORD</code> set for this
+        environment.
       </p>
     </form>
   );
