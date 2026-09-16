@@ -151,6 +151,69 @@ export interface FormConfig {
   [positionSlug: string]: FormQuestionSet;
 }
 
+// ---------------------------------------------------------------------------
+// Positions — admin-editable leadership/service role registry.
+// Mirrors the shape that used to live as a hardcoded array in
+// src/lib/positions.ts. Positions are looked up by `slug`; apply/[slug]
+// and become-a-member resolve against this array via src/lib/positions.ts,
+// which now reads from SiteContent instead of a static file.
+// ---------------------------------------------------------------------------
+
+export type Wing = "male" | "female" | "both";
+
+export type PositionLevel = "head" | "deputy" | "lead" | "member";
+
+export interface Position {
+  slug: string;
+  title: string;
+  arabicTitle?: string;
+  wing: Wing;
+  level: PositionLevel;
+  reportsTo: string;
+  summary: string;
+  responsibilities: string[];
+  idealProfile: string[];
+  commitment: string;
+  termLength: string;
+  questionSet: string; // references id in questions.ts
+  open: boolean;
+  closesOn?: string; // ISO date string
+  priority: number; // lower = shown first
+}
+
+// ---------------------------------------------------------------------------
+// Drive / Feedback / Become-a-Member page copy — admin-editable.
+// ---------------------------------------------------------------------------
+
+export interface DriveContent {
+  landingHeroEyebrow: string;
+  landingHeroTitle: string;
+  landingTagline: string;
+  pickupInfoFallback: string;
+  applyCtaLabel: string;
+  donateCtaLabel: string;
+  reserveButtonLabel: string;
+  statBooksLabel: string;
+  statDrivesLabel: string;
+  statFundLabel: string;
+  whatsIncludedHeading: string;
+  whatsIncludedItems: Array<{ title: string; text: string }>;
+  howItWorksHeading: string;
+  howItWorksSteps: Array<{ title: string; text: string }>;
+}
+
+export interface FeedbackPageContent {
+  eyebrow: string;
+  heading: string;
+  lead: string;
+}
+
+export interface BecomeMemberPageContent {
+  eyebrow: string;
+  heading: string;
+  lead: string;
+}
+
 export interface SiteContent {
   hero: HeroContent;
   about: AboutContent;
@@ -162,4 +225,8 @@ export interface SiteContent {
   visibility: SectionVisibility;
   customLogo: string; // base64 data URL, or empty string for default SVG
   formConfig: FormConfig;
+  positions: Position[];
+  drive: DriveContent;
+  feedbackPage: FeedbackPageContent;
+  becomeMemberPage: BecomeMemberPageContent;
 }

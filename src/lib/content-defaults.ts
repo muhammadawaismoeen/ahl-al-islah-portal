@@ -1,6 +1,159 @@
-import type { SiteContent, FormConfig, FormQuestionSet } from "./content-types";
+import type {
+  SiteContent,
+  FormConfig,
+  FormQuestionSet,
+  Position,
+} from "./content-types";
 import { QUESTION_SETS } from "./questions";
 import type { QuestionSet } from "./questions";
+
+// ---------------------------------------------------------------------------
+// Default position registry — was previously a hardcoded array in
+// src/lib/positions.ts. Now lives here as the seed data for SiteContent;
+// the Advisor edits it live via /admin/positions.
+// ---------------------------------------------------------------------------
+
+const DEFAULT_POSITIONS: Position[] = [
+  {
+    slug: "male-head",
+    title: "Male Head of Ahl Al-Islah",
+    arabicTitle: "رئيس جناح الإخوة",
+    wing: "male",
+    level: "head",
+    reportsTo: "Advisor",
+    summary:
+      "Lead the brothers' cohort day-to-day. Execute the Advisor's strategic direction, manage all brothers' team members, and represent the cohort in HSE meetings. You are accountable for all brothers' programming and for upholding the values and standards of the department.",
+    responsibilities: [
+      "Lead weekly meetings with the male core team",
+      "Execute the curriculum and quarterly plan set by the Advisor",
+      "Onboard and mentor male team members and new brothers",
+      "Represent Ahl Al-Islah at HSE general meetings",
+      "Submit weekly/monthly written reports to the Advisor",
+      "Train your successor before end of term",
+    ],
+    idealProfile: [
+      "Senior male medical student with genuine taqwa",
+      "Respected by male peers, strong communicator",
+      "Committed to the 5 daily prayers and consistent in Deen",
+      "Comfortable leading within the parallel-cohort model",
+      "Able to commit 6–8 hours per week during academic terms",
+    ],
+    commitment: "6–8 hours/week",
+    termLength: "1 academic year",
+    questionSet: "head-application",
+    open: false,
+    priority: 1,
+  },
+  {
+    slug: "female-head",
+    title: "Female Head of Ahl Al-Islah",
+    arabicTitle: "رئيسة جناح الأخوات",
+    wing: "female",
+    level: "head",
+    reportsTo: "Advisor",
+    summary:
+      "Lead the sisters' cohort day-to-day. Execute the Advisor's strategic direction, manage all sisters' team members, and represent the cohort in HSE women's forums. You lead an independent cohort with full trust and authority — parallel to, not beneath, the brothers' team.",
+    responsibilities: [
+      "Lead weekly meetings with the female core team",
+      "Execute the curriculum and quarterly plan set by the Advisor",
+      "Onboard and mentor female team members and new sisters",
+      "Represent Ahl Al-Islah in HSE women's committees or forums",
+      "Submit weekly/monthly written reports to the Advisor",
+      "Train your successor before end of term",
+    ],
+    idealProfile: [
+      "Senior female medical student with genuine taqwa",
+      "Respected by female peers, strong communicator",
+      "Committed to the 5 daily prayers and consistent in Deen",
+      "Embodies haya' and is comfortable with the parallel-cohort model",
+      "Able to commit 6–8 hours per week during academic terms",
+    ],
+    commitment: "6–8 hours/week",
+    termLength: "1 academic year",
+    questionSet: "head-application",
+    open: false,
+    priority: 2,
+  },
+  {
+    slug: "core-member-male",
+    title: "Core Member — Brothers",
+    arabicTitle: "عضو أساسي · جناح الإخوة",
+    wing: "male",
+    level: "member",
+    reportsTo: "Head of Brothers' Cohort",
+    summary:
+      "Core Members are the backbone of Ahl Al-Islah — committed brothers who actively contribute to the cohort's programmes, support department events, and grow in character and leadership under the guidance of the Advisor and the Brothers' Head.",
+    responsibilities: [
+      "Attend and actively participate in weekly cohort meetings",
+      "Support the planning and execution of department events and programmes",
+      "Build genuine brotherhood within the cohort",
+      "Complete assigned tasks punctually and with excellence",
+      "Maintain consistent communication with the Brothers' Head",
+      "Work on personal development goals set alongside the Advisor",
+    ],
+    idealProfile: [
+      "Male medical student of any year with a sincere desire to grow",
+      "Team-oriented, dependable, and eager to contribute",
+      "Able to commit 3–5 hours per week during academic terms",
+      "Comfortable working within a structured, values-driven team",
+    ],
+    commitment: "3–5 hours/week",
+    termLength: "1 academic year",
+    questionSet: "core-member-brothers-application",
+    open: false,
+    priority: 5,
+  },
+  {
+    slug: "core-member-female",
+    title: "Core Member — Sisters",
+    arabicTitle: "عضوة أساسية · جناح الأخوات",
+    wing: "female",
+    level: "member",
+    reportsTo: "Head of Sisters' Cohort",
+    summary:
+      "Core Members are the backbone of Ahl Al-Islah — committed sisters who actively contribute to the cohort's programmes, support department events, and grow in character and leadership under the guidance of the Advisor and the Sisters' Head.",
+    responsibilities: [
+      "Attend and actively participate in weekly cohort meetings",
+      "Support the planning and execution of department events and programmes",
+      "Build genuine sisterhood within the cohort",
+      "Complete assigned tasks punctually and with excellence",
+      "Maintain consistent communication with the Sisters' Head",
+      "Work on personal development goals set alongside the Advisor",
+    ],
+    idealProfile: [
+      "Female medical student of any year with a sincere desire to grow",
+      "Team-oriented, dependable, and eager to contribute",
+      "Able to commit 3–5 hours per week during academic terms",
+      "Comfortable working within a structured, values-driven team",
+    ],
+    commitment: "3–5 hours/week",
+    termLength: "1 academic year",
+    questionSet: "core-member-application",
+    open: false,
+    priority: 6,
+  },
+  {
+    slug: "general-member",
+    title: "Ahl Al-Islah Membership",
+    arabicTitle: "العضوية",
+    wing: "both",
+    level: "member",
+    reportsTo: "Cohort Head",
+    summary:
+      "Be part of the Ahl Al-Islah community — show up to sessions, stay on the updates list, and grow alongside the cohort. No leadership commitment required.",
+    responsibilities: [
+      "Attend sessions when you can",
+      "Stay engaged with cohort updates",
+      "Grow with the community",
+    ],
+    idealProfile: ["Any HSE student with sincere interest in the journey"],
+    commitment: "As you are able",
+    termLength: "Open-ended",
+    questionSet: "general-member-application",
+    open: true,
+    priority: 100,
+  },
+];
 
 /**
  * DEFAULT PUBLIC COPY — practicing Hikmah and Diplomacy.
@@ -45,6 +198,7 @@ export const DEFAULT_CONTENT: SiteContent = {
       { value: "2", label: "Dedicated cohorts" },
       { value: "1", label: "Unified mission" },
       { value: "6", label: "Core values" },
+      { value: "86", label: "Sessions done" },
     ],
   },
 
@@ -237,6 +391,65 @@ export const DEFAULT_CONTENT: SiteContent = {
   customLogo: "",
 
   formConfig: buildDefaultFormConfig(),
+
+  positions: DEFAULT_POSITIONS,
+
+  drive: {
+    landingHeroEyebrow: "قرآن وسيرة",
+    landingHeroTitle: "Qur'an & Seerah Drive",
+    landingTagline:
+      "Every book we place in a student's hands is a seed for the deen — sponsored, distributed, and tracked with care.",
+    pickupInfoFallback:
+      "Pickup details are announced once a drive is open — check back soon.",
+    applyCtaLabel: "Apply for a Book",
+    donateCtaLabel: "Donate",
+    reserveButtonLabel: "Reserve my copy",
+    statBooksLabel: "Books given all-time",
+    statDrivesLabel: "Drives run",
+    statFundLabel: "General fund total",
+    whatsIncludedHeading: "What's included",
+    whatsIncludedItems: [
+      {
+        title: "A physical copy",
+        text: "A Qur'an or Seerah book, sponsored by the Ahl Al-Islah general fund or a specific drive.",
+      },
+      {
+        title: "A pickup ticket",
+        text: "A QR-coded ticket generated instantly after you apply — show it at pickup.",
+      },
+      {
+        title: "Transparent tracking",
+        text: "Every book given is logged, so the community can see the drive's impact over time.",
+      },
+    ],
+    howItWorksHeading: "How it works",
+    howItWorksSteps: [
+      {
+        title: "Apply for a book",
+        text: "Choose an item from the current drive's catalog and submit your request.",
+      },
+      {
+        title: "Get your ticket",
+        text: "Receive a pickup ticket with a QR code right after applying.",
+      },
+      {
+        title: "Collect at pickup",
+        text: "Bring your ticket to the announced pickup time and location.",
+      },
+    ],
+  },
+
+  feedbackPage: {
+    eyebrow: "ملاحظاتكم",
+    heading: "Session Feedback",
+    lead: "Pick the session you're reflecting on and share what stayed with you. Your honest words shape every session that follows.",
+  },
+
+  becomeMemberPage: {
+    eyebrow: "انضم إلينا",
+    heading: "Become a Member",
+    lead: "Sign up to be part of the Ahl Al-Islah community. Show up to sessions, stay on our cohort updates, and grow alongside the team. No leadership commitment required.",
+  },
 };
 
 // ---------------------------------------------------------------------------

@@ -5,7 +5,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { getContent } from "@/lib/content-store";
 import { getActiveDrive, computeDriveStats } from "@/lib/drive-store";
-import { DRIVE_COPY, DRIVE_CURRENCY } from "@/lib/drive-config";
+import { DRIVE_CURRENCY } from "@/lib/drive-config";
 import { formatDate } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -26,6 +26,7 @@ export default async function DrivePage() {
   const goal = drive?.goalAmount ?? 0;
   const raised = drive?.raisedAmount ?? 0;
   const progressPct = goal > 0 ? Math.min(100, Math.round((raised / goal) * 100)) : 0;
+  const { drive: driveCopy } = content;
 
   return (
     <>
@@ -38,13 +39,13 @@ export default async function DrivePage() {
               <BookOpen className="h-7 w-7 text-emerald-deep" />
             </div>
             <span className="arabic-text block text-emerald-deep text-lg mb-1">
-              {DRIVE_COPY.landingHeroEyebrow}
+              {driveCopy.landingHeroEyebrow}
             </span>
             <h1 className="heading-serif text-4xl sm:text-5xl font-semibold text-emerald-deep">
-              {drive?.name ?? DRIVE_COPY.landingHeroTitle}
+              {drive?.name ?? driveCopy.landingHeroTitle}
             </h1>
             <p className="mt-3 text-ink/65 leading-relaxed max-w-lg mx-auto">
-              {DRIVE_COPY.landingTagline}
+              {driveCopy.landingTagline}
             </p>
 
             {drive ? (
@@ -60,7 +61,7 @@ export default async function DrivePage() {
               </div>
             ) : (
               <p className="mt-4 text-xs text-ink/50 bg-surface-2 inline-block px-3 py-1.5 rounded-full border border-border">
-                {DRIVE_COPY.pickupInfoFallback}
+                {driveCopy.pickupInfoFallback}
               </p>
             )}
           </div>
@@ -91,11 +92,11 @@ export default async function DrivePage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-14">
             <Link href="/drive/apply" className="btn-primary">
               <BookOpen className="h-4 w-4" />
-              {DRIVE_COPY.applyCtaLabel}
+              {driveCopy.applyCtaLabel}
             </Link>
             <Link href="/drive/donate" className="btn-secondary">
               <HandCoins className="h-4 w-4" />
-              {DRIVE_COPY.donateCtaLabel}
+              {driveCopy.donateCtaLabel}
             </Link>
           </div>
 
@@ -104,17 +105,17 @@ export default async function DrivePage() {
             <StatChip
               icon={<Library className="h-5 w-5 text-emerald-deep" />}
               value={stats.booksGivenAllTime}
-              label={DRIVE_COPY.statBooksLabel}
+              label={driveCopy.statBooksLabel}
             />
             <StatChip
               icon={<CalendarDays className="h-5 w-5 text-emerald-deep" />}
               value={stats.drivesRun}
-              label={DRIVE_COPY.statDrivesLabel}
+              label={driveCopy.statDrivesLabel}
             />
             <StatChip
               icon={<HeartHandshake className="h-5 w-5 text-emerald-deep" />}
               value={`${DRIVE_CURRENCY} ${stats.generalFundTotal.toLocaleString()}`}
-              label={DRIVE_COPY.statFundLabel}
+              label={driveCopy.statFundLabel}
             />
           </div>
 
@@ -124,6 +125,49 @@ export default async function DrivePage() {
               View your Drive records
             </Link>
           </p>
+
+          {/* What's included */}
+          <section className="mt-16">
+            <h2 className="heading-serif text-2xl font-semibold text-emerald-deep mb-6 text-center">
+              {driveCopy.whatsIncludedHeading}
+            </h2>
+            <div className="grid sm:grid-cols-3 gap-4">
+              {driveCopy.whatsIncludedItems.map((item) => (
+                <div key={item.title} className="p-5 border border-border">
+                  <p className="font-medium text-sm text-ink mb-1">
+                    {item.title}
+                  </p>
+                  <p className="text-xs text-ink/60 leading-relaxed">
+                    {item.text}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* How it works */}
+          <section className="mt-16">
+            <h2 className="heading-serif text-2xl font-semibold text-emerald-deep mb-6 text-center">
+              {driveCopy.howItWorksHeading}
+            </h2>
+            <ol className="divide-y divide-border border-y border-border">
+              {driveCopy.howItWorksSteps.map((step, i) => (
+                <li key={step.title} className="flex gap-4 py-4">
+                  <span className="text-sm font-medium text-emerald-deep shrink-0">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <div>
+                    <p className="font-medium text-sm text-ink">
+                      {step.title}
+                    </p>
+                    <p className="mt-1 text-xs text-ink/60 leading-relaxed">
+                      {step.text}
+                    </p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </section>
         </div>
       </main>
       <Footer

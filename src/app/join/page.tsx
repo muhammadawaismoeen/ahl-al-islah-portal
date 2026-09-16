@@ -41,7 +41,7 @@ export default async function JoinPage() {
           {/* Two cohort cards */}
           <div className="grid sm:grid-cols-2 gap-6">
             {/* Brothers */}
-            <div className="ornate-card p-8 flex flex-col group hover:shadow-lg transition-shadow">
+            <div className="ornate-card p-8 flex flex-col group">
               <div className="mb-5">
                 <span className="inline-block w-3 h-3 rounded-full bg-emerald-deep mb-4" />
                 <p className="arabic-text text-xl text-emerald-deep mb-1">جناح الإخوة</p>
@@ -68,7 +68,7 @@ export default async function JoinPage() {
             </div>
 
             {/* Sisters */}
-            <div className="ornate-card p-8 flex flex-col group hover:shadow-lg transition-shadow">
+            <div className="ornate-card p-8 flex flex-col group">
               <div className="mb-5">
                 <span className="inline-block w-3 h-3 rounded-full bg-sapphire mb-4" />
                 <p className="arabic-text text-xl text-sapphire mb-1">جناح الأخوات</p>
@@ -87,7 +87,7 @@ export default async function JoinPage() {
               </ul>
               <Link
                 href="/apply/core-member-female"
-                className="inline-flex items-center justify-center gap-2 w-full px-6 py-3 rounded-full bg-sapphire text-white font-semibold tracking-wide shadow-md hover:bg-sapphire/90 hover:scale-[1.02] transition-all group"
+                className="inline-flex items-center justify-center gap-2 w-full px-6 py-3 rounded-sm border-[1.5px] border-sapphire bg-sapphire text-white font-medium text-sm tracking-wide transition-colors duration-200 hover:bg-sapphire/90 group"
               >
                 Apply — Sisters&apos; Cohort
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />

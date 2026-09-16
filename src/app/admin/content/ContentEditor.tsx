@@ -297,7 +297,7 @@ export function ContentEditor({
   return (
     <div className="space-y-4">
       {/* Sticky save bar */}
-      <div className="sticky top-0 z-40 bg-bg/90 backdrop-blur-lg border-b border-border -mx-4 px-4 py-3 flex items-center justify-between gap-4">
+      <div className="sticky top-0 z-40 bg-bg border-b border-border -mx-4 px-4 py-3 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           {dirty && (
             <span className="inline-flex items-center gap-1.5 text-xs text-amber font-medium">
@@ -1061,6 +1061,244 @@ export function ContentEditor({
           <TextInput
             value={content.cta.buttonLabel}
             onChange={(v) => set("cta", { buttonLabel: v })}
+          />
+        </Field>
+      </Section>
+
+      {/* ─── Drive ─── */}
+      <Section
+        title="Qur'an & Seerah Drive"
+        subtitle="/drive, /drive/apply, /drive/donate"
+        icon="📚"
+      >
+        <Field label="Landing Hero Eyebrow (Arabic)">
+          <TextInput
+            value={content.drive.landingHeroEyebrow}
+            onChange={(v) => set("drive", { landingHeroEyebrow: v })}
+          />
+        </Field>
+        <Field label="Landing Hero Title" help="Falls back when no drive is active">
+          <TextInput
+            value={content.drive.landingHeroTitle}
+            onChange={(v) => set("drive", { landingHeroTitle: v })}
+          />
+        </Field>
+        <Field label="Tagline">
+          <TextArea
+            value={content.drive.landingTagline}
+            onChange={(v) => set("drive", { landingTagline: v })}
+            rows={3}
+          />
+        </Field>
+        <Field label="Pickup Info Fallback" help="Shown when no drive is active">
+          <TextArea
+            value={content.drive.pickupInfoFallback}
+            onChange={(v) => set("drive", { pickupInfoFallback: v })}
+            rows={2}
+          />
+        </Field>
+        <Field label="Apply CTA Label">
+          <TextInput
+            value={content.drive.applyCtaLabel}
+            onChange={(v) => set("drive", { applyCtaLabel: v })}
+          />
+        </Field>
+        <Field label="Donate CTA Label">
+          <TextInput
+            value={content.drive.donateCtaLabel}
+            onChange={(v) => set("drive", { donateCtaLabel: v })}
+          />
+        </Field>
+        <Field label="Reserve Button Label" help="On the apply-for-a-book form">
+          <TextInput
+            value={content.drive.reserveButtonLabel}
+            onChange={(v) => set("drive", { reserveButtonLabel: v })}
+          />
+        </Field>
+        <Field label="Stat: Books Label">
+          <TextInput
+            value={content.drive.statBooksLabel}
+            onChange={(v) => set("drive", { statBooksLabel: v })}
+          />
+        </Field>
+        <Field label="Stat: Drives Label">
+          <TextInput
+            value={content.drive.statDrivesLabel}
+            onChange={(v) => set("drive", { statDrivesLabel: v })}
+          />
+        </Field>
+        <Field label="Stat: Fund Label">
+          <TextInput
+            value={content.drive.statFundLabel}
+            onChange={(v) => set("drive", { statFundLabel: v })}
+          />
+        </Field>
+
+        <Field label="What's Included — Heading">
+          <TextInput
+            value={content.drive.whatsIncludedHeading}
+            onChange={(v) => set("drive", { whatsIncludedHeading: v })}
+          />
+        </Field>
+        <div className="space-y-3 mt-2">
+          {content.drive.whatsIncludedItems.map((item, i) => (
+            <div key={i} className="p-3 border border-border rounded-lg space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-xs font-medium text-ink/50">Item {i + 1}</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const items = content.drive.whatsIncludedItems.filter(
+                      (_, idx) => idx !== i
+                    );
+                    set("drive", { whatsIncludedItems: items });
+                  }}
+                  className="text-xs text-danger hover:underline"
+                >
+                  Remove
+                </button>
+              </div>
+              <TextInput
+                value={item.title}
+                onChange={(v) => {
+                  const items = [...content.drive.whatsIncludedItems];
+                  items[i] = { ...items[i], title: v };
+                  set("drive", { whatsIncludedItems: items });
+                }}
+                placeholder="Title"
+              />
+              <TextArea
+                value={item.text}
+                onChange={(v) => {
+                  const items = [...content.drive.whatsIncludedItems];
+                  items[i] = { ...items[i], text: v };
+                  set("drive", { whatsIncludedItems: items });
+                }}
+                rows={2}
+                placeholder="Text"
+              />
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={() =>
+              set("drive", {
+                whatsIncludedItems: [
+                  ...content.drive.whatsIncludedItems,
+                  { title: "", text: "" },
+                ],
+              })
+            }
+            className="text-xs text-emerald-deep hover:underline"
+          >
+            + Add item
+          </button>
+        </div>
+
+        <Field label="How It Works — Heading">
+          <TextInput
+            value={content.drive.howItWorksHeading}
+            onChange={(v) => set("drive", { howItWorksHeading: v })}
+          />
+        </Field>
+        <div className="space-y-3 mt-2">
+          {content.drive.howItWorksSteps.map((step, i) => (
+            <div key={i} className="p-3 border border-border rounded-lg space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-xs font-medium text-ink/50">Step {i + 1}</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const steps = content.drive.howItWorksSteps.filter(
+                      (_, idx) => idx !== i
+                    );
+                    set("drive", { howItWorksSteps: steps });
+                  }}
+                  className="text-xs text-danger hover:underline"
+                >
+                  Remove
+                </button>
+              </div>
+              <TextInput
+                value={step.title}
+                onChange={(v) => {
+                  const steps = [...content.drive.howItWorksSteps];
+                  steps[i] = { ...steps[i], title: v };
+                  set("drive", { howItWorksSteps: steps });
+                }}
+                placeholder="Title"
+              />
+              <TextArea
+                value={step.text}
+                onChange={(v) => {
+                  const steps = [...content.drive.howItWorksSteps];
+                  steps[i] = { ...steps[i], text: v };
+                  set("drive", { howItWorksSteps: steps });
+                }}
+                rows={2}
+                placeholder="Text"
+              />
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={() =>
+              set("drive", {
+                howItWorksSteps: [
+                  ...content.drive.howItWorksSteps,
+                  { title: "", text: "" },
+                ],
+              })
+            }
+            className="text-xs text-emerald-deep hover:underline"
+          >
+            + Add step
+          </button>
+        </div>
+      </Section>
+
+      {/* ─── Feedback Page ─── */}
+      <Section title="Feedback Page" subtitle="/feedback" icon="💬">
+        <Field label="Eyebrow (Arabic)">
+          <TextInput
+            value={content.feedbackPage.eyebrow}
+            onChange={(v) => set("feedbackPage", { eyebrow: v })}
+          />
+        </Field>
+        <Field label="Heading">
+          <TextInput
+            value={content.feedbackPage.heading}
+            onChange={(v) => set("feedbackPage", { heading: v })}
+          />
+        </Field>
+        <Field label="Lead">
+          <TextArea
+            value={content.feedbackPage.lead}
+            onChange={(v) => set("feedbackPage", { lead: v })}
+            rows={3}
+          />
+        </Field>
+      </Section>
+
+      {/* ─── Become a Member Page ─── */}
+      <Section title="Become a Member Page" subtitle="/become-a-member" icon="🤝">
+        <Field label="Eyebrow (Arabic)">
+          <TextInput
+            value={content.becomeMemberPage.eyebrow}
+            onChange={(v) => set("becomeMemberPage", { eyebrow: v })}
+          />
+        </Field>
+        <Field label="Heading">
+          <TextInput
+            value={content.becomeMemberPage.heading}
+            onChange={(v) => set("becomeMemberPage", { heading: v })}
+          />
+        </Field>
+        <Field label="Lead">
+          <TextArea
+            value={content.becomeMemberPage.lead}
+            onChange={(v) => set("becomeMemberPage", { lead: v })}
+            rows={3}
           />
         </Field>
       </Section>

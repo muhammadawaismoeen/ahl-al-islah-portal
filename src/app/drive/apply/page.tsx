@@ -61,7 +61,11 @@ export default async function DriveApplyPage() {
               </p>
             </div>
           ) : (
-            <ApplyForm driveId={drive.id} items={items} />
+            <ApplyForm
+              driveId={drive.id}
+              items={items}
+              reserveButtonLabel={content.drive.reserveButtonLabel}
+            />
           )}
         </div>
       </main>

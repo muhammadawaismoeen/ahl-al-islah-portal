@@ -65,10 +65,7 @@ export function Hero({ content, customLogo }: { content: HeroContent; customLogo
             transition={{ duration: 0.8, delay: 0.6 }}
             className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4"
           >
-            <Link
-              href="/become-a-member"
-              className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-emerald text-ink-on-emerald font-semibold tracking-wide shadow-xl hover:bg-emerald-deep hover:shadow-emerald-deep/30 hover:scale-[1.03] transition-all"
-            >
+            <Link href="/become-a-member" className="btn-primary">
               <Sparkles className="h-4 w-4" />
               Become a Member
             </Link>
@@ -81,7 +78,7 @@ export function Hero({ content, customLogo }: { content: HeroContent; customLogo
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 1, delay: 0.9 }}
-            className="mt-16 grid grid-cols-3 gap-4 sm:gap-8 max-w-2xl mx-auto"
+            className="mt-16 grid grid-cols-2 sm:grid-cols-4 gap-6 sm:gap-8 max-w-3xl mx-auto"
           >
             {content.stats.map((stat) => (
               <div key={stat.label} className="text-center">

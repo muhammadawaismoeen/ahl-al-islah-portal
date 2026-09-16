@@ -93,5 +93,15 @@ function mergeWithDefaults(stored: Partial<SiteContent>): SiteContent {
     visibility: { ...DEFAULT_CONTENT.visibility, ...(stored.visibility ?? {}) },
     customLogo: stored.customLogo ?? DEFAULT_CONTENT.customLogo,
     formConfig: { ...DEFAULT_CONTENT.formConfig, ...(stored.formConfig ?? {}) },
+    positions:
+      stored.positions && stored.positions.length > 0
+        ? stored.positions
+        : DEFAULT_CONTENT.positions,
+    drive: { ...DEFAULT_CONTENT.drive, ...(stored.drive ?? {}) },
+    feedbackPage: { ...DEFAULT_CONTENT.feedbackPage, ...(stored.feedbackPage ?? {}) },
+    becomeMemberPage: {
+      ...DEFAULT_CONTENT.becomeMemberPage,
+      ...(stored.becomeMemberPage ?? {}),
+    },
   };
 }

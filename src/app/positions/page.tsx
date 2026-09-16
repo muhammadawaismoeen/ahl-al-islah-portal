@@ -90,10 +90,7 @@ function PositionCard({ position }: { position: Position }) {
 
       {position.open ? (
         position.slug.startsWith("core-member") ? (
-          <Link
-            href="/join"
-            className="inline-flex items-center justify-center gap-2 w-full px-6 py-3 rounded-full bg-emerald text-ink-on-emerald font-semibold tracking-wide shadow-md hover:bg-emerald-deep hover:shadow-emerald-deep/30 hover:scale-[1.02] transition-all"
-          >
+          <Link href="/join" className="btn-primary w-full">
             Join as Core Member
             <ArrowRight className="h-4 w-4" />
           </Link>
@@ -118,8 +115,10 @@ function PositionCard({ position }: { position: Position }) {
 export const dynamic = "force-dynamic";
 
 export default async function PositionsPage() {
-  const positions = getAllPositions();
-  const content = await getContent();
+  const [positions, content] = await Promise.all([
+    getAllPositions(),
+    getContent(),
+  ]);
   const open = positions.filter((p) => p.open);
   const closed = positions.filter((p) => !p.open);
 

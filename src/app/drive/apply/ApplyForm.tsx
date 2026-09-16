@@ -5,15 +5,16 @@ import { useRouter } from "next/navigation";
 import { Loader2, BookOpen, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import type { DriveItem } from "@/lib/drive-types";
-import { DRIVE_COPY } from "@/lib/drive-config";
 import { reserveBookAction } from "./actions";
 
 export function ApplyForm({
   driveId,
   items,
+  reserveButtonLabel,
 }: {
   driveId: string;
   items: DriveItem[];
+  reserveButtonLabel: string;
 }) {
   const router = useRouter();
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
@@ -132,7 +133,7 @@ export function ApplyForm({
         ) : (
           <BookOpen className="h-4 w-4" />
         )}
-        {DRIVE_COPY.reserveButtonLabel}
+        {reserveButtonLabel}
       </button>
     </form>
   );

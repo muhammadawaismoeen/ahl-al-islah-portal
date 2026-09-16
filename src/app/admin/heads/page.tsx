@@ -14,6 +14,7 @@ import {
   Crown,
   ArrowLeft,
   LifeBuoy,
+  Briefcase,
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -23,7 +24,8 @@ import { listMessages } from "@/lib/message-store";
 import { listFeedback } from "@/lib/feedback-store";
 import { listSubmissions as listActivitySubmissions } from "@/lib/activity-submissions-store";
 import { listThreads as listCounselThreads } from "@/lib/counsel-store";
-import { getPositionBySlug } from "@/lib/positions";
+import { getAllPositions } from "@/lib/positions";
+import type { Position } from "@/lib/positions";
 import { getQuestionSet } from "@/lib/questions";
 import { LoginForm } from "@/app/admin/LoginForm";
 import { formatDate } from "@/lib/utils";
@@ -71,13 +73,15 @@ export default async function AdminHeadsPage({
     );
   }
 
-  const [allSubmissions, messages, feedback, activitySubmissions, counselThreads] = await Promise.all([
+  const [allSubmissions, messages, feedback, activitySubmissions, counselThreads, positions] = await Promise.all([
     listSubmissions(),
     listMessages(),
     listFeedback(),
     listActivitySubmissions(),
     listCounselThreads(),
+    getAllPositions(),
   ]);
+  const positionsMap = new Map(positions.map((p) => [p.slug, p]));
   const unreadMessages = messages.filter((m) => m.status === "unread").length;
   const unreadFeedback = feedback.filter((f) => f.status === "unread").length;
   const unreadActivities = activitySubmissions.filter((a) => a.status === "unread").length;
@@ -202,6 +206,13 @@ export default async function AdminHeadsPage({
                 Sessions
               </Link>
               <Link
+                href="/admin/positions"
+                className="btn-ghost !py-2 !px-4 text-xs"
+              >
+                <Briefcase className="h-3.5 w-3.5" />
+                Positions
+              </Link>
+              <Link
                 href="/admin/content"
                 className="btn-ghost !py-2 !px-4 text-xs"
               >
@@ -263,7 +274,7 @@ export default async function AdminHeadsPage({
               ) : (
                 <ul className="divide-y divide-border">
                   {filtered.map((s) => {
-                    const position = getPositionBySlug(s.positionSlug);
+                    const position = positionsMap.get(s.positionSlug);
                     const name =
                       (s.data.fullName as string) ??
                       (s.data.name as string) ??
@@ -305,7 +316,10 @@ export default async function AdminHeadsPage({
             {/* Detail */}
             <div className="ornate-card p-6 sm:p-8">
               {selected ? (
-                <SubmissionDetail submission={selected} />
+                <SubmissionDetail
+                  submission={selected}
+                  position={positionsMap.get(selected.positionSlug)}
+                />
               ) : (
                 <div className="h-full flex items-center justify-center text-center py-20">
                   <div>
@@ -342,8 +356,13 @@ function WingDot({ wing }: { wing: string }) {
 
 type Submission = Awaited<ReturnType<typeof listSubmissions>>[number];
 
-function SubmissionDetail({ submission }: { submission: Submission }) {
-  const position = getPositionBySlug(submission.positionSlug);
+function SubmissionDetail({
+  submission,
+  position,
+}: {
+  submission: Submission;
+  position: Position | undefined;
+}) {
   const qs = position ? getQuestionSet(position.questionSet) : null;
   const data = submission.data as Record<string, unknown>;
 

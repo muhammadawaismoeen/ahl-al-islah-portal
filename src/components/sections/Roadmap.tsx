@@ -9,8 +9,7 @@ export function Roadmap({ content }: { content: RoadmapContent }) {
       <div className="container-prose">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           className="max-w-3xl mx-auto text-center"
         >
@@ -27,7 +26,7 @@ export function Roadmap({ content }: { content: RoadmapContent }) {
         <div className="mt-16 max-w-4xl mx-auto">
           <div className="relative">
             <div
-              className="absolute left-6 sm:left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-emerald-deep/40 to-transparent"
+              className="absolute left-6 sm:left-1/2 top-0 bottom-0 w-px bg-border-strong"
               aria-hidden
             />
 
@@ -36,8 +35,7 @@ export function Roadmap({ content }: { content: RoadmapContent }) {
                 <motion.div
                   key={phase.phase + i}
                   initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
+                  animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: i * 0.08 }}
                   className={`relative flex flex-col sm:flex-row gap-6 ${
                     i % 2 === 0 ? "sm:flex-row" : "sm:flex-row-reverse"
@@ -45,7 +43,7 @@ export function Roadmap({ content }: { content: RoadmapContent }) {
                 >
                   <div className="absolute left-6 sm:left-1/2 top-6 -translate-x-1/2 z-10">
                     <div className="relative">
-                      <div className="relative h-4 w-4 rounded-full bg-gradient-to-br from-emerald to-emerald-deep border-2 border-bg" />
+                      <div className="relative h-4 w-4 rounded-full bg-emerald-deep border-2 border-bg" />
                     </div>
                   </div>
 

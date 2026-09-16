@@ -48,7 +48,7 @@ function formConfigToQuestionSet(fqs: FormQuestionSet): QuestionSet {
 }
 
 export default async function BecomeAMemberPage() {
-  const position = getPositionBySlug("general-member");
+  const position = await getPositionBySlug("general-member");
   if (!position) notFound();
 
   const content = await getContent();
@@ -76,16 +76,14 @@ export default async function BecomeAMemberPage() {
               Open to all HSE students
             </div>
             <p className="arabic-text text-3xl text-emerald-deep mb-3">
-              انضم إلينا
+              {content.becomeMemberPage.eyebrow}
             </p>
             <h1 className="heading-serif text-4xl sm:text-5xl font-semibold text-emerald-deep text-balance">
-              Become a Member
+              {content.becomeMemberPage.heading}
             </h1>
             <div className="gold-divider" />
             <p className="mt-4 text-lg text-ink/70 leading-relaxed max-w-xl mx-auto">
-              Sign up to be part of the Ahl Al-Islah community. Show up to
-              sessions, stay on our cohort updates, and grow alongside the
-              team. No leadership commitment required.
+              {content.becomeMemberPage.lead}
             </p>
             <p className="mt-3 text-sm text-ink/55 max-w-xl mx-auto">
               Looking to take on a leadership role?{" "}

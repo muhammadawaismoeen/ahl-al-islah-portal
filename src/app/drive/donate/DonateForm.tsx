@@ -4,10 +4,16 @@ import { useRef, useState, useTransition } from "react";
 import { Loader2, HandCoins, CheckCircle2, Upload, Landmark } from "lucide-react";
 import { toast } from "sonner";
 import type { Drive } from "@/lib/drive-types";
-import { BANK_TRANSFER_DETAILS, DRIVE_CURRENCY, DRIVE_COPY, MAX_PROOF_BYTES } from "@/lib/drive-config";
+import { BANK_TRANSFER_DETAILS, DRIVE_CURRENCY, MAX_PROOF_BYTES } from "@/lib/drive-config";
 import { submitDonationAction } from "./actions";
 
-export function DonateForm({ drives }: { drives: Drive[] }) {
+export function DonateForm({
+  drives,
+  donateCtaLabel,
+}: {
+  drives: Drive[];
+  donateCtaLabel: string;
+}) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -158,7 +164,7 @@ export function DonateForm({ drives }: { drives: Drive[] }) {
         ) : (
           <HandCoins className="h-4 w-4" />
         )}
-        {DRIVE_COPY.donateCtaLabel}
+        {donateCtaLabel}
       </button>
     </form>
   );

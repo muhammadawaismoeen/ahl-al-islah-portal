@@ -50,7 +50,7 @@ export async function submitApplication(
   slug: string,
   rawData: Record<string, unknown>
 ): Promise<SubmitResult> {
-  const position = getPositionBySlug(slug);
+  const position = await getPositionBySlug(slug);
   if (!position) {
     return { ok: false, error: "Position not found." };
   }

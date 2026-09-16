@@ -16,12 +16,13 @@ interface Props {
 }
 
 export async function generateStaticParams() {
-  return getAllPositions().map((p) => ({ slug: p.slug }));
+  const positions = await getAllPositions();
+  return positions.map((p) => ({ slug: p.slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const position = getPositionBySlug(slug);
+  const position = await getPositionBySlug(slug);
   if (!position) return { title: "Position not found" };
   return {
     title: `Apply — ${position.title}`,
@@ -63,7 +64,7 @@ function formConfigToQuestionSet(fqs: FormQuestionSet): QuestionSet {
 
 export default async function ApplyPage({ params }: Props) {
   const { slug } = await params;
-  const position = getPositionBySlug(slug);
+  const position = await getPositionBySlug(slug);
   if (!position) notFound();
 
   // Try dynamic form config from content store first, fall back to static
@@ -96,7 +97,7 @@ export default async function ApplyPage({ params }: Props) {
 
           {/* Position summary header */}
           <div className="max-w-3xl mx-auto mb-12">
-            <div className="ornate-card p-6 sm:p-8 bg-gradient-to-br from-white to-surface-2/40">
+            <div className="ornate-card p-6 sm:p-8">
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
                   {position.arabicTitle && (

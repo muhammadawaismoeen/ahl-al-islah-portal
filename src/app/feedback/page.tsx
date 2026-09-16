@@ -39,14 +39,13 @@ export default async function FeedbackPage() {
               <MessageSquareHeart className="h-7 w-7 text-emerald-deep" />
             </div>
             <span className="arabic-text block text-emerald-deep text-lg mb-1">
-              ملاحظاتكم
+              {content.feedbackPage.eyebrow}
             </span>
             <h1 className="heading-serif text-4xl font-semibold text-emerald-deep">
-              Session Feedback
+              {content.feedbackPage.heading}
             </h1>
             <p className="mt-3 text-ink/65 leading-relaxed max-w-lg mx-auto">
-              Pick the session you&apos;re reflecting on and share what stayed
-              with you. Your honest words shape every session that follows.
+              {content.feedbackPage.lead}
             </p>
             <div className="inline-flex items-center gap-1.5 mt-4 text-xs text-ink/50 bg-surface-2 px-3 py-1.5 rounded-full border border-border">
               <Shield className="h-3 w-3" />

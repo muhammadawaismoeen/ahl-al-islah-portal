@@ -19,18 +19,3 @@ export const BANK_TRANSFER_DETAILS = {
   iban: "PK00MEZN0001234567891",
   branch: "Main Branch",
 };
-
-export const DRIVE_COPY = {
-  landingHeroEyebrow: "قرآن وسيرة",
-  landingHeroTitle: "Qur'an & Seerah Drive",
-  landingTagline:
-    "Every book we place in a student's hands is a seed for the deen — sponsored, distributed, and tracked with care.",
-  pickupInfoFallback:
-    "Pickup details are announced once a drive is open — check back soon.",
-  applyCtaLabel: "Apply for a Book",
-  donateCtaLabel: "Donate",
-  reserveButtonLabel: "Reserve my copy",
-  statBooksLabel: "Books given all-time",
-  statDrivesLabel: "Drives run",
-  statFundLabel: "General fund total",
-};

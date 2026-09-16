@@ -43,7 +43,10 @@ export default async function DriveDonatePage() {
             </p>
           </div>
 
-          <DonateForm drives={openDrives} />
+          <DonateForm
+            drives={openDrives}
+            donateCtaLabel={content.drive.donateCtaLabel}
+          />
         </div>
       </main>
       <Footer

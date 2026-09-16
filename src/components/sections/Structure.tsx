@@ -8,13 +8,12 @@ export function Structure({ content }: { content: StructureContent }) {
   return (
     <section
       id="structure"
-      className="relative py-24 sm:py-32 bg-gradient-to-b from-transparent via-surface-2/60 to-transparent"
+      className="relative py-24 sm:py-32 bg-surface-2/40"
     >
       <div className="container-prose">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           className="max-w-3xl mx-auto text-center"
         >
@@ -31,15 +30,13 @@ export function Structure({ content }: { content: StructureContent }) {
         <div className="mt-16 max-w-5xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             className="flex justify-center"
           >
             <div className="relative">
-              <div className="absolute -inset-4 rounded-3xl bg-emerald-deep/10 blur-xl" />
               <div className="relative ornate-card p-6 text-center min-w-[260px]">
-                <div className="mx-auto h-14 w-14 rounded-2xl bg-gradient-to-br from-emerald to-emerald-deep flex items-center justify-center mb-3">
+                <div className="mx-auto h-14 w-14 rounded-sm bg-emerald-deep flex items-center justify-center mb-3">
                   <Shield className="h-7 w-7 text-ink-on-emerald" />
                 </div>
                 <div className="arabic-text text-sm text-emerald-deep">
@@ -63,8 +60,7 @@ export function Structure({ content }: { content: StructureContent }) {
             >
               <motion.path
                 initial={{ pathLength: 0 }}
-                whileInView={{ pathLength: 1 }}
-                viewport={{ once: true }}
+                animate={{ pathLength: 1 }}
                 transition={{ duration: 1.5, delay: 0.3 }}
                 d="M200 0 L200 40 L80 40 L80 80 M200 40 L320 40 L320 80"
                 stroke="#1F5A3B"
@@ -79,8 +75,7 @@ export function Structure({ content }: { content: StructureContent }) {
             {/* Brothers' cohort */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
+              animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
               className="space-y-3"
             >
@@ -104,8 +99,7 @@ export function Structure({ content }: { content: StructureContent }) {
                   <motion.div
                     key={role + i}
                     initial={{ opacity: 0, x: -10 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
+                    animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.4, delay: 0.4 + i * 0.06 }}
                     className="flex items-center gap-3 px-4 py-2.5 bg-white rounded-lg border border-border text-sm text-ink/75"
                   >
@@ -119,8 +113,7 @@ export function Structure({ content }: { content: StructureContent }) {
             {/* Sisters' cohort */}
             <motion.div
               initial={{ opacity: 0, x: 20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
+              animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
               className="space-y-3"
             >
@@ -144,8 +137,7 @@ export function Structure({ content }: { content: StructureContent }) {
                   <motion.div
                     key={role + i}
                     initial={{ opacity: 0, x: 10 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
+                    animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.4, delay: 0.4 + i * 0.06 }}
                     className="flex items-center gap-3 px-4 py-2.5 bg-white rounded-lg border border-border text-sm text-ink/75"
                   >
@@ -160,8 +152,7 @@ export function Structure({ content }: { content: StructureContent }) {
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           className="mt-20 max-w-4xl mx-auto"
         >

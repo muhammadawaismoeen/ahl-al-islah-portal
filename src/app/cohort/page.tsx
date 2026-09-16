@@ -15,7 +15,8 @@ import { getContent } from "@/lib/content-store";
 import { getHeadRole, logoutHead } from "./actions";
 import { CohortLoginForm } from "./LoginForm";
 import { listSubmissions } from "@/lib/storage";
-import { getPositionBySlug } from "@/lib/positions";
+import { getAllPositions } from "@/lib/positions";
+import type { Position } from "@/lib/positions";
 import { getQuestionSet } from "@/lib/questions";
 import { formatDate } from "@/lib/utils";
 
@@ -122,7 +123,11 @@ export default async function CohortPage({
 
   /* ── Authenticated ───────────────────────────────────────────── */
   const wing = WING_CONFIG[role];
-  const allSubmissions = await listSubmissions();
+  const [allSubmissions, positions] = await Promise.all([
+    listSubmissions(),
+    getAllPositions(),
+  ]);
+  const positionsMap = new Map(positions.map((p) => [p.slug, p]));
 
   // Role scoping:
   //   - "male"           → Brothers' Cohort (Core + General)
@@ -308,7 +313,7 @@ export default async function CohortPage({
               ) : (
                 <ul className="divide-y divide-border">
                   {visibleSubmissions.map((s) => {
-                    const position = getPositionBySlug(s.positionSlug);
+                    const position = positionsMap.get(s.positionSlug);
                     const name =
                       (s.data.fullName as string) ??
                       (s.data.name as string) ??
@@ -355,7 +360,10 @@ export default async function CohortPage({
             {/* Detail panel */}
             <div className="ornate-card p-6 sm:p-8">
               {selected ? (
-                <ApplicationDetail submission={selected} />
+                <ApplicationDetail
+                  submission={selected}
+                  position={positionsMap.get(selected.positionSlug)}
+                />
               ) : (
                 <div className="h-full flex items-center justify-center py-20 text-center">
                   <div>
@@ -383,8 +391,13 @@ export default async function CohortPage({
 
 type Submission = Awaited<ReturnType<typeof listSubmissions>>[number];
 
-function ApplicationDetail({ submission }: { submission: Submission }) {
-  const position = getPositionBySlug(submission.positionSlug);
+function ApplicationDetail({
+  submission,
+  position,
+}: {
+  submission: Submission;
+  position: Position | undefined;
+}) {
   const qs = position ? getQuestionSet(position.questionSet) : null;
   const data = submission.data as Record<string, unknown>;
 

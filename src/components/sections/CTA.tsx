@@ -11,8 +11,7 @@ export function CTA({ content }: { content: CtaContent }) {
       <div className="container-prose">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           className="relative rounded-sm overflow-hidden bg-emerald-deep"
         >
@@ -30,7 +29,7 @@ export function CTA({ content }: { content: CtaContent }) {
             <div className="mt-10 flex items-center justify-center">
               <Link
                 href="/become-a-member"
-                className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-bg text-emerald-deep font-semibold tracking-wide shadow-xl hover:bg-bg/90 hover:scale-[1.02] transition-all"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-sm bg-bg text-emerald-deep font-medium text-sm tracking-wide border-[1.5px] border-bg transition-colors duration-200 hover:bg-bg/90"
               >
                 <Sparkles className="h-4 w-4" />
                 Become a Member

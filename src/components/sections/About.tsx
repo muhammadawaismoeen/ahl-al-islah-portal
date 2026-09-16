@@ -27,8 +27,7 @@ export function About({ content }: { content: AboutContent }) {
       <div className="container-prose">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           className="max-w-3xl mx-auto text-center"
         >
@@ -45,8 +44,7 @@ export function About({ content }: { content: AboutContent }) {
         <div className="mt-16 grid md:grid-cols-2 gap-6 max-w-5xl mx-auto">
           <motion.div
             initial={{ opacity: 0, x: -20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
+            animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6 }}
             className="ornate-card p-8"
           >
@@ -61,8 +59,7 @@ export function About({ content }: { content: AboutContent }) {
 
           <motion.div
             initial={{ opacity: 0, x: 20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
+            animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
             className="ornate-card p-8"
           >
@@ -79,8 +76,7 @@ export function About({ content }: { content: AboutContent }) {
         <div className="mt-24">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             className="max-w-2xl mx-auto text-center mb-12"
           >
@@ -97,8 +93,7 @@ export function About({ content }: { content: AboutContent }) {
                 <motion.div
                   key={value.title + i}
                   initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
+                  animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: i * 0.08 }}
                   className="ornate-card p-6 group"
                 >
