@@ -27,7 +27,7 @@ export default async function SessionsPage() {
         <div className="container-prose max-w-4xl mx-auto">
           {/* Header */}
           <header className="text-center mb-12">
-            <span className="arabic-text text-gold-antique">الجلسات</span>
+            <span className="arabic-text text-emerald-deep">الجلسات</span>
             <h1 className="heading-serif text-4xl sm:text-5xl font-semibold text-emerald-deep mt-1">
               Sessions
             </h1>
@@ -62,14 +62,14 @@ export default async function SessionsPage() {
                             <img
                               src={s.posterUrl}
                               alt={`Poster — ${s.title}`}
-                              className="w-full sm:w-32 md:w-36 aspect-[3/4] object-cover rounded-lg border border-cream-muted shadow-sm"
+                              className="w-full sm:w-32 md:w-36 aspect-[3/4] object-cover rounded-lg border border-border shadow-sm"
                               loading="lazy"
                             />
                           </div>
                         )}
                         <div className="flex-1 min-w-0">
                         <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 mb-2">
-                          <span className="text-xs uppercase tracking-widest text-gold-antique inline-flex items-center gap-1.5">
+                          <span className="text-xs uppercase tracking-widest text-emerald-deep inline-flex items-center gap-1.5">
                             <CalendarDays className="h-3.5 w-3.5" />
                             {formatDate(s.date)}
                           </span>
@@ -86,11 +86,11 @@ export default async function SessionsPage() {
                           </span>
                         </div>
                         {s.arabicTitle && (
-                          <p className="arabic-text text-lg text-gold-antique mb-1">
+                          <p className="arabic-text text-lg text-emerald-deep mb-1">
                             {s.arabicTitle}
                           </p>
                         )}
-                        <h2 className="heading-serif text-2xl sm:text-3xl font-semibold text-emerald-deep leading-tight group-hover:text-emerald-rich transition">
+                        <h2 className="heading-serif text-2xl sm:text-3xl font-semibold text-emerald-deep leading-tight group-hover:text-emerald-deep transition">
                           {s.title}
                         </h2>
                         {s.description && (

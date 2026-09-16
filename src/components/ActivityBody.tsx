@@ -22,9 +22,9 @@ export function ActivityBody({ body }: { body: string }) {
           return (
             <p
               key={i}
-              className="text-sm italic text-ink/55 pl-4 border-l-2 border-gold-antique/40 bg-cream-warm/40 py-2.5 px-4 rounded-r-lg"
+              className="text-sm italic text-ink/55 pl-4 border-l-2 border-emerald-deep/40 bg-surface-2/40 py-2.5 px-4 rounded-r-lg"
             >
-              <span className="text-[10px] uppercase tracking-widest text-gold-antique/80 font-sans not-italic mr-2">
+              <span className="text-[10px] uppercase tracking-widest text-emerald-deep/80 font-sans not-italic mr-2">
                 Facilitator note
               </span>
               {inner}

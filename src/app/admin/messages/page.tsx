@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 const STATUS_CONFIG = {
-  unread: { label: "Unread", className: "bg-gold-antique text-white" },
+  unread: { label: "Unread", className: "bg-amber text-white" },
   read: { label: "Read", className: "bg-ink/20 text-ink/70" },
   replied: { label: "Replied", className: "bg-emerald-deep/20 text-emerald-deep" },
 };
@@ -39,7 +39,7 @@ export default async function MessagesPage({
           <div className="container-prose max-w-md mx-auto">
             <div className="ornate-card p-8">
               <div className="text-center mb-6">
-                <span className="arabic-text text-gold-antique">لوحة الإدارة</span>
+                <span className="arabic-text text-emerald-deep">لوحة الإدارة</span>
                 <h1 className="heading-serif text-3xl font-semibold text-emerald-deep mt-1">Admin Access</h1>
               </div>
               <LoginForm action={login} />
@@ -68,14 +68,14 @@ export default async function MessagesPage({
               <Link href="/admin" className="inline-flex items-center gap-1.5 text-xs text-ink/50 hover:text-emerald-deep mb-2 transition">
                 <ArrowLeft className="h-3.5 w-3.5" /> Back to Core Members
               </Link>
-              <span className="arabic-text block text-gold-antique">صندوق الوارد</span>
+              <span className="arabic-text block text-emerald-deep">صندوق الوارد</span>
               <h1 className="heading-serif text-4xl font-semibold text-emerald-deep">
                 Advisor Inbox
               </h1>
               <p className="text-sm text-ink/60 mt-1">
                 {messages.length} message{messages.length !== 1 ? "s" : ""}
                 {unreadCount > 0 && (
-                  <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full bg-gold-antique text-white text-xs font-medium">
+                  <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full bg-amber text-white text-xs font-medium">
                     {unreadCount} unread
                   </span>
                 )}
@@ -91,11 +91,11 @@ export default async function MessagesPage({
                   <MessageCircle className="h-10 w-10 text-ink/20 mx-auto mb-3" />
                   <p className="text-sm text-ink/60">No messages yet.</p>
                   <p className="text-xs text-ink/40 mt-1">
-                    Share <code className="font-mono bg-cream-muted px-1 rounded">/ask-advisor</code> with department heads.
+                    Share <code className="font-mono bg-border px-1 rounded">/ask-advisor</code> with department heads.
                   </p>
                 </div>
               ) : (
-                <ul className="divide-y divide-cream-muted">
+                <ul className="divide-y divide-border">
                   {messages.map((msg) => {
                     const status = STATUS_CONFIG[msg.status];
                     const isSelected = msg.id === selectedId;
@@ -104,7 +104,7 @@ export default async function MessagesPage({
                         <Link
                           href={`/admin/messages?id=${msg.id}`}
                           className={`block p-4 rounded-xl transition ${
-                            isSelected ? "bg-emerald-deep/5" : "hover:bg-cream-warm/40"
+                            isSelected ? "bg-emerald-deep/5" : "hover:bg-surface-2/40"
                           }`}
                         >
                           <div className="flex items-start justify-between gap-2 mb-1">
@@ -155,7 +155,7 @@ function MessageDetail({ message }: { message: AdvisorMessage }) {
   return (
     <article className="space-y-6">
       {/* Header */}
-      <header className="pb-5 border-b border-cream-muted">
+      <header className="pb-5 border-b border-border">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
             <span className={`inline-block text-[10px] font-medium px-2 py-0.5 rounded-full mb-2 ${status.className}`}>
@@ -164,7 +164,7 @@ function MessageDetail({ message }: { message: AdvisorMessage }) {
             <h2 className="heading-serif text-2xl font-semibold text-emerald-deep leading-tight">
               {message.subject}
             </h2>
-            <p className="text-sm text-gold-antique font-medium mt-1">
+            <p className="text-sm text-emerald-deep font-medium mt-1">
               {ROLE_LABELS[message.role]}
             </p>
           </div>
@@ -176,7 +176,7 @@ function MessageDetail({ message }: { message: AdvisorMessage }) {
 
         {/* Sender info */}
         <div className="mt-4 grid sm:grid-cols-2 gap-3">
-          <div className="flex items-center gap-2 text-sm p-3 bg-cream-warm rounded-xl border border-cream-muted">
+          <div className="flex items-center gap-2 text-sm p-3 bg-surface-2 rounded-xl border border-border">
             <div className="h-8 w-8 rounded-full bg-emerald-deep/10 flex items-center justify-center shrink-0">
               <span className="text-emerald-deep font-semibold text-sm">
                 {message.senderName.charAt(0)}
@@ -205,7 +205,7 @@ function MessageDetail({ message }: { message: AdvisorMessage }) {
           <Clock className="h-3.5 w-3.5" />
           {formatDate(message.submittedAt)}
           {" · "}
-          <code className="font-mono text-[10px] bg-cream-muted px-1.5 py-0.5 rounded">
+          <code className="font-mono text-[10px] bg-border px-1.5 py-0.5 rounded">
             {message.id}
           </code>
         </div>
@@ -214,7 +214,7 @@ function MessageDetail({ message }: { message: AdvisorMessage }) {
       {/* Message body */}
       <div>
         <p className="text-xs uppercase tracking-wider text-ink/50 font-medium mb-3">Message</p>
-        <p className="text-sm text-ink/85 leading-relaxed whitespace-pre-wrap bg-cream-warm rounded-xl p-4 border border-cream-muted">
+        <p className="text-sm text-ink/85 leading-relaxed whitespace-pre-wrap bg-surface-2 rounded-xl p-4 border border-border">
           {message.body}
         </p>
       </div>
@@ -238,7 +238,7 @@ function MessageDetail({ message }: { message: AdvisorMessage }) {
       )}
 
       {/* Reply box */}
-      <div className="pt-2 border-t border-cream-muted">
+      <div className="pt-2 border-t border-border">
         <ReplyBox messageId={message.id} hasReply={!!message.reply} />
       </div>
     </article>

@@ -4,26 +4,34 @@
 
 @layer base {
   :root {
-    --background: 34 60% 96%;
-    --foreground: 155 25% 8%;
-    --card: 0 0% 100%;
-    --card-foreground: 155 25% 8%;
-    --primary: 159 73% 17%;
-    --primary-foreground: 40 80% 95%;
-    --secondary: 40 56% 50%;
-    --secondary-foreground: 155 25% 8%;
-    --muted: 40 30% 90%;
-    --muted-foreground: 155 15% 35%;
-    --accent: 40 56% 50%;
-    --accent-foreground: 155 25% 8%;
-    --border: 40 30% 85%;
-    --input: 40 30% 90%;
-    --ring: 159 73% 17%;
+    /* Jewel Manuscript design tokens */
+    /* Channel triples (not full color values) so Tailwind's opacity
+       modifiers — bg-emerald/10, border-ink/20, etc. — can compose them
+       into rgb(var(--x) / <alpha-value>) at build time. */
+    --bg: 251 248 243;
+    --surface: 255 255 255;
+    --surface-2: 242 238 227;
+    --border: 231 224 210;
+    --border-strong: 216 207 188;
+
+    --ink: 28 35 51;
+    --ink-muted: 92 100 120;
+    --ink-dim: 137 145 163;
+
+    --emerald: 47 122 82;
+    --emerald-deep: 31 90 59;
+    --emerald-soft: rgba(47, 122, 82, 0.11);
+    --sapphire: 27 75 143;
+    --amber: 184 132 46;
+    --danger: 178 59 50;
+    --danger-soft: rgba(178, 59, 50, 0.12);
+    --ink-on-emerald: 251 248 243;
+
     --radius: 0.75rem;
   }
 
   * {
-    @apply border-[hsl(var(--border))];
+    @apply border-border;
   }
 
   html {
@@ -31,23 +39,12 @@
   }
 
   body {
-    @apply bg-cream text-ink antialiased;
+    @apply bg-bg text-ink antialiased;
     font-feature-settings: "rlig" 1, "calt" 1, "ss01" 1;
-    background-image: radial-gradient(
-        circle at 0% 0%,
-        rgba(10, 77, 60, 0.04) 0%,
-        transparent 50%
-      ),
-      radial-gradient(
-        circle at 100% 100%,
-        rgba(184, 137, 43, 0.04) 0%,
-        transparent 50%
-      );
-    background-attachment: fixed;
   }
 
   ::selection {
-    @apply bg-emerald-deep text-cream;
+    @apply bg-emerald-soft text-emerald-deep;
   }
 }
 
@@ -60,12 +57,17 @@
     @apply font-serif tracking-tight;
   }
 
+  /* Restrained ambient shape — hero-style sections only, one per section */
+  .ambient-blob {
+    @apply pointer-events-none absolute rounded-full blur-3xl bg-emerald/10 animate-drift;
+  }
+
   .gold-divider {
     @apply relative mx-auto h-px w-24 my-6;
     background: linear-gradient(
       90deg,
       transparent 0%,
-      #b8892b 50%,
+      rgb(var(--emerald-deep)) 50%,
       transparent 100%
     );
   }
@@ -77,7 +79,7 @@
     top: 50%;
     width: 4px;
     height: 4px;
-    background: #b8892b;
+    background: rgb(var(--emerald-deep));
     border-radius: 50%;
     transform: translateY(-50%) rotate(45deg);
   }
@@ -92,44 +94,21 @@
 
   .section-eyebrow {
     @apply inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium uppercase tracking-widest;
-    @apply bg-emerald-deep/10 text-emerald-deep border border-emerald-deep/20;
+    @apply bg-emerald-soft text-emerald-deep border border-emerald-deep/20;
   }
 
   .ornate-card {
-    @apply relative rounded-2xl bg-white border border-cream-muted shadow-sm;
-    @apply transition-all duration-300 hover:shadow-xl hover:-translate-y-1;
-    @apply hover:border-gold-antique/30;
-  }
-
-  .ornate-card::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    padding: 1px;
-    border-radius: inherit;
-    pointer-events: none;
-    background: linear-gradient(
-      135deg,
-      transparent 0%,
-      rgba(184, 137, 43, 0.3) 50%,
-      transparent 100%
-    );
-    mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-    mask-composite: exclude;
-    opacity: 0;
-    transition: opacity 0.3s;
-  }
-
-  .ornate-card:hover::before {
-    opacity: 1;
+    @apply relative rounded-2xl bg-surface border border-border shadow-sm;
+    @apply transition-all duration-300 hover:-translate-y-[2px];
+    @apply hover:shadow-[0_12px_28px_-12px_rgba(31,90,59,0.22)] hover:border-border-strong;
   }
 
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full;
-    @apply bg-emerald-deep text-cream font-medium text-sm tracking-wide;
-    @apply transition-all duration-300 hover:bg-emerald-rich;
-    @apply shadow-md hover:shadow-xl hover:shadow-emerald-deep/20;
-    @apply focus:outline-none focus:ring-2 focus:ring-gold-antique focus:ring-offset-2;
+    @apply bg-emerald text-ink-on-emerald font-medium text-sm tracking-wide;
+    @apply transition-all duration-300 hover:bg-emerald-deep;
+    @apply shadow-md hover:shadow-lg hover:shadow-emerald-deep/20;
+    @apply focus:outline-none focus:ring-2 focus:ring-emerald/40 focus:ring-offset-2;
     @apply disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
@@ -138,7 +117,7 @@
     @apply bg-transparent text-emerald-deep font-medium text-sm tracking-wide;
     @apply border-2 border-emerald-deep/20;
     @apply transition-all duration-300 hover:border-emerald-deep hover:bg-emerald-deep/5;
-    @apply focus:outline-none focus:ring-2 focus:ring-gold-antique focus:ring-offset-2;
+    @apply focus:outline-none focus:ring-2 focus:ring-emerald/40 focus:ring-offset-2;
   }
 
   .btn-ghost {
@@ -149,10 +128,10 @@
 
   .input-field {
     @apply w-full px-4 py-3 rounded-xl;
-    @apply bg-white border border-cream-muted;
-    @apply text-ink placeholder:text-ink/40;
+    @apply bg-surface-2 border border-border;
+    @apply text-ink placeholder:text-ink-dim;
     @apply transition-all duration-200;
-    @apply focus:outline-none focus:border-emerald-deep/50 focus:ring-2 focus:ring-emerald-deep/10;
+    @apply focus:outline-none focus:border-emerald/50 focus:ring-2 focus:ring-emerald/10;
   }
 
   .textarea-field {
@@ -164,11 +143,11 @@
   }
 
   .help-text {
-    @apply text-xs text-ink/60 mt-1.5 leading-relaxed;
+    @apply text-xs text-ink-muted mt-1.5 leading-relaxed;
   }
 
   .error-text {
-    @apply text-xs text-red-700 mt-1.5 font-medium;
+    @apply text-xs text-danger mt-1.5 font-medium;
   }
 
   .arabic-text {
@@ -177,24 +156,16 @@
     unicode-bidi: embed;
   }
 
-  .shimmer-text {
-    background: linear-gradient(
+  /* Shimmer sweep — reserved for progress-bar fills only */
+  .shimmer-sweep {
+    background-image: linear-gradient(
       90deg,
-      #b8892b 0%,
-      #e5c16f 25%,
-      #b8892b 50%,
-      #e5c16f 75%,
-      #b8892b 100%
+      transparent 0%,
+      rgba(255, 255, 255, 0.35) 50%,
+      transparent 100%
     );
     background-size: 200% 100%;
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    animation: shimmer 3s linear infinite;
-  }
-
-  .geometric-bg {
-    background-image: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%230a4d3c' stroke-opacity='0.05' stroke-width='1'%3E%3Cpath d='M40 0L80 40L40 80L0 40Z'/%3E%3Cpath d='M40 15L65 40L40 65L15 40Z'/%3E%3Cpath d='M40 30L50 40L40 50L30 40Z'/%3E%3C/g%3E%3C/svg%3E");
+    animation: shimmer 2.5s linear infinite;
   }
 }
 
@@ -212,7 +183,6 @@
 @media print {
   body {
     background: white !important;
-    background-image: none !important;
   }
   .no-print {
     display: none !important;

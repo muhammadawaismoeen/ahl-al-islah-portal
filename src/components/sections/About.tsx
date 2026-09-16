@@ -50,7 +50,7 @@ export function About({ content }: { content: AboutContent }) {
             transition={{ duration: 0.6 }}
             className="ornate-card p-8"
           >
-            <div className="arabic-text text-lg text-gold-antique mb-2">
+            <div className="arabic-text text-lg text-emerald-deep mb-2">
               {content.visionArabic}
             </div>
             <h3 className="heading-serif text-2xl font-semibold text-emerald-deep mb-4">
@@ -66,7 +66,7 @@ export function About({ content }: { content: AboutContent }) {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="ornate-card p-8"
           >
-            <div className="arabic-text text-lg text-gold-antique mb-2">
+            <div className="arabic-text text-lg text-emerald-deep mb-2">
               {content.missionArabic}
             </div>
             <h3 className="heading-serif text-2xl font-semibold text-emerald-deep mb-4">
@@ -103,15 +103,15 @@ export function About({ content }: { content: AboutContent }) {
                   className="ornate-card p-6 group"
                 >
                   <div className="flex items-start gap-4">
-                    <div className="shrink-0 h-12 w-12 rounded-xl bg-emerald-deep/5 border border-emerald-deep/10 flex items-center justify-center group-hover:bg-emerald-deep group-hover:text-cream transition-colors">
-                      <Icon className="h-5 w-5 text-emerald-deep group-hover:text-cream transition-colors" />
+                    <div className="shrink-0 h-12 w-12 rounded-xl bg-emerald-deep/5 border border-emerald-deep/10 flex items-center justify-center group-hover:bg-emerald-deep group-hover:text-ink-on-emerald transition-colors">
+                      <Icon className="h-5 w-5 text-emerald-deep group-hover:text-ink-on-emerald transition-colors" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-baseline gap-3">
                         <h4 className="heading-serif text-lg font-semibold text-ink">
                           {value.title}
                         </h4>
-                        <span className="arabic-text text-sm text-gold-antique">
+                        <span className="arabic-text text-sm text-emerald-deep">
                           {value.arabic}
                         </span>
                       </div>

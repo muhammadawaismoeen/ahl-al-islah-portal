@@ -27,7 +27,7 @@ export function Roadmap({ content }: { content: RoadmapContent }) {
         <div className="mt-16 max-w-4xl mx-auto">
           <div className="relative">
             <div
-              className="absolute left-6 sm:left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-gold-antique/40 to-transparent"
+              className="absolute left-6 sm:left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-emerald-deep/40 to-transparent"
               aria-hidden
             />
 
@@ -45,8 +45,7 @@ export function Roadmap({ content }: { content: RoadmapContent }) {
                 >
                   <div className="absolute left-6 sm:left-1/2 top-6 -translate-x-1/2 z-10">
                     <div className="relative">
-                      <div className="absolute inset-0 rounded-full bg-gold-warm animate-ping opacity-20" />
-                      <div className="relative h-4 w-4 rounded-full bg-gradient-to-br from-gold-antique to-gold-warm border-2 border-cream" />
+                      <div className="relative h-4 w-4 rounded-full bg-gradient-to-br from-emerald to-emerald-deep border-2 border-bg" />
                     </div>
                   </div>
 
@@ -58,7 +57,7 @@ export function Roadmap({ content }: { content: RoadmapContent }) {
                     }`}
                   >
                     <div className="ornate-card p-6">
-                      <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-gold-antique font-medium mb-2 justify-start">
+                      <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-emerald-deep font-medium mb-2 justify-start">
                         <span>{phase.phase}</span>
                         <span className="text-ink/30">·</span>
                         <span>{phase.timeframe}</span>
@@ -69,7 +68,7 @@ export function Roadmap({ content }: { content: RoadmapContent }) {
                       <p className="text-sm text-ink/70 leading-relaxed mb-3 text-left">
                         {phase.description}
                       </p>
-                      <p className="text-xs text-emerald-rich italic leading-relaxed text-left">
+                      <p className="text-xs text-emerald-deep italic leading-relaxed text-left">
                         {phase.metric}
                       </p>
                     </div>

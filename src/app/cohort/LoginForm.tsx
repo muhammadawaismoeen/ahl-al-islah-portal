@@ -62,7 +62,7 @@ export function CohortLoginForm() {
       </div>
 
       {error && (
-        <p className="text-sm text-red-500 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+        <p className="text-sm text-danger bg-danger-50 border border-danger-200 rounded-xl px-4 py-3">
           {error}
         </p>
       )}

@@ -130,7 +130,7 @@ export function IdentityPillarsForm({
       </section>
 
       {/* Pillars */}
-      <section className="space-y-6 pt-2 border-t border-cream-muted">
+      <section className="space-y-6 pt-2 border-t border-border">
         <div>
           <h3 className="heading-serif text-lg font-semibold text-emerald-deep">
             Your Three Pillars
@@ -140,7 +140,7 @@ export function IdentityPillarsForm({
             non-negotiables your decisions currently rest on. Next to each, mark
             <strong className="text-emerald-deep"> A</strong> if it would hold
             even if everyone around you withdrew their approval, or{" "}
-            <strong className="text-gold-antique">B</strong> if it depends on
+            <strong className="text-emerald-deep">B</strong> if it depends on
             that approval to stay standing.
           </p>
         </div>
@@ -151,7 +151,7 @@ export function IdentityPillarsForm({
       </section>
 
       {/* Reflection */}
-      <section className="space-y-3 pt-2 border-t border-cream-muted">
+      <section className="space-y-3 pt-2 border-t border-border">
         <div>
           <h3 className="heading-serif text-lg font-semibold text-emerald-deep">
             One Honest Sentence *
@@ -172,7 +172,7 @@ export function IdentityPillarsForm({
       </section>
 
       {error && (
-        <p className="text-sm text-red-500 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+        <p className="text-sm text-danger bg-danger-50 border border-danger-200 rounded-xl px-4 py-3">
           {error}
         </p>
       )}
@@ -240,8 +240,8 @@ function PillarTypeChoice({
     <label
       className={`flex items-start gap-2 px-4 py-2.5 rounded-xl border cursor-pointer transition flex-1 min-w-[14rem] ${
         value === "A"
-          ? "border-cream-muted bg-cream-warm/40 hover:bg-emerald-deep/5 hover:border-emerald-deep/30 has-[:checked]:bg-emerald-deep/10 has-[:checked]:border-emerald-deep"
-          : "border-cream-muted bg-cream-warm/40 hover:bg-gold-antique/5 hover:border-gold-antique/30 has-[:checked]:bg-gold-antique/10 has-[:checked]:border-gold-antique"
+          ? "border-border bg-surface-2/40 hover:bg-emerald-deep/5 hover:border-emerald-deep/30 has-[:checked]:bg-emerald-deep/10 has-[:checked]:border-emerald-deep"
+          : "border-border bg-surface-2/40 hover:bg-emerald-deep/5 hover:border-emerald-deep/30 has-[:checked]:bg-emerald-deep/10 has-[:checked]:border-emerald-deep"
       }`}
     >
       <input
@@ -485,7 +485,7 @@ function CompletedView({
           </button>
         </div>
         {downloadError && (
-          <p className="text-xs text-red-500 bg-red-50 border border-red-200 rounded-xl px-4 py-2 inline-block">
+          <p className="text-xs text-danger bg-danger-50 border border-danger-200 rounded-xl px-4 py-2 inline-block">
             {downloadError}
           </p>
         )}
@@ -496,8 +496,8 @@ function CompletedView({
         id="printable-audit"
         className="ornate-card p-6 sm:p-10 space-y-6 print-card"
       >
-        <header className="text-center pb-5 border-b border-cream-muted">
-          <span className="arabic-text block text-gold-antique text-lg mb-1">
+        <header className="text-center pb-5 border-b border-border">
+          <span className="arabic-text block text-emerald-deep text-lg mb-1">
             ركائز الهوية
           </span>
           <h2 className="heading-serif text-2xl sm:text-3xl font-semibold text-emerald-deep">
@@ -522,18 +522,18 @@ function CompletedView({
         </div>
 
         {record.reflection && (
-          <div className="pt-5 border-t border-cream-muted">
-            <h3 className="text-xs uppercase tracking-wider text-gold-antique font-semibold mb-2">
+          <div className="pt-5 border-t border-border">
+            <h3 className="text-xs uppercase tracking-wider text-emerald-deep font-semibold mb-2">
               One Honest Sentence
             </h3>
-            <p className="text-sm text-ink/85 leading-relaxed whitespace-pre-wrap bg-cream-warm rounded-xl p-4 border border-cream-muted print:bg-transparent print:border-ink/15">
+            <p className="text-sm text-ink/85 leading-relaxed whitespace-pre-wrap bg-surface-2 rounded-xl p-4 border border-border print:bg-transparent print:border-ink/15">
               {record.reflection}
             </p>
           </div>
         )}
 
-        <footer className="pt-5 border-t border-cream-muted text-center">
-          <p className="arabic-text text-gold-antique text-lg">
+        <footer className="pt-5 border-t border-border text-center">
+          <p className="arabic-text text-emerald-deep text-lg">
             لَآ إِلَٰهَ إِلَّا ٱللَّٰهُ
           </p>
           <p className="text-xs text-ink/45 mt-1 italic">
@@ -556,9 +556,9 @@ function PrintablePillar({
   const typeLabel = pillar.type ? PILLAR_TYPE_LABELS[pillar.type] : "";
   const isA = pillar.type === "A";
   return (
-    <div className="rounded-xl p-4 border border-cream-muted bg-cream-warm/40 print:bg-transparent print:border-ink/15">
+    <div className="rounded-xl p-4 border border-border bg-surface-2/40 print:bg-transparent print:border-ink/15">
       <div className="flex items-baseline justify-between gap-3 mb-2">
-        <span className="text-[10px] uppercase tracking-widest text-gold-antique font-medium">
+        <span className="text-[10px] uppercase tracking-widest text-emerald-deep font-medium">
           Pillar {number}
         </span>
         {pillar.type && (
@@ -566,7 +566,7 @@ function PrintablePillar({
             className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
               isA
                 ? "bg-emerald-deep text-white"
-                : "bg-gold-antique/15 text-gold-antique"
+                : "bg-emerald-deep/15 text-emerald-deep"
             } print:bg-transparent print:border print:border-ink/30 print:text-ink`}
           >
             {pillar.type} · {typeLabel}

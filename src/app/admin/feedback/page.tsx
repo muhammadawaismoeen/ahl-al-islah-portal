@@ -35,7 +35,7 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 const STATUS_CONFIG = {
-  unread: { label: "Unread", className: "bg-gold-antique text-white" },
+  unread: { label: "Unread", className: "bg-amber text-white" },
   read: { label: "Read", className: "bg-ink/20 text-ink/70" },
 };
 
@@ -54,7 +54,7 @@ export default async function FeedbackAdminPage({
           <div className="container-prose max-w-md mx-auto">
             <div className="ornate-card p-8">
               <div className="text-center mb-6">
-                <span className="arabic-text text-gold-antique">لوحة الإدارة</span>
+                <span className="arabic-text text-emerald-deep">لوحة الإدارة</span>
                 <h1 className="heading-serif text-3xl font-semibold text-emerald-deep mt-1">
                   Admin Access
                 </h1>
@@ -110,7 +110,7 @@ export default async function FeedbackAdminPage({
               >
                 <ArrowLeft className="h-3.5 w-3.5" /> Back to Core Members
               </Link>
-              <span className="arabic-text block text-gold-antique">ملاحظاتكم</span>
+              <span className="arabic-text block text-emerald-deep">ملاحظاتكم</span>
               <h1 className="heading-serif text-4xl font-semibold text-emerald-deep">
                 Feedback Inbox
               </h1>
@@ -122,7 +122,7 @@ export default async function FeedbackAdminPage({
                   </span>
                 )}
                 {unreadCount > 0 && (
-                  <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full bg-gold-antique text-white text-xs font-medium">
+                  <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full bg-amber text-white text-xs font-medium">
                     {unreadCount} unread
                   </span>
                 )}
@@ -159,7 +159,7 @@ export default async function FeedbackAdminPage({
                   {!sessionFilter && (
                     <p className="text-xs text-ink/40 mt-1">
                       Share{" "}
-                      <code className="font-mono bg-cream-muted px-1 rounded">
+                      <code className="font-mono bg-border px-1 rounded">
                         /feedback
                       </code>{" "}
                       with cohort members.
@@ -167,7 +167,7 @@ export default async function FeedbackAdminPage({
                   )}
                 </div>
               ) : (
-                <ul className="divide-y divide-cream-muted">
+                <ul className="divide-y divide-border">
                   {entries.map((entry) => {
                     const status = STATUS_CONFIG[entry.status];
                     const isSelected = entry.id === selectedId;
@@ -188,7 +188,7 @@ export default async function FeedbackAdminPage({
                             sessionFilter ? `&session=${sessionFilter}` : ""
                           }`}
                           className={`block p-4 rounded-xl transition ${
-                            isSelected ? "bg-emerald-deep/5" : "hover:bg-cream-warm/40"
+                            isSelected ? "bg-emerald-deep/5" : "hover:bg-surface-2/40"
                           }`}
                         >
                           <div className="flex items-start justify-between gap-2 mb-1">
@@ -261,7 +261,7 @@ function FeedbackDetail({ entry }: { entry: FeedbackEntry }) {
   return (
     <article className="space-y-6">
       {/* Header */}
-      <header className="pb-5 border-b border-cream-muted">
+      <header className="pb-5 border-b border-border">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
             <span
@@ -287,8 +287,8 @@ function FeedbackDetail({ entry }: { entry: FeedbackEntry }) {
 
         {/* Session badge */}
         {entry.sessionTitle && (
-          <div className="mt-4 inline-flex items-center gap-2 px-3 py-2 bg-gold-antique/10 rounded-xl border border-gold-antique/25">
-            <CalendarDays className="h-4 w-4 text-gold-antique shrink-0" />
+          <div className="mt-4 inline-flex items-center gap-2 px-3 py-2 bg-emerald-deep/10 rounded-xl border border-emerald-deep/25">
+            <CalendarDays className="h-4 w-4 text-emerald-deep shrink-0" />
             <div>
               <p className="text-[10px] uppercase tracking-wider text-ink/45 leading-none mb-0.5">
                 Session
@@ -330,7 +330,7 @@ function FeedbackDetail({ entry }: { entry: FeedbackEntry }) {
           <Clock className="h-3.5 w-3.5" />
           {formatDate(entry.submittedAt)}
           {" · "}
-          <code className="font-mono text-[10px] bg-cream-muted px-1.5 py-0.5 rounded">
+          <code className="font-mono text-[10px] bg-border px-1.5 py-0.5 rounded">
             {entry.id}
           </code>
         </div>
@@ -339,7 +339,7 @@ function FeedbackDetail({ entry }: { entry: FeedbackEntry }) {
       {/* ── The Session ─────────────────────────────────── */}
       {(entry.gatheringRating || entry.gatheringReflection || entry.deepestLine) && (
         <section>
-          <h3 className="text-xs uppercase tracking-wider text-gold-antique font-semibold mb-3 flex items-center gap-1.5">
+          <h3 className="text-xs uppercase tracking-wider text-emerald-deep font-semibold mb-3 flex items-center gap-1.5">
             <Star className="h-3.5 w-3.5" /> The Session
           </h3>
           {entry.gatheringRating && (
@@ -355,7 +355,7 @@ function FeedbackDetail({ entry }: { entry: FeedbackEntry }) {
               <span className="text-[10px] uppercase tracking-wider text-ink/40 block mb-1">
                 What stayed with them
               </span>
-              <p className="text-sm text-ink/85 leading-relaxed whitespace-pre-wrap bg-cream-warm rounded-xl p-4 border border-cream-muted">
+              <p className="text-sm text-ink/85 leading-relaxed whitespace-pre-wrap bg-surface-2 rounded-xl p-4 border border-border">
                 {entry.gatheringReflection}
               </p>
             </div>
@@ -376,13 +376,13 @@ function FeedbackDetail({ entry }: { entry: FeedbackEntry }) {
       {/* ── The One Change ─────────────────────────────────── */}
       {entry.oneChange && (
         <section>
-          <h3 className="text-xs uppercase tracking-wider text-gold-antique font-semibold mb-3 flex items-center gap-1.5">
+          <h3 className="text-xs uppercase tracking-wider text-emerald-deep font-semibold mb-3 flex items-center gap-1.5">
             <Target className="h-3.5 w-3.5" /> The One Change
           </h3>
           <span className="text-[10px] uppercase tracking-wider text-ink/40 block mb-1">
             What they will do this week
           </span>
-          <p className="text-sm text-emerald-deep leading-relaxed whitespace-pre-wrap bg-gold-antique/8 rounded-xl p-4 border border-gold-antique/30 font-medium">
+          <p className="text-sm text-emerald-deep leading-relaxed whitespace-pre-wrap bg-emerald-deep/8 rounded-xl p-4 border border-emerald-deep/30 font-medium">
             {entry.oneChange}
           </p>
         </section>
@@ -391,7 +391,7 @@ function FeedbackDetail({ entry }: { entry: FeedbackEntry }) {
       {/* ── The Speaker's Delivery ────────────────────────────── */}
       {(entry.advisorRating || entry.advisorReflection) && (
         <section>
-          <h3 className="text-xs uppercase tracking-wider text-gold-antique font-semibold mb-3 flex items-center gap-1.5">
+          <h3 className="text-xs uppercase tracking-wider text-emerald-deep font-semibold mb-3 flex items-center gap-1.5">
             <Star className="h-3.5 w-3.5" /> The Speaker&apos;s Delivery
           </h3>
           {entry.advisorRating && (
@@ -407,7 +407,7 @@ function FeedbackDetail({ entry }: { entry: FeedbackEntry }) {
               <span className="text-[10px] uppercase tracking-wider text-ink/40 block mb-1">
                 Reflection
               </span>
-              <p className="text-sm text-ink/85 leading-relaxed whitespace-pre-wrap bg-cream-warm rounded-xl p-4 border border-cream-muted">
+              <p className="text-sm text-ink/85 leading-relaxed whitespace-pre-wrap bg-surface-2 rounded-xl p-4 border border-border">
                 {entry.advisorReflection}
               </p>
             </div>
@@ -418,11 +418,11 @@ function FeedbackDetail({ entry }: { entry: FeedbackEntry }) {
       {/* ── Questions ─────────────────────────────────── */}
       {(entry.questions || entry.preferredChannel) && (
         <section>
-          <h3 className="text-xs uppercase tracking-wider text-gold-antique font-semibold mb-3 flex items-center gap-1.5">
+          <h3 className="text-xs uppercase tracking-wider text-emerald-deep font-semibold mb-3 flex items-center gap-1.5">
             <HelpCircle className="h-3.5 w-3.5" /> Questions
           </h3>
           {entry.questions && (
-            <p className="text-sm text-ink/85 leading-relaxed whitespace-pre-wrap bg-cream-warm rounded-xl p-4 border border-cream-muted mb-3">
+            <p className="text-sm text-ink/85 leading-relaxed whitespace-pre-wrap bg-surface-2 rounded-xl p-4 border border-border mb-3">
               {entry.questions}
             </p>
           )}
@@ -441,7 +441,7 @@ function FeedbackDetail({ entry }: { entry: FeedbackEntry }) {
                 entry.preferredChannel === "in-person") &&
                 !entry.whatsapp &&
                 isAnonymous && (
-                  <p className="mt-2 text-gold-antique italic">
+                  <p className="mt-2 text-emerald-deep italic">
                     ⚠ Wanted a response but did not leave contact details.
                   </p>
                 )}
@@ -453,10 +453,10 @@ function FeedbackDetail({ entry }: { entry: FeedbackEntry }) {
       {/* ── Additional ─────────────────────────────────── */}
       {entry.additionalNotes && (
         <section>
-          <h3 className="text-xs uppercase tracking-wider text-gold-antique font-semibold mb-3">
+          <h3 className="text-xs uppercase tracking-wider text-emerald-deep font-semibold mb-3">
             Additional Notes
           </h3>
-          <p className="text-sm text-ink/85 leading-relaxed whitespace-pre-wrap bg-cream-warm rounded-xl p-4 border border-cream-muted">
+          <p className="text-sm text-ink/85 leading-relaxed whitespace-pre-wrap bg-surface-2 rounded-xl p-4 border border-border">
             {entry.additionalNotes}
           </p>
         </section>
@@ -474,8 +474,8 @@ function RatingBadge({ value }: { value: string }) {
       : value === "good"
       ? "bg-emerald-deep/15 text-emerald-deep"
       : value === "average"
-      ? "bg-gold-antique/15 text-gold-antique"
-      : "bg-red-100 text-red-700";
+      ? "bg-emerald-deep/15 text-emerald-deep"
+      : "bg-danger-100 text-danger-700";
   return (
     <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${tone}`}>
       {label}

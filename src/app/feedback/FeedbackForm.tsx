@@ -114,7 +114,7 @@ export function FeedbackForm({ sessions }: { sessions: SessionOption[] }) {
       <section className="space-y-3">
         <div>
           <h3 className="heading-serif text-lg font-semibold text-emerald-deep flex items-center gap-2">
-            <CalendarDays className="h-4 w-4 text-gold-antique" />
+            <CalendarDays className="h-4 w-4 text-emerald-deep" />
             Which session is this feedback about?
           </h3>
           <p className="text-xs text-ink/55 mt-0.5">
@@ -139,7 +139,7 @@ export function FeedbackForm({ sessions }: { sessions: SessionOption[] }) {
       </section>
 
       {/* ── Optional Identity ─────────────────────────────────── */}
-      <section className="space-y-5 pt-2 border-t border-cream-muted">
+      <section className="space-y-5 pt-2 border-t border-border">
         <div>
           <h3 className="heading-serif text-lg font-semibold text-emerald-deep">
             About You <span className="text-xs font-normal text-ink/40">(optional)</span>
@@ -162,7 +162,7 @@ export function FeedbackForm({ sessions }: { sessions: SessionOption[] }) {
       </section>
 
       {/* ── The Session ─────────────────────────────────── */}
-      <section className="space-y-5 pt-2 border-t border-cream-muted">
+      <section className="space-y-5 pt-2 border-t border-border">
         <div>
           <h3 className="heading-serif text-lg font-semibold text-emerald-deep">
             The Session
@@ -178,7 +178,7 @@ export function FeedbackForm({ sessions }: { sessions: SessionOption[] }) {
             {RATING_ORDER.map((r) => (
               <label
                 key={r}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-cream-muted bg-cream-warm/40 cursor-pointer hover:bg-emerald-deep/5 hover:border-emerald-deep/30 transition has-[:checked]:bg-emerald-deep has-[:checked]:text-white has-[:checked]:border-emerald-deep"
+                className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-border bg-surface-2/40 cursor-pointer hover:bg-emerald-deep/5 hover:border-emerald-deep/30 transition has-[:checked]:bg-emerald-deep has-[:checked]:text-white has-[:checked]:border-emerald-deep"
               >
                 <input
                   type="radio"
@@ -226,7 +226,7 @@ export function FeedbackForm({ sessions }: { sessions: SessionOption[] }) {
       </section>
 
       {/* ── The One Change ─────────────────────────────────── */}
-      <section className="space-y-5 pt-2 border-t border-cream-muted">
+      <section className="space-y-5 pt-2 border-t border-border">
         <div>
           <h3 className="heading-serif text-lg font-semibold text-emerald-deep">
             The One Change
@@ -256,7 +256,7 @@ export function FeedbackForm({ sessions }: { sessions: SessionOption[] }) {
       </section>
 
       {/* ── The Speaker's Delivery ─────────────────────────────── */}
-      <section className="space-y-5 pt-2 border-t border-cream-muted">
+      <section className="space-y-5 pt-2 border-t border-border">
         <div>
           <h3 className="heading-serif text-lg font-semibold text-emerald-deep">
             The Speaker&apos;s Delivery
@@ -274,7 +274,7 @@ export function FeedbackForm({ sessions }: { sessions: SessionOption[] }) {
             {RATING_ORDER.map((r) => (
               <label
                 key={r}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-cream-muted bg-cream-warm/40 cursor-pointer hover:bg-emerald-deep/5 hover:border-emerald-deep/30 transition has-[:checked]:bg-emerald-deep has-[:checked]:text-white has-[:checked]:border-emerald-deep"
+                className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-border bg-surface-2/40 cursor-pointer hover:bg-emerald-deep/5 hover:border-emerald-deep/30 transition has-[:checked]:bg-emerald-deep has-[:checked]:text-white has-[:checked]:border-emerald-deep"
               >
                 <input
                   type="radio"
@@ -305,7 +305,7 @@ export function FeedbackForm({ sessions }: { sessions: SessionOption[] }) {
       </section>
 
       {/* ── Questions ─────────────────────────────────── */}
-      <section className="space-y-5 pt-2 border-t border-cream-muted">
+      <section className="space-y-5 pt-2 border-t border-border">
         <div>
           <h3 className="heading-serif text-lg font-semibold text-emerald-deep">
             Questions &amp; Concerns
@@ -336,7 +336,7 @@ export function FeedbackForm({ sessions }: { sessions: SessionOption[] }) {
             {CHANNEL_ORDER.map((c) => (
               <label
                 key={c}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-cream-muted bg-cream-warm/40 cursor-pointer hover:bg-emerald-deep/5 hover:border-emerald-deep/30 transition has-[:checked]:bg-emerald-deep/10 has-[:checked]:border-emerald-deep"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-border bg-surface-2/40 cursor-pointer hover:bg-emerald-deep/5 hover:border-emerald-deep/30 transition has-[:checked]:bg-emerald-deep/10 has-[:checked]:border-emerald-deep"
               >
                 <input
                   type="radio"
@@ -370,7 +370,7 @@ export function FeedbackForm({ sessions }: { sessions: SessionOption[] }) {
             </div>
           )}
           {channel === "in-person" && (
-            <p className="help-text text-gold-antique mt-3">
+            <p className="help-text text-emerald-deep mt-3">
               Reminder: leave your name above so the Speaker can recognise you.
             </p>
           )}
@@ -388,7 +388,7 @@ export function FeedbackForm({ sessions }: { sessions: SessionOption[] }) {
       </section>
 
       {/* ── Additional ─────────────────────────────────── */}
-      <section className="space-y-5 pt-2 border-t border-cream-muted">
+      <section className="space-y-5 pt-2 border-t border-border">
         <div>
           <label className="label-field">
             Anything else you would like to share? *
@@ -406,7 +406,7 @@ export function FeedbackForm({ sessions }: { sessions: SessionOption[] }) {
 
       {/* Errors */}
       {result?.error && (
-        <p className="text-sm text-red-500 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+        <p className="text-sm text-danger bg-danger-50 border border-danger-200 rounded-xl px-4 py-3">
           {result.error}
         </p>
       )}

@@ -22,7 +22,7 @@ function WingBadge({ wing }: { wing: Position["wing"] }) {
     female: {
       label: "Sisters' Cohort",
       arabic: "جناح الأخوات",
-      className: "bg-gold-antique/10 text-gold-antique border-gold-antique/30",
+      className: "bg-sapphire/10 text-sapphire border-sapphire/30",
     },
     both: {
       label: "Either Cohort",
@@ -47,10 +47,10 @@ function PositionCard({ position }: { position: Position }) {
       <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
         <WingBadge wing={position.wing} />
         {position.open ? (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-rich/10 text-emerald-rich text-xs font-medium">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald/10 text-emerald text-xs font-medium">
             <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-rich opacity-60" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-rich" />
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald opacity-60" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald" />
             </span>
             Open
           </span>
@@ -62,7 +62,7 @@ function PositionCard({ position }: { position: Position }) {
       </div>
 
       {position.arabicTitle && (
-        <p className="arabic-text text-lg text-gold-antique mb-1">
+        <p className="arabic-text text-lg text-emerald-deep mb-1">
           {position.arabicTitle}
         </p>
       )}
@@ -75,15 +75,15 @@ function PositionCard({ position }: { position: Position }) {
 
       <div className="space-y-2 mb-6 text-xs text-ink/60">
         <div className="flex items-center gap-2">
-          <Users className="h-3.5 w-3.5 text-gold-antique shrink-0" />
+          <Users className="h-3.5 w-3.5 text-emerald-deep shrink-0" />
           <span>Reports to: <span className="text-ink/80">{position.reportsTo}</span></span>
         </div>
         <div className="flex items-center gap-2">
-          <Clock className="h-3.5 w-3.5 text-gold-antique shrink-0" />
+          <Clock className="h-3.5 w-3.5 text-emerald-deep shrink-0" />
           <span>Commitment: <span className="text-ink/80">{position.commitment}</span></span>
         </div>
         <div className="flex items-center gap-2">
-          <CalendarClock className="h-3.5 w-3.5 text-gold-antique shrink-0" />
+          <CalendarClock className="h-3.5 w-3.5 text-emerald-deep shrink-0" />
           <span>Term: <span className="text-ink/80">{position.termLength}</span></span>
         </div>
       </div>
@@ -92,7 +92,7 @@ function PositionCard({ position }: { position: Position }) {
         position.slug.startsWith("core-member") ? (
           <Link
             href="/join"
-            className="inline-flex items-center justify-center gap-2 w-full px-6 py-3 rounded-full bg-gold-gradient text-ink font-semibold tracking-wide shadow-md hover:shadow-gold-warm/30 hover:scale-[1.02] transition-all"
+            className="inline-flex items-center justify-center gap-2 w-full px-6 py-3 rounded-full bg-emerald text-ink-on-emerald font-semibold tracking-wide shadow-md hover:bg-emerald-deep hover:shadow-emerald-deep/30 hover:scale-[1.02] transition-all"
           >
             Join as Core Member
             <ArrowRight className="h-4 w-4" />
@@ -136,7 +136,7 @@ export default async function PositionsPage() {
             <div className="gold-divider" />
             <p className="mt-4 text-lg text-ink/70 leading-relaxed">
               Leadership in Ahl Al-Islah is a trust (
-              <span className="arabic-text text-gold-antique">أمانة</span>).
+              <span className="arabic-text text-emerald-deep">أمانة</span>).
               Before applying, please read the Department Structure &amp;
               Strategic Roadmap document in full — and make istikharah.
             </p>
@@ -145,9 +145,9 @@ export default async function PositionsPage() {
           {open.length > 0 && (
             <section>
               <h2 className="heading-serif text-2xl font-semibold text-emerald-deep mb-6 flex items-center gap-3">
-                <span className="h-px flex-1 bg-gold-antique/30" />
+                <span className="h-px flex-1 bg-emerald-deep/30" />
                 <span>Currently Open</span>
-                <span className="h-px flex-1 bg-gold-antique/30" />
+                <span className="h-px flex-1 bg-emerald-deep/30" />
               </h2>
               <div className="grid md:grid-cols-2 gap-6">
                 {open.map((position) => (
@@ -172,7 +172,7 @@ export default async function PositionsPage() {
             </section>
           )}
 
-          <div className="mt-20 max-w-2xl mx-auto text-center text-sm text-ink/60 p-6 rounded-2xl bg-cream-warm border border-cream-muted">
+          <div className="mt-20 max-w-2xl mx-auto text-center text-sm text-ink/60 p-6 rounded-2xl bg-surface-2 border border-border">
             <p>
               <span className="font-serif italic text-emerald-deep">Tip: </span>
               Make istikharah before applying, and make du&rsquo;a that Allah

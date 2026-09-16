@@ -58,12 +58,12 @@ export default async function SessionDetailPage({ params }: Props) {
                 <img
                   src={session.posterUrl}
                   alt={`Poster — ${session.title}`}
-                  className="max-h-[28rem] w-auto rounded-xl border border-cream-muted shadow-md"
+                  className="max-h-[28rem] w-auto rounded-xl border border-border shadow-md"
                 />
               </div>
             )}
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
-              <span className="text-xs uppercase tracking-widest text-gold-antique inline-flex items-center gap-1.5">
+              <span className="text-xs uppercase tracking-widest text-emerald-deep inline-flex items-center gap-1.5">
                 <CalendarDays className="h-3.5 w-3.5" />
                 {formatDate(session.date)}
               </span>
@@ -78,7 +78,7 @@ export default async function SessionDetailPage({ params }: Props) {
               })()}
             </div>
             {session.arabicTitle && (
-              <p className="arabic-text text-2xl text-gold-antique mt-3 mb-1">
+              <p className="arabic-text text-2xl text-emerald-deep mt-3 mb-1">
                 {session.arabicTitle}
               </p>
             )}
@@ -132,8 +132,8 @@ export default async function SessionDetailPage({ params }: Props) {
                   className="ornate-card p-6 sm:p-10 scroll-mt-24"
                   id={`activity-${idx + 1}`}
                 >
-                  <div className="pb-5 mb-6 border-b border-cream-muted">
-                    <span className="text-[10px] uppercase tracking-widest text-gold-antique font-medium">
+                  <div className="pb-5 mb-6 border-b border-border">
+                    <span className="text-[10px] uppercase tracking-widest text-emerald-deep font-medium">
                       Activity {idx + 1}
                     </span>
                     <h2 className="heading-serif text-2xl sm:text-3xl font-semibold text-emerald-deep mt-1 leading-tight">

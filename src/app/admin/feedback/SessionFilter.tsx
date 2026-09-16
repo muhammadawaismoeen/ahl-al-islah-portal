@@ -38,7 +38,7 @@ export function SessionFilter({
       <select
         value={selected ?? ""}
         onChange={handleChange}
-        className="text-sm px-3 py-2 rounded-lg border border-cream-muted bg-white focus:outline-none focus:ring-2 focus:ring-emerald-deep/30 focus:border-emerald-deep transition"
+        className="text-sm px-3 py-2 rounded-lg border border-border bg-white focus:outline-none focus:ring-2 focus:ring-emerald-deep/30 focus:border-emerald-deep transition"
       >
         <option value="">All sessions ({totalCount})</option>
         {sessions.map((s) => (

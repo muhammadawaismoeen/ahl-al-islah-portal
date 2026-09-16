@@ -147,9 +147,9 @@ export function ApplicationForm({
           </span>
           <span>{Math.round(progress)}%</span>
         </div>
-        <div className="h-1.5 rounded-full bg-cream-muted overflow-hidden">
+        <div className="h-1.5 rounded-full bg-border overflow-hidden">
           <motion.div
-            className="h-full bg-gradient-to-r from-emerald-deep via-emerald-rich to-gold-warm"
+            className="h-full bg-sapphire shimmer-sweep"
             initial={{ width: 0 }}
             animate={{ width: `${progress}%` }}
             transition={{ duration: 0.5, ease: "easeOut" }}
@@ -169,10 +169,10 @@ export function ApplicationForm({
               className={cn(
                 "text-xs px-3 py-1 rounded-full transition",
                 i === step
-                  ? "bg-emerald-deep text-cream font-medium"
+                  ? "bg-emerald-deep text-ink-on-emerald font-medium"
                   : i < step
                   ? "bg-emerald-deep/10 text-emerald-deep hover:bg-emerald-deep/20 cursor-pointer"
-                  : "bg-cream-muted text-ink/40 cursor-default"
+                  : "bg-border text-ink/40 cursor-default"
               )}
               disabled={i > step}
             >
@@ -200,7 +200,7 @@ export function ApplicationForm({
         </AnimatePresence>
 
         {/* Controls */}
-        <div className="flex items-center justify-between pt-6 border-t border-cream-muted">
+        <div className="flex items-center justify-between pt-6 border-t border-border">
           <div>
             {step > 0 && (
               <button
@@ -277,7 +277,7 @@ function SectionView({
     <div className="space-y-8">
       <div>
         {section.arabicTitle && (
-          <p className="arabic-text text-gold-antique mb-1">
+          <p className="arabic-text text-emerald-deep mb-1">
             {section.arabicTitle}
           </p>
         )}
@@ -321,7 +321,7 @@ function FieldView({
       <label htmlFor={field.id} className="label-field">
         {field.label}
         {field.required && (
-          <span className="text-gold-antique ml-1" aria-hidden>
+          <span className="text-emerald-deep ml-1" aria-hidden>
             *
           </span>
         )}
@@ -333,7 +333,7 @@ function FieldView({
           rows={5}
           placeholder={field.placeholder}
           maxLength={field.maxLength}
-          className={cn("textarea-field", error && "border-red-400")}
+          className={cn("textarea-field", error && "border-danger")}
           {...register(field.id)}
         />
       )}
@@ -352,7 +352,7 @@ function FieldView({
           max={field.max}
           minLength={field.minLength}
           maxLength={field.maxLength}
-          className={cn("input-field", error && "border-red-400")}
+          className={cn("input-field", error && "border-danger")}
           {...register(field.id)}
         />
       )}
@@ -360,7 +360,7 @@ function FieldView({
       {field.type === "select" && (
         <select
           id={field.id}
-          className={cn("input-field appearance-none bg-white pr-10", error && "border-red-400")}
+          className={cn("input-field appearance-none bg-white pr-10", error && "border-danger")}
           {...register(field.id)}
           defaultValue=""
         >
@@ -390,7 +390,7 @@ function FieldView({
                       "flex items-start gap-3 p-4 rounded-xl border cursor-pointer transition-all",
                       checked
                         ? "bg-emerald-deep/5 border-emerald-deep/40 shadow-sm"
-                        : "bg-white border-cream-muted hover:border-emerald-deep/20 hover:bg-cream-warm/30"
+                        : "bg-white border-border hover:border-emerald-deep/20 hover:bg-surface-2/30"
                     )}
                   >
                     <input
@@ -432,7 +432,7 @@ function FieldView({
                         "flex items-start gap-3 p-4 rounded-xl border cursor-pointer transition-all",
                         checked
                           ? "bg-emerald-deep/5 border-emerald-deep/40 shadow-sm"
-                          : "bg-white border-cream-muted hover:border-emerald-deep/20"
+                          : "bg-white border-border hover:border-emerald-deep/20"
                       )}
                     >
                       <input
@@ -490,12 +490,12 @@ function SuccessState({
       className="max-w-2xl mx-auto text-center"
     >
       <div className="relative mx-auto w-20 h-20 mb-6">
-        <div className="absolute inset-0 rounded-full bg-emerald-rich/20 animate-ping" />
+        <div className="absolute inset-0 rounded-full bg-emerald/20 animate-ping" />
         <div className="relative h-20 w-20 rounded-full bg-emerald-gradient flex items-center justify-center">
-          <CheckCircle2 className="h-10 w-10 text-cream" />
+          <CheckCircle2 className="h-10 w-10 text-ink-on-emerald" />
         </div>
       </div>
-      <div className="arabic-text text-2xl text-gold-antique mb-2">
+      <div className="arabic-text text-2xl text-emerald-deep mb-2">
         جزاك الله خيراً
       </div>
       <h2 className="heading-serif text-4xl font-semibold text-emerald-deep">
@@ -521,7 +521,7 @@ function SuccessState({
       {submissionId && (
         <p className="mt-6 text-xs text-ink/50">
           Submission reference:{" "}
-          <code className="px-2 py-1 rounded bg-cream-muted text-ink/70 font-mono">
+          <code className="px-2 py-1 rounded bg-border text-ink/70 font-mono">
             {submissionId}
           </code>
         </p>

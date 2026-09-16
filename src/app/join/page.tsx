@@ -24,11 +24,11 @@ export default async function JoinPage() {
 
           {/* Header */}
           <div className="text-center mb-14">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gold-antique/10 border border-gold-antique/20 text-xs font-medium text-gold-antique tracking-wider uppercase mb-6">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-deep/10 border border-emerald-deep/20 text-xs font-medium text-emerald-deep tracking-wider uppercase mb-6">
               <Users className="h-3.5 w-3.5" />
               Open Recruitment
             </div>
-            <p className="arabic-text text-3xl text-gold-antique mb-3">انضم إلينا</p>
+            <p className="arabic-text text-3xl text-emerald-deep mb-3">انضم إلينا</p>
             <h1 className="heading-serif text-4xl sm:text-5xl font-semibold text-emerald-deep text-balance">
               Join as Core Member
             </h1>
@@ -44,7 +44,7 @@ export default async function JoinPage() {
             <div className="ornate-card p-8 flex flex-col group hover:shadow-lg transition-shadow">
               <div className="mb-5">
                 <span className="inline-block w-3 h-3 rounded-full bg-emerald-deep mb-4" />
-                <p className="arabic-text text-xl text-gold-antique mb-1">جناح الإخوة</p>
+                <p className="arabic-text text-xl text-emerald-deep mb-1">جناح الإخوة</p>
                 <h2 className="heading-serif text-2xl font-semibold text-emerald-deep">
                   Brothers&apos; Cohort
                 </h2>
@@ -53,10 +53,10 @@ export default async function JoinPage() {
                 </p>
               </div>
               <ul className="space-y-2 text-sm text-ink/70 mb-8 flex-1">
-                <li className="flex gap-2"><span className="text-gold-antique shrink-0">•</span>Weekly cohort meetings</li>
-                <li className="flex gap-2"><span className="text-gold-antique shrink-0">•</span>Event planning &amp; execution</li>
-                <li className="flex gap-2"><span className="text-gold-antique shrink-0">•</span>3–5 hrs/week commitment</li>
-                <li className="flex gap-2"><span className="text-gold-antique shrink-0">•</span>1 academic year term</li>
+                <li className="flex gap-2"><span className="text-emerald-deep shrink-0">•</span>Weekly cohort meetings</li>
+                <li className="flex gap-2"><span className="text-emerald-deep shrink-0">•</span>Event planning &amp; execution</li>
+                <li className="flex gap-2"><span className="text-emerald-deep shrink-0">•</span>3–5 hrs/week commitment</li>
+                <li className="flex gap-2"><span className="text-emerald-deep shrink-0">•</span>1 academic year term</li>
               </ul>
               <Link
                 href="/apply/core-member-male"
@@ -70,8 +70,8 @@ export default async function JoinPage() {
             {/* Sisters */}
             <div className="ornate-card p-8 flex flex-col group hover:shadow-lg transition-shadow">
               <div className="mb-5">
-                <span className="inline-block w-3 h-3 rounded-full bg-gold-antique mb-4" />
-                <p className="arabic-text text-xl text-gold-antique mb-1">جناح الأخوات</p>
+                <span className="inline-block w-3 h-3 rounded-full bg-sapphire mb-4" />
+                <p className="arabic-text text-xl text-sapphire mb-1">جناح الأخوات</p>
                 <h2 className="heading-serif text-2xl font-semibold text-emerald-deep">
                   Sisters&apos; Cohort
                 </h2>
@@ -80,14 +80,14 @@ export default async function JoinPage() {
                 </p>
               </div>
               <ul className="space-y-2 text-sm text-ink/70 mb-8 flex-1">
-                <li className="flex gap-2"><span className="text-gold-antique shrink-0">•</span>Weekly cohort meetings</li>
-                <li className="flex gap-2"><span className="text-gold-antique shrink-0">•</span>Event planning &amp; execution</li>
-                <li className="flex gap-2"><span className="text-gold-antique shrink-0">•</span>3–5 hrs/week commitment</li>
-                <li className="flex gap-2"><span className="text-gold-antique shrink-0">•</span>1 academic year term</li>
+                <li className="flex gap-2"><span className="text-sapphire shrink-0">•</span>Weekly cohort meetings</li>
+                <li className="flex gap-2"><span className="text-sapphire shrink-0">•</span>Event planning &amp; execution</li>
+                <li className="flex gap-2"><span className="text-sapphire shrink-0">•</span>3–5 hrs/week commitment</li>
+                <li className="flex gap-2"><span className="text-sapphire shrink-0">•</span>1 academic year term</li>
               </ul>
               <Link
                 href="/apply/core-member-female"
-                className="inline-flex items-center justify-center gap-2 w-full px-6 py-3 rounded-full bg-gold-gradient text-ink font-semibold tracking-wide shadow-md hover:shadow-gold-warm/30 hover:scale-[1.02] transition-all group"
+                className="inline-flex items-center justify-center gap-2 w-full px-6 py-3 rounded-full bg-sapphire text-white font-semibold tracking-wide shadow-md hover:bg-sapphire/90 hover:scale-[1.02] transition-all group"
               >
                 Apply — Sisters&apos; Cohort
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />

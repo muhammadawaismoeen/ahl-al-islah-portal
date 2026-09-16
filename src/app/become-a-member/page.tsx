@@ -75,7 +75,7 @@ export default async function BecomeAMemberPage() {
               <Heart className="h-3.5 w-3.5" />
               Open to all HSE students
             </div>
-            <p className="arabic-text text-3xl text-gold-antique mb-3">
+            <p className="arabic-text text-3xl text-emerald-deep mb-3">
               انضم إلينا
             </p>
             <h1 className="heading-serif text-4xl sm:text-5xl font-semibold text-emerald-deep text-balance">
@@ -91,7 +91,7 @@ export default async function BecomeAMemberPage() {
               Looking to take on a leadership role?{" "}
               <Link
                 href="/join"
-                className="text-emerald-deep underline underline-offset-2 hover:text-emerald-rich transition"
+                className="text-emerald-deep underline underline-offset-2 hover:text-emerald-deep transition"
               >
                 Join as Core Member
               </Link>{" "}

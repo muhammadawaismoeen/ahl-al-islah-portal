@@ -64,6 +64,7 @@ export async function resetContent(): Promise<void> {
 const REQUIRED_NAV_ROUTES: { label: string; href: string }[] = [
   { label: "Sessions", href: "/sessions" },
   { label: "Feedback", href: "/feedback" },
+  { label: "Drive", href: "/drive" },
 ];
 
 /**

@@ -23,7 +23,7 @@ export default async function ContentPage() {
         <div className="container-prose max-w-md mx-auto">
           <div className="ornate-card p-8">
             <div className="text-center mb-6">
-              <span className="arabic-text text-gold-antique">لوحة الإدارة</span>
+              <span className="arabic-text text-emerald-deep">لوحة الإدارة</span>
               <h1 className="heading-serif text-3xl font-semibold text-emerald-deep mt-1">
                 Admin Access
               </h1>
@@ -55,7 +55,7 @@ export default async function ContentPage() {
                 Core Members
               </Link>
             </div>
-            <span className="arabic-text text-gold-antique">تحرير المحتوى</span>
+            <span className="arabic-text text-emerald-deep">تحرير المحتوى</span>
             <h1 className="heading-serif text-4xl font-semibold text-emerald-deep">
               Content Editor
             </h1>

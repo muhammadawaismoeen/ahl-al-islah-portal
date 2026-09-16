@@ -171,7 +171,7 @@ function Section({
             setOpen(!open);
           }
         }}
-        className="w-full flex items-center justify-between p-5 hover:bg-cream-warm/30 transition text-left cursor-pointer select-none"
+        className="w-full flex items-center justify-between p-5 hover:bg-surface-2/30 transition text-left cursor-pointer select-none"
       >
         <div className="flex items-center gap-3 min-w-0 flex-1">
           {icon && <span className="text-lg shrink-0">{icon}</span>}
@@ -210,7 +210,7 @@ function Section({
         </div>
       </div>
       {open && (
-        <div className="px-5 pb-6 pt-2 border-t border-cream-muted space-y-5">
+        <div className="px-5 pb-6 pt-2 border-t border-border space-y-5">
           {children}
         </div>
       )}
@@ -297,11 +297,11 @@ export function ContentEditor({
   return (
     <div className="space-y-4">
       {/* Sticky save bar */}
-      <div className="sticky top-0 z-40 bg-cream/90 backdrop-blur-lg border-b border-cream-muted -mx-4 px-4 py-3 flex items-center justify-between gap-4">
+      <div className="sticky top-0 z-40 bg-bg/90 backdrop-blur-lg border-b border-border -mx-4 px-4 py-3 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           {dirty && (
-            <span className="inline-flex items-center gap-1.5 text-xs text-gold-antique font-medium">
-              <span className="h-2 w-2 rounded-full bg-gold-antique animate-pulse" />
+            <span className="inline-flex items-center gap-1.5 text-xs text-amber font-medium">
+              <span className="h-2 w-2 rounded-full bg-amber animate-pulse" />
               Unsaved changes
             </span>
           )}
@@ -348,7 +348,7 @@ export function ContentEditor({
                 <img
                   src={content.customLogo}
                   alt="Custom logo"
-                  className="h-12 w-12 object-contain rounded border border-cream-muted bg-white p-1"
+                  className="h-12 w-12 object-contain rounded border border-border bg-white p-1"
                 />
               ) : (
                 <span className="text-sm text-ink/50 italic">
@@ -388,7 +388,7 @@ export function ContentEditor({
           />
 
           {logoError && (
-            <p className="text-xs text-red-500 font-medium">{logoError}</p>
+            <p className="text-xs text-danger font-medium">{logoError}</p>
           )}
 
           <div className="flex items-center gap-3">
@@ -408,7 +408,7 @@ export function ContentEditor({
                   setDirty(true);
                   setLogoError("");
                 }}
-                className="btn-ghost !py-2 !px-4 text-xs flex items-center gap-1.5 text-red-500 hover:text-red-700"
+                className="btn-ghost !py-2 !px-4 text-xs flex items-center gap-1.5 text-danger hover:text-danger-700"
               >
                 <X className="h-3.5 w-3.5" />
                 Remove Custom Logo
@@ -472,7 +472,7 @@ export function ContentEditor({
                   const items = content.nav.items.filter((_, idx) => idx !== i);
                   set("nav", { items });
                 }}
-                className="p-2 text-red-400 hover:text-red-600 transition shrink-0"
+                className="p-2 text-danger-400 hover:text-danger-600 transition shrink-0"
               >
                 <Trash2 className="h-4 w-4" />
               </button>
@@ -580,7 +580,7 @@ export function ContentEditor({
                   const stats = content.hero.stats.filter((_, idx) => idx !== i);
                   set("hero", { stats });
                 }}
-                className="p-2 text-red-400 hover:text-red-600 transition shrink-0"
+                className="p-2 text-danger-400 hover:text-danger-600 transition shrink-0"
               >
                 <Trash2 className="h-4 w-4" />
               </button>
@@ -683,7 +683,7 @@ export function ContentEditor({
           {content.about.values.map((val, i) => (
             <div
               key={i}
-              className="p-3 rounded-lg border border-cream-muted mb-3 space-y-2"
+              className="p-3 rounded-lg border border-border mb-3 space-y-2"
             >
               <div className="flex items-center justify-between">
                 <span className="text-xs font-medium text-emerald-deep">
@@ -697,7 +697,7 @@ export function ContentEditor({
                     );
                     set("about", { values });
                   }}
-                  className="p-1 text-red-400 hover:text-red-600 transition"
+                  className="p-1 text-danger-400 hover:text-danger-600 transition"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
                 </button>
@@ -844,7 +844,7 @@ export function ContentEditor({
             </Field>
           </div>
           <div className="space-y-3">
-            <h4 className="text-xs uppercase tracking-wider text-gold-antique font-medium">
+            <h4 className="text-xs uppercase tracking-wider text-sapphire font-medium">
               Sisters&apos; Cohort
             </h4>
             <Field label="Label">
@@ -937,7 +937,7 @@ export function ContentEditor({
           {content.roadmap.phases.map((phase, i) => (
             <div
               key={i}
-              className="p-4 rounded-lg border border-cream-muted mb-3 space-y-3"
+              className="p-4 rounded-lg border border-border mb-3 space-y-3"
             >
               <div className="flex items-center justify-between">
                 <span className="text-xs font-medium text-emerald-deep">
@@ -951,7 +951,7 @@ export function ContentEditor({
                     );
                     set("roadmap", { phases });
                   }}
-                  className="p-1 text-red-400 hover:text-red-600 transition"
+                  className="p-1 text-danger-400 hover:text-danger-600 transition"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
                 </button>
@@ -1131,7 +1131,7 @@ export function ContentEditor({
                   const links = (content.footer.exploreLinks ?? []).filter((_, idx) => idx !== i);
                   set("footer", { exploreLinks: links });
                 }}
-                className="p-2 text-red-400 hover:text-red-600 transition shrink-0"
+                className="p-2 text-danger-400 hover:text-danger-600 transition shrink-0"
               >
                 <Trash2 className="h-4 w-4" />
               </button>
@@ -1251,7 +1251,7 @@ function FormConfigEditor({
       </p>
 
       {/* Tabs */}
-      <div className="flex items-center gap-2 border-b border-cream-muted pb-0">
+      <div className="flex items-center gap-2 border-b border-border pb-0">
         {POSITION_TABS.map((tab) => (
           <button
             key={tab.slug}
@@ -1260,7 +1260,7 @@ function FormConfigEditor({
             className={`px-4 py-2 text-sm font-medium transition border-b-2 -mb-px ${
               activeTab === tab.slug
                 ? "border-emerald-deep text-emerald-deep"
-                : "border-transparent text-ink/50 hover:text-ink/70 hover:border-cream-muted"
+                : "border-transparent text-ink/50 hover:text-ink/70 hover:border-border"
             }`}
           >
             {tab.label}
@@ -1442,7 +1442,7 @@ function FormSectionEditor({
   }
 
   return (
-    <div className="rounded-lg border border-cream-muted overflow-hidden bg-white">
+    <div className="rounded-lg border border-border overflow-hidden bg-white">
       {/* Section header bar */}
       <div
         role="button"
@@ -1454,7 +1454,7 @@ function FormSectionEditor({
             setExpanded(!expanded);
           }
         }}
-        className="flex items-center gap-2 px-4 py-3 bg-cream-warm/40 hover:bg-cream-warm/60 transition cursor-pointer select-none"
+        className="flex items-center gap-2 px-4 py-3 bg-surface-2/40 hover:bg-surface-2/60 transition cursor-pointer select-none"
       >
         <FileText className="h-4 w-4 text-emerald-deep/60 shrink-0" />
         <div className="flex-1 min-w-0">
@@ -1487,7 +1487,7 @@ function FormSectionEditor({
           <button
             type="button"
             onClick={onRemove}
-            className="p-1 text-red-400 hover:text-red-600 transition ml-1"
+            className="p-1 text-danger-400 hover:text-danger-600 transition ml-1"
             title="Remove section"
           >
             <Trash2 className="h-3.5 w-3.5" />
@@ -1499,7 +1499,7 @@ function FormSectionEditor({
       </div>
 
       {expanded && (
-        <div className="px-4 py-4 space-y-4 border-t border-cream-muted">
+        <div className="px-4 py-4 space-y-4 border-t border-border">
           {/* Section metadata */}
           <div className="grid sm:grid-cols-3 gap-3">
             <Field label="Section Title">
@@ -1583,7 +1583,7 @@ function FormFieldEditor({
   const hasOptions = field.type === "select" || field.type === "radio" || field.type === "checkbox";
 
   return (
-    <div className="rounded-lg border border-cream-muted/80 bg-cream-warm/20 overflow-hidden">
+    <div className="rounded-lg border border-border/80 bg-surface-2/20 overflow-hidden">
       {/* Field header */}
       <div
         role="button"
@@ -1595,7 +1595,7 @@ function FormFieldEditor({
             setExpanded(!expanded);
           }
         }}
-        className="flex items-center gap-2 px-3 py-2 hover:bg-cream-warm/40 transition cursor-pointer select-none"
+        className="flex items-center gap-2 px-3 py-2 hover:bg-surface-2/40 transition cursor-pointer select-none"
       >
         <GripVertical className="h-3.5 w-3.5 text-ink/25 shrink-0" />
         <div className="flex-1 min-w-0 flex items-center gap-2">
@@ -1606,7 +1606,7 @@ function FormFieldEditor({
             {FIELD_TYPES.find((t) => t.value === field.type)?.label ?? field.type}
           </span>
           {field.required && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-gold-antique/10 text-gold-antique shrink-0">
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-deep/10 text-emerald-deep shrink-0">
               required
             </span>
           )}
@@ -1633,7 +1633,7 @@ function FormFieldEditor({
           <button
             type="button"
             onClick={onRemove}
-            className="p-1 text-red-400 hover:text-red-600 transition ml-0.5"
+            className="p-1 text-danger-400 hover:text-danger-600 transition ml-0.5"
             title="Remove field"
           >
             <Trash2 className="h-3 w-3" />
@@ -1645,7 +1645,7 @@ function FormFieldEditor({
       </div>
 
       {expanded && (
-        <div className="px-3 py-3 space-y-3 border-t border-cream-muted/60">
+        <div className="px-3 py-3 space-y-3 border-t border-border/60">
           {/* Row 1: label + type + required */}
           <div className="grid sm:grid-cols-[1fr_auto_auto] gap-3 items-end">
             <Field label="Label">
@@ -1857,7 +1857,7 @@ function FormFieldEditor({
                         const options = (field.options ?? []).filter((_, i) => i !== oIdx);
                         onChange({ ...field, options });
                       }}
-                      className="p-1 text-red-400 hover:text-red-600 transition"
+                      className="p-1 text-danger-400 hover:text-danger-600 transition"
                       title="Remove option"
                     >
                       <Trash2 className="h-3 w-3" />

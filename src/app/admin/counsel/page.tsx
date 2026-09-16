@@ -56,7 +56,7 @@ export default async function AdminCounselPage({
           <div className="container-prose max-w-md mx-auto">
             <div className="ornate-card p-8">
               <div className="text-center mb-6">
-                <span className="arabic-text text-gold-antique">لوحة الإدارة</span>
+                <span className="arabic-text text-emerald-deep">لوحة الإدارة</span>
                 <h1 className="heading-serif text-3xl font-semibold text-emerald-deep mt-1">
                   Admin Access
                 </h1>
@@ -89,14 +89,14 @@ export default async function AdminCounselPage({
               >
                 <ArrowLeft className="h-3.5 w-3.5" /> Back to Core Members
               </Link>
-              <span className="arabic-text block text-gold-antique">نصيحة</span>
+              <span className="arabic-text block text-emerald-deep">نصيحة</span>
               <h1 className="heading-serif text-4xl font-semibold text-emerald-deep">
                 Confidential Counsel
               </h1>
               <p className="text-sm text-ink/60 mt-1">
                 {threads.length} thread{threads.length !== 1 ? "s" : ""}
                 {unreadCount > 0 && (
-                  <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full bg-gold-antique text-white text-xs font-medium">
+                  <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full bg-amber text-white text-xs font-medium">
                     {unreadCount} unread
                   </span>
                 )}
@@ -113,14 +113,14 @@ export default async function AdminCounselPage({
                   <p className="text-sm text-ink/60">No threads yet.</p>
                   <p className="text-xs text-ink/40 mt-1">
                     Share{" "}
-                    <code className="font-mono bg-cream-muted px-1 rounded">
+                    <code className="font-mono bg-border px-1 rounded">
                       /counsel
                     </code>{" "}
                     with those you want to reach.
                   </p>
                 </div>
               ) : (
-                <ul className="divide-y divide-cream-muted">
+                <ul className="divide-y divide-border">
                   {threads.map((t) => {
                     const status = STATUS_CONFIG[t.status];
                     const isSelected = t.id === selectedId;
@@ -135,7 +135,7 @@ export default async function AdminCounselPage({
                           className={`block p-4 rounded-xl transition ${
                             isSelected
                               ? "bg-emerald-deep/5"
-                              : "hover:bg-cream-warm/40"
+                              : "hover:bg-surface-2/40"
                           }`}
                         >
                           <div className="flex items-start justify-between gap-2 mb-1">
@@ -149,7 +149,7 @@ export default async function AdminCounselPage({
                             </span>
                             <div className="flex items-center gap-1 shrink-0">
                               {t.advisorHasUnread && (
-                                <span className="h-2 w-2 rounded-full bg-gold-antique" />
+                                <span className="h-2 w-2 rounded-full bg-amber" />
                               )}
                               <span
                                 className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${status.className}`}
@@ -211,7 +211,7 @@ function ThreadDetail({ thread }: { thread: CounselThread }) {
   return (
     <article className="space-y-6">
       {/* Header */}
-      <header className="pb-5 border-b border-cream-muted">
+      <header className="pb-5 border-b border-border">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
             <span
@@ -223,7 +223,7 @@ function ThreadDetail({ thread }: { thread: CounselThread }) {
               <UserRound className="h-5 w-5 text-ink/40" />
               Anonymous seeker
             </h2>
-            <p className="text-sm text-gold-antique font-medium mt-1">
+            <p className="text-sm text-emerald-deep font-medium mt-1">
               {cohortLabel}
             </p>
           </div>
@@ -243,7 +243,7 @@ function ThreadDetail({ thread }: { thread: CounselThread }) {
           <Clock className="h-3.5 w-3.5" />
           Started {formatDate(thread.createdAt)}
           {" · "}
-          <code className="font-mono text-[10px] bg-cream-muted px-1.5 py-0.5 rounded">
+          <code className="font-mono text-[10px] bg-border px-1.5 py-0.5 rounded">
             {thread.id}
           </code>
         </div>
@@ -257,7 +257,7 @@ function ThreadDetail({ thread }: { thread: CounselThread }) {
       </div>
 
       {/* Reply box */}
-      <div className="pt-2 border-t border-cream-muted">
+      <div className="pt-2 border-t border-border">
         <ReplyBox threadId={thread.id} disabled={thread.status === "closed"} />
       </div>
     </article>
@@ -273,8 +273,8 @@ function AdminMessageBubble({ message }: { message: CounselMessage }) {
       <div
         className={`h-8 w-8 rounded-full flex items-center justify-center shrink-0 ${
           isSeeker
-            ? "bg-cream-muted text-ink/60"
-            : "bg-emerald-deep text-white"
+            ? "bg-border text-ink/60"
+            : "bg-emerald text-ink-on-emerald"
         }`}
       >
         {isSeeker ? (
@@ -286,7 +286,7 @@ function AdminMessageBubble({ message }: { message: CounselMessage }) {
       <div
         className={`max-w-[80%] rounded-2xl px-4 py-3 ${
           isSeeker
-            ? "bg-cream-warm border border-cream-muted"
+            ? "bg-surface-2 border border-border"
             : "bg-emerald-deep/10 border border-emerald-deep/20"
         }`}
       >

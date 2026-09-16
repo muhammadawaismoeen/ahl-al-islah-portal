@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Cormorant_Garamond, Amiri } from "next/font/google";
+import { Inter, Fraunces, Amiri } from "next/font/google";
 import { Toaster } from "sonner";
 import "./globals.css";
 
@@ -9,10 +9,10 @@ const inter = Inter({
   display: "swap",
 });
 
-const cormorant = Cormorant_Garamond({
+const fraunces = Fraunces({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-cormorant",
+  weight: ["500", "600", "700"],
+  variable: "--font-fraunces",
   display: "swap",
 });
 
@@ -57,7 +57,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth">
       <body
-        className={`${inter.variable} ${cormorant.variable} ${amiri.variable} font-sans`}
+        className={`${inter.variable} ${fraunces.variable} ${amiri.variable} font-sans`}
       >
         {children}
         <Toaster

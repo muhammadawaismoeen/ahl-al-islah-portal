@@ -27,7 +27,7 @@ export default async function AskAdvisorPage() {
             <div className="inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-emerald-deep/10 mb-4">
               <MessageCircle className="h-7 w-7 text-emerald-deep" />
             </div>
-            <span className="arabic-text block text-gold-antique text-lg mb-1">
+            <span className="arabic-text block text-emerald-deep text-lg mb-1">
               اسأل المستشار
             </span>
             <h1 className="heading-serif text-4xl font-semibold text-emerald-deep">
@@ -36,7 +36,7 @@ export default async function AskAdvisorPage() {
             <p className="mt-3 text-ink/65 leading-relaxed max-w-lg mx-auto">
               A private channel for department leadership. Your message goes directly and confidentially to the Advisor.
             </p>
-            <div className="inline-flex items-center gap-1.5 mt-4 text-xs text-ink/50 bg-cream-warm px-3 py-1.5 rounded-full border border-cream-muted">
+            <div className="inline-flex items-center gap-1.5 mt-4 text-xs text-ink/50 bg-surface-2 px-3 py-1.5 rounded-full border border-border">
               <Lock className="h-3 w-3" />
               Private &amp; confidential
             </div>

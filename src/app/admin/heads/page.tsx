@@ -52,7 +52,7 @@ export default async function AdminHeadsPage({
           <div className="container-prose max-w-md mx-auto">
             <div className="ornate-card p-8">
               <div className="text-center mb-6">
-                <span className="arabic-text text-gold-antique">
+                <span className="arabic-text text-emerald-deep">
                   لوحة الإدارة
                 </span>
                 <h1 className="heading-serif text-3xl font-semibold text-emerald-deep mt-1">
@@ -122,7 +122,7 @@ export default async function AdminHeadsPage({
               >
                 <ArrowLeft className="h-3.5 w-3.5" /> Core Members
               </Link>
-              <span className="arabic-text text-gold-antique">رؤساء</span>
+              <span className="arabic-text text-emerald-deep">رؤساء</span>
               <h1 className="heading-serif text-4xl font-semibold text-emerald-deep">
                 Heads
               </h1>
@@ -153,7 +153,7 @@ export default async function AdminHeadsPage({
                 <MessageCircle className="h-3.5 w-3.5" />
                 Inbox
                 {unreadMessages > 0 && (
-                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-gold-antique text-white text-[9px] font-bold flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-amber text-white text-[9px] font-bold flex items-center justify-center">
                     {unreadMessages}
                   </span>
                 )}
@@ -165,7 +165,7 @@ export default async function AdminHeadsPage({
                 <MessageSquareHeart className="h-3.5 w-3.5" />
                 Feedback
                 {unreadFeedback > 0 && (
-                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-gold-antique text-white text-[9px] font-bold flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-amber text-white text-[9px] font-bold flex items-center justify-center">
                     {unreadFeedback}
                   </span>
                 )}
@@ -177,7 +177,7 @@ export default async function AdminHeadsPage({
                 <LifeBuoy className="h-3.5 w-3.5" />
                 Counsel
                 {unreadCounsel > 0 && (
-                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-gold-antique text-white text-[9px] font-bold flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-amber text-white text-[9px] font-bold flex items-center justify-center">
                     {unreadCounsel}
                   </span>
                 )}
@@ -189,7 +189,7 @@ export default async function AdminHeadsPage({
                 <ClipboardList className="h-3.5 w-3.5" />
                 Audits
                 {unreadActivities > 0 && (
-                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-gold-antique text-white text-[9px] font-bold flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-amber text-white text-[9px] font-bold flex items-center justify-center">
                     {unreadActivities}
                   </span>
                 )}
@@ -224,7 +224,7 @@ export default async function AdminHeadsPage({
               className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
                 !wingFilter
                   ? "bg-emerald-deep text-white"
-                  : "bg-cream-muted text-ink/60 hover:bg-emerald-deep/10 hover:text-emerald-deep"
+                  : "bg-border text-ink/60 hover:bg-emerald-deep/10 hover:text-emerald-deep"
               }`}
             >
               All ({countAll})
@@ -234,7 +234,7 @@ export default async function AdminHeadsPage({
               className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
                 wingFilter === "male"
                   ? "bg-emerald-deep text-white"
-                  : "bg-cream-muted text-ink/60 hover:bg-emerald-deep/10 hover:text-emerald-deep"
+                  : "bg-border text-ink/60 hover:bg-emerald-deep/10 hover:text-emerald-deep"
               }`}
             >
               Brothers ({countBrothers})
@@ -243,8 +243,8 @@ export default async function AdminHeadsPage({
               href={filterUrl({ wing: "female" })}
               className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
                 wingFilter === "female"
-                  ? "bg-gold-antique text-white"
-                  : "bg-cream-muted text-ink/60 hover:bg-gold-antique/10 hover:text-gold-antique"
+                  ? "bg-sapphire text-white"
+                  : "bg-border text-ink/60 hover:bg-sapphire/10 hover:text-sapphire"
               }`}
             >
               Sisters ({countSisters})
@@ -261,7 +261,7 @@ export default async function AdminHeadsPage({
                     : "No applications match this filter."}
                 </p>
               ) : (
-                <ul className="divide-y divide-cream-muted">
+                <ul className="divide-y divide-border">
                   {filtered.map((s) => {
                     const position = getPositionBySlug(s.positionSlug);
                     const name =
@@ -279,7 +279,7 @@ export default async function AdminHeadsPage({
                           className={`block p-4 rounded-xl transition ${
                             isSelected
                               ? "bg-emerald-deep/5"
-                              : "hover:bg-cream-warm/40"
+                              : "hover:bg-surface-2/40"
                           }`}
                         >
                           <div className="flex items-start justify-between gap-3 mb-1">
@@ -330,7 +330,7 @@ function WingDot({ wing }: { wing: string }) {
     wing === "male"
       ? "bg-emerald-deep"
       : wing === "female"
-      ? "bg-gold-antique"
+      ? "bg-sapphire"
       : "bg-ink/40";
   return (
     <span
@@ -358,10 +358,10 @@ function SubmissionDetail({ submission }: { submission: Submission }) {
 
   return (
     <article>
-      <header className="pb-6 border-b border-cream-muted">
+      <header className="pb-6 border-b border-border">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <div className="text-xs uppercase tracking-widest text-gold-antique">
+            <div className="text-xs uppercase tracking-widest text-emerald-deep">
               {position?.title ?? submission.positionTitle}
             </div>
             <h2 className="heading-serif text-3xl font-semibold text-emerald-deep mt-1">
@@ -369,7 +369,7 @@ function SubmissionDetail({ submission }: { submission: Submission }) {
             </h2>
             <p className="text-xs text-ink/50 mt-1">
               Submitted {formatDate(submission.submittedAt)} · Ref{" "}
-              <code className="font-mono bg-cream-muted px-1.5 py-0.5 rounded">
+              <code className="font-mono bg-border px-1.5 py-0.5 rounded">
                 {submission.id}
               </code>
             </p>
@@ -411,7 +411,7 @@ function SubmissionDetail({ submission }: { submission: Submission }) {
         {qs ? (
           qs.sections.map((section) => (
             <section key={section.id}>
-              <h3 className="heading-serif text-lg font-semibold text-emerald-deep mb-3 pb-2 border-b border-cream-muted">
+              <h3 className="heading-serif text-lg font-semibold text-emerald-deep mb-3 pb-2 border-b border-border">
                 {section.title}
               </h3>
               <dl className="space-y-4">
@@ -435,7 +435,7 @@ function SubmissionDetail({ submission }: { submission: Submission }) {
             </section>
           ))
         ) : (
-          <pre className="p-4 rounded-lg bg-cream-muted text-xs overflow-x-auto">
+          <pre className="p-4 rounded-lg bg-border text-xs overflow-x-auto">
             {jsonString}
           </pre>
         )}

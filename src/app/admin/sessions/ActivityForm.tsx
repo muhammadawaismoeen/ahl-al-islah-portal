@@ -51,7 +51,7 @@ export function ActivityForm({
       />
       <p className="text-xs text-ink/55 -mt-2">
         Tip — wrap stage directions in{" "}
-        <code className="font-mono bg-cream-muted px-1 rounded">[brackets]</code>.
+        <code className="font-mono bg-border px-1 rounded">[brackets]</code>.
         They render in a softer italic style on the public page so readers can
         tell facilitator cues apart from spoken script.
       </p>
@@ -94,7 +94,7 @@ function Field({
         placeholder={placeholder}
         required={required}
         defaultValue={defaultValue}
-        className="w-full px-3 py-2.5 rounded-lg border border-cream-muted bg-white text-sm text-ink focus:outline-none focus:ring-2 focus:ring-emerald-deep/30 focus:border-emerald-deep transition"
+        className="w-full px-3 py-2.5 rounded-lg border border-border bg-white text-sm text-ink focus:outline-none focus:ring-2 focus:ring-emerald-deep/30 focus:border-emerald-deep transition"
       />
     </label>
   );
@@ -123,7 +123,7 @@ function FieldArea({
         placeholder={placeholder}
         rows={rows}
         defaultValue={defaultValue}
-        className="w-full px-3 py-2.5 rounded-lg border border-cream-muted bg-white text-sm text-ink focus:outline-none focus:ring-2 focus:ring-emerald-deep/30 focus:border-emerald-deep transition resize-y font-mono leading-relaxed"
+        className="w-full px-3 py-2.5 rounded-lg border border-border bg-white text-sm text-ink focus:outline-none focus:ring-2 focus:ring-emerald-deep/30 focus:border-emerald-deep transition resize-y font-mono leading-relaxed"
       />
     </label>
   );

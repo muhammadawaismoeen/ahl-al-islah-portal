@@ -17,24 +17,22 @@ export function CTA({ content }: { content: CtaContent }) {
           className="relative rounded-3xl overflow-hidden"
         >
           <div className="absolute inset-0 bg-emerald-gradient" />
-          <div className="absolute inset-0 geometric-bg opacity-30" />
-          <div className="absolute top-0 right-0 w-96 h-96 rounded-full bg-gold-warm/10 blur-3xl" />
 
-          <div className="relative p-10 sm:p-16 text-center text-cream">
-            <div className="arabic-text text-xl text-gold-soft mb-3">
+          <div className="relative p-10 sm:p-16 text-center text-bg">
+            <div className="arabic-text text-xl text-bg/80 mb-3">
               {content.arabicTitle}
             </div>
             <h2 className="heading-serif text-4xl sm:text-5xl font-semibold text-balance">
               {content.heading}
             </h2>
-            <p className="mt-6 max-w-2xl mx-auto text-lg text-cream/80 leading-relaxed">
+            <p className="mt-6 max-w-2xl mx-auto text-lg text-bg/80 leading-relaxed">
               {content.description}
             </p>
 
             <div className="mt-10 flex items-center justify-center">
               <Link
                 href="/become-a-member"
-                className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-gold-gradient text-ink font-semibold tracking-wide shadow-xl hover:shadow-gold-warm/30 hover:scale-[1.02] transition-all"
+                className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-bg text-emerald-deep font-semibold tracking-wide shadow-xl hover:bg-bg/90 hover:scale-[1.02] transition-all"
               >
                 <Sparkles className="h-4 w-4" />
                 Become a Member

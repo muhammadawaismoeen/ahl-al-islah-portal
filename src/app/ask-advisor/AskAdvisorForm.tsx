@@ -47,18 +47,18 @@ export function AskAdvisorForm() {
           </p>
         </div>
 
-        <div className="bg-cream-warm rounded-xl p-4 border border-cream-muted">
+        <div className="bg-surface-2 rounded-xl p-4 border border-border">
           <p className="text-xs uppercase tracking-wider text-ink/50 font-medium mb-2">
             Your Reference ID
           </p>
           <div className="flex items-center justify-center gap-2">
-            <code className="font-mono text-sm text-emerald-deep bg-white px-3 py-1.5 rounded-lg border border-cream-muted">
+            <code className="font-mono text-sm text-emerald-deep bg-white px-3 py-1.5 rounded-lg border border-border">
               {result.id}
             </code>
             <button
               type="button"
               onClick={copyId}
-              className="p-1.5 hover:bg-cream-muted rounded-lg transition text-ink/50 hover:text-emerald-deep"
+              className="p-1.5 hover:bg-border rounded-lg transition text-ink/50 hover:text-emerald-deep"
               aria-label="Copy reference ID"
             >
               {copied ? <Check className="h-4 w-4 text-emerald-deep" /> : <Copy className="h-4 w-4" />}
@@ -166,7 +166,7 @@ export function AskAdvisorForm() {
       )}
 
       {result?.error && (
-        <p className="text-sm text-red-500 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+        <p className="text-sm text-danger bg-danger-50 border border-danger-200 rounded-xl px-4 py-3">
           {result.error}
         </p>
       )}

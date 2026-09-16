@@ -96,11 +96,11 @@ export default async function ApplyPage({ params }: Props) {
 
           {/* Position summary header */}
           <div className="max-w-3xl mx-auto mb-12">
-            <div className="ornate-card p-6 sm:p-8 bg-gradient-to-br from-white to-cream-warm/40">
+            <div className="ornate-card p-6 sm:p-8 bg-gradient-to-br from-white to-surface-2/40">
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
                   {position.arabicTitle && (
-                    <p className="arabic-text text-lg text-gold-antique mb-1">
+                    <p className="arabic-text text-lg text-emerald-deep mb-1">
                       {position.arabicTitle}
                     </p>
                   )}
@@ -120,8 +120,8 @@ export default async function ApplyPage({ params }: Props) {
               </p>
 
               <div className="mt-6 grid sm:grid-cols-3 gap-3 text-xs">
-                <div className="flex items-center gap-2 p-3 rounded-lg bg-white border border-cream-muted">
-                  <Users className="h-4 w-4 text-gold-antique shrink-0" />
+                <div className="flex items-center gap-2 p-3 rounded-lg bg-white border border-border">
+                  <Users className="h-4 w-4 text-emerald-deep shrink-0" />
                   <div>
                     <div className="text-ink/50 uppercase tracking-wider text-[10px]">
                       Reports to
@@ -131,8 +131,8 @@ export default async function ApplyPage({ params }: Props) {
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 p-3 rounded-lg bg-white border border-cream-muted">
-                  <Clock className="h-4 w-4 text-gold-antique shrink-0" />
+                <div className="flex items-center gap-2 p-3 rounded-lg bg-white border border-border">
+                  <Clock className="h-4 w-4 text-emerald-deep shrink-0" />
                   <div>
                     <div className="text-ink/50 uppercase tracking-wider text-[10px]">
                       Commitment
@@ -142,8 +142,8 @@ export default async function ApplyPage({ params }: Props) {
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 p-3 rounded-lg bg-white border border-cream-muted">
-                  <CalendarClock className="h-4 w-4 text-gold-antique shrink-0" />
+                <div className="flex items-center gap-2 p-3 rounded-lg bg-white border border-border">
+                  <CalendarClock className="h-4 w-4 text-emerald-deep shrink-0" />
                   <div>
                     <div className="text-ink/50 uppercase tracking-wider text-[10px]">
                       Term
@@ -156,34 +156,34 @@ export default async function ApplyPage({ params }: Props) {
               </div>
 
               <details className="mt-6 group">
-                <summary className="cursor-pointer text-sm font-medium text-emerald-deep hover:text-emerald-rich transition list-none flex items-center gap-2">
+                <summary className="cursor-pointer text-sm font-medium text-emerald-deep hover:text-emerald-deep transition list-none flex items-center gap-2">
                   <span className="w-5 h-5 rounded-full bg-emerald-deep/10 flex items-center justify-center text-xs group-open:rotate-45 transition-transform">
                     +
                   </span>
                   View full responsibilities &amp; ideal profile
                 </summary>
-                <div className="mt-4 grid sm:grid-cols-2 gap-6 pt-4 border-t border-cream-muted">
+                <div className="mt-4 grid sm:grid-cols-2 gap-6 pt-4 border-t border-border">
                   <div>
-                    <h4 className="text-xs uppercase tracking-widest text-gold-antique font-medium mb-3">
+                    <h4 className="text-xs uppercase tracking-widest text-emerald-deep font-medium mb-3">
                       Responsibilities
                     </h4>
                     <ul className="space-y-2 text-sm text-ink/75">
                       {position.responsibilities.map((r) => (
                         <li key={r} className="flex gap-2">
-                          <span className="text-gold-antique shrink-0">•</span>
+                          <span className="text-emerald-deep shrink-0">•</span>
                           <span>{r}</span>
                         </li>
                       ))}
                     </ul>
                   </div>
                   <div>
-                    <h4 className="text-xs uppercase tracking-widest text-gold-antique font-medium mb-3">
+                    <h4 className="text-xs uppercase tracking-widest text-emerald-deep font-medium mb-3">
                       Ideal Profile
                     </h4>
                     <ul className="space-y-2 text-sm text-ink/75">
                       {position.idealProfile.map((r) => (
                         <li key={r} className="flex gap-2">
-                          <span className="text-gold-antique shrink-0">•</span>
+                          <span className="text-emerald-deep shrink-0">•</span>
                           <span>{r}</span>
                         </li>
                       ))}
@@ -197,7 +197,7 @@ export default async function ApplyPage({ params }: Props) {
           {position.open ? (
             <ApplicationForm position={position} questionSet={questionSet} />
           ) : (
-            <div className="max-w-2xl mx-auto text-center p-10 rounded-2xl bg-cream-warm border border-cream-muted">
+            <div className="max-w-2xl mx-auto text-center p-10 rounded-2xl bg-surface-2 border border-border">
               <h2 className="heading-serif text-2xl font-semibold text-ink/70">
                 Applications are currently closed for this role
               </h2>

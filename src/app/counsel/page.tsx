@@ -40,7 +40,7 @@ export default async function CounselPage() {
             <div className="inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-emerald-deep/10 mb-4">
               <MessageCircle className="h-7 w-7 text-emerald-deep" />
             </div>
-            <span className="arabic-text block text-gold-antique text-lg mb-1">
+            <span className="arabic-text block text-emerald-deep text-lg mb-1">
               نصيحة
             </span>
             <h1 className="heading-serif text-4xl font-semibold text-emerald-deep">
@@ -50,7 +50,7 @@ export default async function CounselPage() {
               A private space to bring what&apos;s weighing on you — a question, a
               struggle, a decision. Every thread goes only to the Advisor.
             </p>
-            <div className="inline-flex items-center gap-1.5 mt-4 text-xs text-ink/50 bg-cream-warm px-3 py-1.5 rounded-full border border-cream-muted">
+            <div className="inline-flex items-center gap-1.5 mt-4 text-xs text-ink/50 bg-surface-2 px-3 py-1.5 rounded-full border border-border">
               <Lock className="h-3 w-3" />
               Anonymous · No name required · Only the Advisor reads
             </div>
@@ -68,7 +68,7 @@ export default async function CounselPage() {
           )}
 
           {/* Honest disclosure */}
-          <details className="mt-10 text-xs text-ink/55 bg-cream-warm/40 rounded-xl border border-cream-muted p-4">
+          <details className="mt-10 text-xs text-ink/55 bg-surface-2/40 rounded-xl border border-border p-4">
             <summary className="cursor-pointer font-medium text-ink/70">
               What &ldquo;private&rdquo; means here
             </summary>

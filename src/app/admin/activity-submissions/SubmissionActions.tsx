@@ -22,7 +22,7 @@ export function DeleteSubmissionButton({ submissionId }: { submissionId: string 
       type="button"
       onClick={handleDelete}
       disabled={pending}
-      className="btn-ghost !py-1.5 !px-3 text-xs text-red-500 hover:text-red-700"
+      className="btn-ghost !py-1.5 !px-3 text-xs text-danger hover:text-danger-700"
     >
       {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
       Delete

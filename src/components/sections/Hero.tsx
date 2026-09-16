@@ -8,9 +8,7 @@ import type { HeroContent } from "@/lib/content-types";
 export function Hero({ content, customLogo }: { content: HeroContent; customLogo?: string }) {
   return (
     <section className="relative min-h-[90vh] flex items-center overflow-hidden pt-24 pb-20">
-      <div className="absolute inset-0 geometric-bg opacity-40" />
-      <div className="absolute top-20 -right-20 w-96 h-96 rounded-full bg-emerald-deep/5 blur-3xl" />
-      <div className="absolute bottom-20 -left-20 w-96 h-96 rounded-full bg-gold-warm/5 blur-3xl" />
+      <div className="ambient-blob top-10 -right-20 w-[28rem] h-[28rem]" />
 
       <div className="container-prose relative">
         <div className="max-w-4xl mx-auto text-center">
@@ -18,9 +16,9 @@ export function Hero({ content, customLogo }: { content: HeroContent; customLogo
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/80 backdrop-blur border border-gold-antique/20 text-xs font-medium text-emerald-deep tracking-wider uppercase mb-8"
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/80 backdrop-blur border border-emerald-deep/20 text-xs font-medium text-emerald-deep tracking-wider uppercase mb-8"
           >
-            <Sparkles className="h-3.5 w-3.5 text-gold-antique" />
+            <Sparkles className="h-3.5 w-3.5 text-emerald-deep" />
             <span>{content.eyebrow}</span>
           </motion.div>
 
@@ -32,7 +30,7 @@ export function Hero({ content, customLogo }: { content: HeroContent; customLogo
               className="flex items-center justify-center mb-6"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={customLogo} alt="" className="h-20 w-20 sm:h-24 sm:w-24 object-contain animate-float" />
+              <img src={customLogo} alt="" className="h-20 w-20 sm:h-24 sm:w-24 object-contain" />
             </motion.div>
           )}
 
@@ -41,7 +39,7 @@ export function Hero({ content, customLogo }: { content: HeroContent; customLogo
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
           >
-            <p className="arabic-text text-3xl sm:text-4xl font-semibold text-gold-antique mb-3">
+            <p className="arabic-text text-3xl sm:text-4xl font-semibold text-emerald-deep mb-3">
               {content.arabicTitle}
             </p>
             <h1 className="heading-serif text-5xl sm:text-7xl font-semibold text-emerald-deep text-balance leading-[1.05]">
@@ -71,7 +69,7 @@ export function Hero({ content, customLogo }: { content: HeroContent; customLogo
           >
             <Link
               href="/become-a-member"
-              className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-gold-gradient text-ink font-semibold tracking-wide shadow-xl hover:shadow-gold-warm/40 hover:scale-[1.03] transition-all"
+              className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-emerald text-ink-on-emerald font-semibold tracking-wide shadow-xl hover:bg-emerald-deep hover:shadow-emerald-deep/30 hover:scale-[1.03] transition-all"
             >
               <Sparkles className="h-4 w-4" />
               Become a Member

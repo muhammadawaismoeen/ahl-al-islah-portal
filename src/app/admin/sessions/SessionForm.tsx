@@ -119,12 +119,12 @@ export function SessionForm({
           Poster image {mode === "create" && "(optional)"}
         </span>
         {currentPosterUrl && (
-          <div className="mb-3 flex items-start gap-4 rounded-lg border border-cream-muted bg-cream-warm/40 p-3">
+          <div className="mb-3 flex items-start gap-4 rounded-lg border border-border bg-surface-2/40 p-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={currentPosterUrl}
               alt="Current poster"
-              className="h-28 w-auto rounded-md border border-cream-muted object-cover"
+              className="h-28 w-auto rounded-md border border-border object-cover"
             />
             <label className="text-xs text-ink/70 inline-flex items-center gap-2 cursor-pointer">
               <input
@@ -141,7 +141,7 @@ export function SessionForm({
           type="file"
           name="poster"
           accept="image/png,image/jpeg,image/webp,image/gif"
-          className="block w-full text-sm text-ink file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-emerald-deep file:text-white file:font-medium hover:file:bg-emerald-rich file:cursor-pointer cursor-pointer"
+          className="block w-full text-sm text-ink file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-emerald-deep file:text-white file:font-medium hover:file:bg-emerald-deep file:cursor-pointer cursor-pointer"
         />
         <span className="text-[11px] text-ink/45 mt-1.5 block">
           {mode === "edit"
@@ -151,7 +151,7 @@ export function SessionForm({
       </div>
 
       {err && (
-        <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2">
+        <p className="text-sm text-danger-700 bg-danger-50 border border-danger-200 rounded-md px-3 py-2">
           {err}
         </p>
       )}
@@ -205,7 +205,7 @@ function Field({
         required={required}
         dir={dir}
         defaultValue={defaultValue}
-        className="w-full px-3 py-2.5 rounded-lg border border-cream-muted bg-white text-sm text-ink focus:outline-none focus:ring-2 focus:ring-emerald-deep/30 focus:border-emerald-deep transition"
+        className="w-full px-3 py-2.5 rounded-lg border border-border bg-white text-sm text-ink focus:outline-none focus:ring-2 focus:ring-emerald-deep/30 focus:border-emerald-deep transition"
       />
     </label>
   );
@@ -234,7 +234,7 @@ function FieldArea({
         placeholder={placeholder}
         rows={rows}
         defaultValue={defaultValue}
-        className="w-full px-3 py-2.5 rounded-lg border border-cream-muted bg-white text-sm text-ink focus:outline-none focus:ring-2 focus:ring-emerald-deep/30 focus:border-emerald-deep transition resize-y"
+        className="w-full px-3 py-2.5 rounded-lg border border-border bg-white text-sm text-ink focus:outline-none focus:ring-2 focus:ring-emerald-deep/30 focus:border-emerald-deep transition resize-y"
       />
     </label>
   );

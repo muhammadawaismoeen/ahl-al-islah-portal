@@ -42,7 +42,7 @@ export default async function IdentityPillarsActivityPage({
             <div className="inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-emerald-deep/10 mb-4">
               <ClipboardList className="h-7 w-7 text-emerald-deep" />
             </div>
-            <span className="arabic-text block text-gold-antique text-lg mb-1">
+            <span className="arabic-text block text-emerald-deep text-lg mb-1">
               ركائز الهوية
             </span>
             <h1 className="heading-serif text-4xl font-semibold text-emerald-deep">
@@ -58,14 +58,14 @@ export default async function IdentityPillarsActivityPage({
               Ibrahim عليه السلام held one pillar — and every test was the same
               question: will you hold it even now? Audit yours.
             </p>
-            <div className="inline-flex items-center gap-1.5 mt-4 text-xs text-ink/50 bg-cream-warm px-3 py-1.5 rounded-full border border-cream-muted">
+            <div className="inline-flex items-center gap-1.5 mt-4 text-xs text-ink/50 bg-surface-2 px-3 py-1.5 rounded-full border border-border">
               <Shield className="h-3 w-3" />
               Private · printable
             </div>
           </div>
 
           {/* Pre-form prompt — speaker's voice from the seed activity */}
-          <div className="ornate-card p-6 sm:p-7 mb-6 bg-cream-warm/30 no-print">
+          <div className="ornate-card p-6 sm:p-7 mb-6 bg-surface-2/30 no-print">
             <p className="text-sm text-ink/80 leading-relaxed">
               We walked through three stages of Ibrahim&apos;s journey —{" "}
               <em>Fitra</em> (the compass), <em>Yaqeen</em> (the certainty that
@@ -82,7 +82,7 @@ export default async function IdentityPillarsActivityPage({
             <p className="text-sm text-ink/80 leading-relaxed mt-3">
               Then mark each one{" "}
               <strong className="text-emerald-deep">A</strong> or{" "}
-              <strong className="text-gold-antique">B</strong>:
+              <strong className="text-emerald-deep">B</strong>:
             </p>
             <ul className="mt-2 space-y-1.5 text-sm text-ink/80">
               <li>
@@ -90,7 +90,7 @@ export default async function IdentityPillarsActivityPage({
                 Holds even if everyone around you disagrees.
               </li>
               <li>
-                <strong className="text-gold-antique">B</strong> — Approval-grounded.
+                <strong className="text-emerald-deep">B</strong> — Approval-grounded.
                 Depends on people around you validating it.
               </li>
             </ul>

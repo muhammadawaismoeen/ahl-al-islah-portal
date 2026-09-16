@@ -33,7 +33,7 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 const STATUS_CONFIG = {
-  unread: { label: "Unread", className: "bg-gold-antique text-white" },
+  unread: { label: "Unread", className: "bg-amber text-white" },
   read: { label: "Read", className: "bg-ink/20 text-ink/70" },
 };
 
@@ -52,7 +52,7 @@ export default async function ActivitySubmissionsPage({
           <div className="container-prose max-w-md mx-auto">
             <div className="ornate-card p-8">
               <div className="text-center mb-6">
-                <span className="arabic-text text-gold-antique">لوحة الإدارة</span>
+                <span className="arabic-text text-emerald-deep">لوحة الإدارة</span>
                 <h1 className="heading-serif text-3xl font-semibold text-emerald-deep mt-1">
                   Admin Access
                 </h1>
@@ -85,14 +85,14 @@ export default async function ActivitySubmissionsPage({
               >
                 <ArrowLeft className="h-3.5 w-3.5" /> Back to Core Members
               </Link>
-              <span className="arabic-text block text-gold-antique">ركائز الهوية</span>
+              <span className="arabic-text block text-emerald-deep">ركائز الهوية</span>
               <h1 className="heading-serif text-4xl font-semibold text-emerald-deep">
                 Identity Pillars Audits
               </h1>
               <p className="text-sm text-ink/60 mt-1">
                 {entries.length} submission{entries.length !== 1 ? "s" : ""}
                 {unreadCount > 0 && (
-                  <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full bg-gold-antique text-white text-xs font-medium">
+                  <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full bg-amber text-white text-xs font-medium">
                     {unreadCount} unread
                   </span>
                 )}
@@ -109,14 +109,14 @@ export default async function ActivitySubmissionsPage({
                   <p className="text-sm text-ink/60">No audits submitted yet.</p>
                   <p className="text-xs text-ink/40 mt-1">
                     Once a student opens{" "}
-                    <code className="font-mono bg-cream-muted px-1 rounded">
+                    <code className="font-mono bg-border px-1 rounded">
                       /activity/identity-pillars
                     </code>{" "}
                     and submits, it lands here.
                   </p>
                 </div>
               ) : (
-                <ul className="divide-y divide-cream-muted">
+                <ul className="divide-y divide-border">
                   {entries.map((entry) => {
                     const status = STATUS_CONFIG[entry.status];
                     const isSelected = entry.id === selectedId;
@@ -129,7 +129,7 @@ export default async function ActivitySubmissionsPage({
                           className={`block p-4 rounded-xl transition ${
                             isSelected
                               ? "bg-emerald-deep/5"
-                              : "hover:bg-cream-warm/40"
+                              : "hover:bg-surface-2/40"
                           }`}
                         >
                           <div className="flex items-start justify-between gap-2 mb-1">
@@ -215,7 +215,7 @@ function SubmissionDetail({ entry }: { entry: IdentityPillarsSubmission }) {
   return (
     <article className="space-y-6">
       {/* Header */}
-      <header className="pb-5 border-b border-cream-muted">
+      <header className="pb-5 border-b border-border">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
             <span
@@ -243,8 +243,8 @@ function SubmissionDetail({ entry }: { entry: IdentityPillarsSubmission }) {
 
         {/* Session badge */}
         {entry.sessionTitle && (
-          <div className="mt-4 inline-flex items-center gap-2 px-3 py-2 bg-gold-antique/10 rounded-xl border border-gold-antique/25">
-            <CalendarDays className="h-4 w-4 text-gold-antique shrink-0" />
+          <div className="mt-4 inline-flex items-center gap-2 px-3 py-2 bg-emerald-deep/10 rounded-xl border border-emerald-deep/25">
+            <CalendarDays className="h-4 w-4 text-emerald-deep shrink-0" />
             <div>
               <p className="text-[10px] uppercase tracking-wider text-ink/45 leading-none mb-0.5">
                 Session
@@ -261,7 +261,7 @@ function SubmissionDetail({ entry }: { entry: IdentityPillarsSubmission }) {
           <span className="inline-flex items-center gap-1.5 text-xs px-3 py-1 rounded-full bg-emerald-deep/10 border border-emerald-deep/20 text-emerald-deep font-medium">
             {counts.A} Allah-grounded (A)
           </span>
-          <span className="inline-flex items-center gap-1.5 text-xs px-3 py-1 rounded-full bg-gold-antique/10 border border-gold-antique/30 text-gold-antique font-medium">
+          <span className="inline-flex items-center gap-1.5 text-xs px-3 py-1 rounded-full bg-emerald-deep/10 border border-emerald-deep/30 text-emerald-deep font-medium">
             {counts.B} Approval-grounded (B)
           </span>
         </div>
@@ -270,7 +270,7 @@ function SubmissionDetail({ entry }: { entry: IdentityPillarsSubmission }) {
           <Clock className="h-3.5 w-3.5" />
           {formatDate(entry.submittedAt)}
           {" · "}
-          <code className="font-mono text-[10px] bg-cream-muted px-1.5 py-0.5 rounded">
+          <code className="font-mono text-[10px] bg-border px-1.5 py-0.5 rounded">
             {entry.id}
           </code>
         </div>
@@ -278,7 +278,7 @@ function SubmissionDetail({ entry }: { entry: IdentityPillarsSubmission }) {
 
       {/* Pillars */}
       <section className="space-y-4">
-        <h3 className="text-xs uppercase tracking-wider text-gold-antique font-semibold">
+        <h3 className="text-xs uppercase tracking-wider text-emerald-deep font-semibold">
           Their Three Pillars
         </h3>
         <PillarDisplay number={1} pillar={entry.pillar1} />
@@ -289,10 +289,10 @@ function SubmissionDetail({ entry }: { entry: IdentityPillarsSubmission }) {
       {/* Reflection */}
       {entry.reflection && (
         <section>
-          <h3 className="text-xs uppercase tracking-wider text-gold-antique font-semibold mb-3">
+          <h3 className="text-xs uppercase tracking-wider text-emerald-deep font-semibold mb-3">
             One Honest Sentence
           </h3>
-          <p className="text-sm text-ink/85 leading-relaxed whitespace-pre-wrap bg-cream-warm rounded-xl p-4 border border-cream-muted">
+          <p className="text-sm text-ink/85 leading-relaxed whitespace-pre-wrap bg-surface-2 rounded-xl p-4 border border-border">
             {entry.reflection}
           </p>
         </section>
@@ -317,8 +317,8 @@ function PillarDisplay({
         isA
           ? "border-emerald-deep/25 bg-emerald-deep/5"
           : isB
-          ? "border-gold-antique/30 bg-gold-antique/5"
-          : "border-cream-muted bg-cream-warm/40"
+          ? "border-emerald-deep/30 bg-emerald-deep/5"
+          : "border-border bg-surface-2/40"
       }`}
     >
       <div className="flex items-baseline justify-between gap-3 mb-2">
@@ -330,7 +330,7 @@ function PillarDisplay({
             className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
               isA
                 ? "bg-emerald-deep text-white"
-                : "bg-gold-antique/15 text-gold-antique"
+                : "bg-emerald-deep/15 text-emerald-deep"
             }`}
           >
             {pillar.type} · {typeLabel}

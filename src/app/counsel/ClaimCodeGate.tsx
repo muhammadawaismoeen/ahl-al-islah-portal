@@ -27,7 +27,7 @@ export function ClaimCodeGate() {
   return (
     <details className="ornate-card p-5 sm:p-6">
       <summary className="cursor-pointer flex items-center gap-2 text-sm font-medium text-ink/75 hover:text-emerald-deep transition">
-        <KeyRound className="h-4 w-4 text-gold-antique" />
+        <KeyRound className="h-4 w-4 text-emerald-deep" />
         Have a claim code? Return to your thread
       </summary>
       <form onSubmit={handleSubmit} className="mt-4 space-y-3">
@@ -41,7 +41,7 @@ export function ClaimCodeGate() {
           spellCheck={false}
         />
         {error && (
-          <p className="text-sm text-red-500 bg-red-50 border border-red-200 rounded-xl px-4 py-2">
+          <p className="text-sm text-danger bg-danger-50 border border-danger-200 rounded-xl px-4 py-2">
             {error}
           </p>
         )}

@@ -38,7 +38,7 @@ export default async function EditSessionPage({ params }: Props) {
           <div className="container-prose max-w-md mx-auto">
             <div className="ornate-card p-8">
               <div className="text-center mb-6">
-                <span className="arabic-text text-gold-antique">لوحة الإدارة</span>
+                <span className="arabic-text text-emerald-deep">لوحة الإدارة</span>
                 <h1 className="heading-serif text-3xl font-semibold text-emerald-deep mt-1">
                   Admin Access
                 </h1>
@@ -93,7 +93,7 @@ export default async function EditSessionPage({ params }: Props) {
             </h2>
             <p className="text-xs text-ink/50 mb-5">
               Slug:{" "}
-              <code className="font-mono bg-cream-muted px-1.5 py-0.5 rounded">
+              <code className="font-mono bg-border px-1.5 py-0.5 rounded">
                 {session.slug}
               </code>
             </p>

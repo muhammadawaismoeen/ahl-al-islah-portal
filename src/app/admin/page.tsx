@@ -13,6 +13,7 @@ import {
   Users,
   Crown,
   LifeBuoy,
+  BookOpen,
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -22,6 +23,7 @@ import { listMessages } from "@/lib/message-store";
 import { listFeedback } from "@/lib/feedback-store";
 import { listSubmissions as listActivitySubmissions } from "@/lib/activity-submissions-store";
 import { listThreads as listCounselThreads } from "@/lib/counsel-store";
+import { listDonations as listDriveDonations } from "@/lib/drive-store";
 import { getPositionBySlug } from "@/lib/positions";
 import { getQuestionSet } from "@/lib/questions";
 import { LoginForm } from "./LoginForm";
@@ -57,7 +59,7 @@ export default async function AdminPage({
           <div className="container-prose max-w-md mx-auto">
             <div className="ornate-card p-8">
               <div className="text-center mb-6">
-                <span className="arabic-text text-gold-antique">
+                <span className="arabic-text text-emerald-deep">
                   لوحة الإدارة
                 </span>
                 <h1 className="heading-serif text-3xl font-semibold text-emerald-deep mt-1">
@@ -76,17 +78,19 @@ export default async function AdminPage({
     );
   }
 
-  const [submissions, messages, feedback, activitySubmissions, counselThreads] = await Promise.all([
+  const [submissions, messages, feedback, activitySubmissions, counselThreads, driveDonations] = await Promise.all([
     listSubmissions(),
     listMessages(),
     listFeedback(),
     listActivitySubmissions(),
     listCounselThreads(),
+    listDriveDonations(),
   ]);
   const unreadMessages = messages.filter((m) => m.status === "unread").length;
   const unreadFeedback = feedback.filter((f) => f.status === "unread").length;
   const unreadActivities = activitySubmissions.filter((a) => a.status === "unread").length;
   const unreadCounsel = counselThreads.filter((t) => t.advisorHasUnread).length;
+  const pendingDriveDonations = driveDonations.filter((d) => d.status === "pending").length;
 
   const {
     id: selectedId,
@@ -139,11 +143,11 @@ export default async function AdminPage({
   const wingAccent =
     wing === "male"
       ? "bg-emerald-deep text-white"
-      : "bg-gold-antique text-white";
+      : "bg-sapphire text-white";
   const wingHover =
     wing === "male"
       ? "hover:bg-emerald-deep/10 hover:text-emerald-deep"
-      : "hover:bg-gold-antique/10 hover:text-gold-antique";
+      : "hover:bg-sapphire/10 hover:text-sapphire";
 
   return (
     <>
@@ -152,7 +156,7 @@ export default async function AdminPage({
         <div className="container-prose">
           <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
             <div>
-              <span className="arabic-text text-gold-antique">لوحة الإدارة</span>
+              <span className="arabic-text text-emerald-deep">لوحة الإدارة</span>
               <h1 className="heading-serif text-4xl font-semibold text-emerald-deep">
                 Core Members
               </h1>
@@ -184,7 +188,7 @@ export default async function AdminPage({
                 <MessageCircle className="h-3.5 w-3.5" />
                 Inbox
                 {unreadMessages > 0 && (
-                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-gold-antique text-white text-[9px] font-bold flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-amber text-white text-[9px] font-bold flex items-center justify-center">
                     {unreadMessages}
                   </span>
                 )}
@@ -196,7 +200,7 @@ export default async function AdminPage({
                 <MessageSquareHeart className="h-3.5 w-3.5" />
                 Feedback
                 {unreadFeedback > 0 && (
-                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-gold-antique text-white text-[9px] font-bold flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-amber text-white text-[9px] font-bold flex items-center justify-center">
                     {unreadFeedback}
                   </span>
                 )}
@@ -208,7 +212,7 @@ export default async function AdminPage({
                 <LifeBuoy className="h-3.5 w-3.5" />
                 Counsel
                 {unreadCounsel > 0 && (
-                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-gold-antique text-white text-[9px] font-bold flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-amber text-white text-[9px] font-bold flex items-center justify-center">
                     {unreadCounsel}
                   </span>
                 )}
@@ -220,7 +224,7 @@ export default async function AdminPage({
                 <ClipboardList className="h-3.5 w-3.5" />
                 Audits
                 {unreadActivities > 0 && (
-                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-gold-antique text-white text-[9px] font-bold flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-amber text-white text-[9px] font-bold flex items-center justify-center">
                     {unreadActivities}
                   </span>
                 )}
@@ -231,6 +235,18 @@ export default async function AdminPage({
               >
                 <CalendarDays className="h-3.5 w-3.5" />
                 Sessions
+              </Link>
+              <Link
+                href="/admin/drive"
+                className="btn-ghost !py-2 !px-4 text-xs relative"
+              >
+                <BookOpen className="h-3.5 w-3.5" />
+                Drive
+                {pendingDriveDonations > 0 && (
+                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-amber text-white text-[9px] font-bold flex items-center justify-center">
+                    {pendingDriveDonations}
+                  </span>
+                )}
               </Link>
               <Link
                 href="/admin/content"
@@ -255,7 +271,7 @@ export default async function AdminPage({
               className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
                 wing === "male"
                   ? "bg-emerald-deep text-white"
-                  : "bg-cream-muted text-ink/60 hover:bg-emerald-deep/10 hover:text-emerald-deep"
+                  : "bg-border text-ink/60 hover:bg-emerald-deep/10 hover:text-emerald-deep"
               }`}
             >
               Brothers ({countBrothers})
@@ -264,8 +280,8 @@ export default async function AdminPage({
               href={filterUrl({ wing: "female" })}
               className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
                 wing === "female"
-                  ? "bg-gold-antique text-white"
-                  : "bg-cream-muted text-ink/60 hover:bg-gold-antique/10 hover:text-gold-antique"
+                  ? "bg-sapphire text-white"
+                  : "bg-border text-ink/60 hover:bg-sapphire/10 hover:text-sapphire"
               }`}
             >
               Sisters ({countSisters})
@@ -279,7 +295,7 @@ export default async function AdminPage({
               className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
                 positionFilter === "all"
                   ? wingAccent
-                  : `bg-cream-muted text-ink/60 ${wingHover}`
+                  : `bg-border text-ink/60 ${wingHover}`
               }`}
             >
               All ({countAllInWing})
@@ -289,7 +305,7 @@ export default async function AdminPage({
               className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
                 positionFilter === "core"
                   ? wingAccent
-                  : `bg-cream-muted text-ink/60 ${wingHover}`
+                  : `bg-border text-ink/60 ${wingHover}`
               }`}
             >
               Core Members ({countCoreInWing})
@@ -299,7 +315,7 @@ export default async function AdminPage({
               className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
                 positionFilter === "general"
                   ? wingAccent
-                  : `bg-cream-muted text-ink/60 ${wingHover}`
+                  : `bg-border text-ink/60 ${wingHover}`
               }`}
             >
               General Members ({countGeneralInWing})
@@ -316,7 +332,7 @@ export default async function AdminPage({
                     : "No applications match this filter."}
                 </p>
               ) : (
-                <ul className="divide-y divide-cream-muted">
+                <ul className="divide-y divide-border">
                   {filtered.map((s) => {
                     const position = getPositionBySlug(s.positionSlug);
                     const name =
@@ -336,7 +352,7 @@ export default async function AdminPage({
                           className={`block p-4 rounded-xl transition ${
                             isSelected
                               ? "bg-emerald-deep/5"
-                              : "hover:bg-cream-warm/40"
+                              : "hover:bg-surface-2/40"
                           }`}
                         >
                           <div className="flex items-start justify-between gap-3 mb-1">
@@ -388,7 +404,7 @@ function WingDot({ wing }: { wing: string }) {
     wing === "male"
       ? "bg-emerald-deep"
       : wing === "female"
-      ? "bg-gold-antique"
+      ? "bg-sapphire"
       : "bg-ink/40";
   return (
     <span
@@ -416,10 +432,10 @@ function SubmissionDetail({ submission }: { submission: Submission }) {
 
   return (
     <article>
-      <header className="pb-6 border-b border-cream-muted">
+      <header className="pb-6 border-b border-border">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <div className="text-xs uppercase tracking-widest text-gold-antique">
+            <div className="text-xs uppercase tracking-widest text-emerald-deep">
               {position?.title ?? submission.positionTitle}
             </div>
             <h2 className="heading-serif text-3xl font-semibold text-emerald-deep mt-1">
@@ -427,7 +443,7 @@ function SubmissionDetail({ submission }: { submission: Submission }) {
             </h2>
             <p className="text-xs text-ink/50 mt-1">
               Submitted {formatDate(submission.submittedAt)} · Ref{" "}
-              <code className="font-mono bg-cream-muted px-1.5 py-0.5 rounded">
+              <code className="font-mono bg-border px-1.5 py-0.5 rounded">
                 {submission.id}
               </code>
             </p>
@@ -469,7 +485,7 @@ function SubmissionDetail({ submission }: { submission: Submission }) {
         {qs ? (
           qs.sections.map((section) => (
             <section key={section.id}>
-              <h3 className="heading-serif text-lg font-semibold text-emerald-deep mb-3 pb-2 border-b border-cream-muted">
+              <h3 className="heading-serif text-lg font-semibold text-emerald-deep mb-3 pb-2 border-b border-border">
                 {section.title}
               </h3>
               <dl className="space-y-4">
@@ -493,7 +509,7 @@ function SubmissionDetail({ submission }: { submission: Submission }) {
             </section>
           ))
         ) : (
-          <pre className="p-4 rounded-lg bg-cream-muted text-xs overflow-x-auto">
+          <pre className="p-4 rounded-lg bg-border text-xs overflow-x-auto">
             {jsonString}
           </pre>
         )}

@@ -38,7 +38,7 @@ export default async function FeedbackPage() {
             <div className="inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-emerald-deep/10 mb-4">
               <MessageSquareHeart className="h-7 w-7 text-emerald-deep" />
             </div>
-            <span className="arabic-text block text-gold-antique text-lg mb-1">
+            <span className="arabic-text block text-emerald-deep text-lg mb-1">
               ملاحظاتكم
             </span>
             <h1 className="heading-serif text-4xl font-semibold text-emerald-deep">
@@ -48,7 +48,7 @@ export default async function FeedbackPage() {
               Pick the session you&apos;re reflecting on and share what stayed
               with you. Your honest words shape every session that follows.
             </p>
-            <div className="inline-flex items-center gap-1.5 mt-4 text-xs text-ink/50 bg-cream-warm px-3 py-1.5 rounded-full border border-cream-muted">
+            <div className="inline-flex items-center gap-1.5 mt-4 text-xs text-ink/50 bg-surface-2 px-3 py-1.5 rounded-full border border-border">
               <Shield className="h-3 w-3" />
               Name &amp; WhatsApp are optional
             </div>

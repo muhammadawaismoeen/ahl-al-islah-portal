@@ -26,6 +26,7 @@ export const DEFAULT_CONTENT: SiteContent = {
       { label: "Sessions", href: "/sessions" },
       { label: "Positions", href: "/positions" },
       { label: "Roadmap", href: "/#roadmap" },
+      { label: "Drive", href: "/drive" },
       { label: "Feedback", href: "/feedback" },
     ],
     ctaLabel: "Apply Now",
@@ -213,6 +214,7 @@ export const DEFAULT_CONTENT: SiteContent = {
       { label: "Model", href: "/#structure" },
       { label: "Roadmap", href: "/#roadmap" },
       { label: "Open Positions", href: "/positions" },
+      { label: "Qur'an & Seerah Drive", href: "/drive" },
     ],
     structureHeading: "Leadership",
     structureItems: [

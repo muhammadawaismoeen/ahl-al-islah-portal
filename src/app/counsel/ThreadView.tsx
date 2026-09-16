@@ -147,21 +147,21 @@ export function ThreadView({ thread }: { thread: CounselThread }) {
     <div className="space-y-6">
       {/* One-time claim-code banner */}
       {savedCode && (
-        <div className="bg-cream-warm rounded-xl p-5 border border-gold-antique/40 space-y-3">
+        <div className="bg-surface-2 rounded-xl p-5 border border-emerald-deep/40 space-y-3">
           <div className="flex items-center gap-2">
-            <KeyRound className="h-4 w-4 text-gold-antique" />
+            <KeyRound className="h-4 w-4 text-emerald-deep" />
             <p className="text-xs uppercase tracking-wider text-ink/60 font-semibold">
               Your Claim Code — save it before dismissing
             </p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
-            <code className="font-mono text-base sm:text-lg text-emerald-deep bg-white px-4 py-2 rounded-lg border border-cream-muted select-all">
+            <code className="font-mono text-base sm:text-lg text-emerald-deep bg-white px-4 py-2 rounded-lg border border-border select-all">
               {savedCode}
             </code>
             <button
               type="button"
               onClick={copyClaimCode}
-              className="p-2 hover:bg-cream-muted rounded-lg transition text-ink/50 hover:text-emerald-deep"
+              className="p-2 hover:bg-border rounded-lg transition text-ink/50 hover:text-emerald-deep"
               aria-label="Copy claim code"
             >
               {codeCopied ? (
@@ -211,7 +211,7 @@ export function ThreadView({ thread }: { thread: CounselThread }) {
             type="button"
             onClick={handleEnd}
             disabled={pending}
-            className="btn-ghost !py-1.5 !px-3 text-xs text-red-500 hover:text-red-700"
+            className="btn-ghost !py-1.5 !px-3 text-xs text-danger hover:text-danger-700"
           >
             <Trash2 className="h-3.5 w-3.5" />
             Delete thread
@@ -247,7 +247,7 @@ export function ThreadView({ thread }: { thread: CounselThread }) {
             maxLength={5000}
           />
           {error && (
-            <p className="text-sm text-red-500 bg-red-50 border border-red-200 rounded-xl px-4 py-2">
+            <p className="text-sm text-danger bg-danger-50 border border-danger-200 rounded-xl px-4 py-2">
               {error}
             </p>
           )}
@@ -283,8 +283,8 @@ function MessageBubble({
       <div
         className={`h-8 w-8 rounded-full flex items-center justify-center shrink-0 ${
           isSeeker
-            ? "bg-cream-muted text-ink/60"
-            : "bg-emerald-deep text-white"
+            ? "bg-border text-ink/60"
+            : "bg-emerald text-ink-on-emerald"
         }`}
       >
         {isSeeker ? (
@@ -296,7 +296,7 @@ function MessageBubble({
       <div
         className={`max-w-[80%] rounded-2xl px-4 py-3 ${
           isSeeker
-            ? "bg-cream-warm border border-cream-muted"
+            ? "bg-surface-2 border border-border"
             : "bg-emerald-deep/10 border border-emerald-deep/20"
         }`}
       >

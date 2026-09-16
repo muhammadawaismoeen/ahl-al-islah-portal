@@ -1,0 +1,67 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { createDonation } from "@/lib/drive-store";
+import { addDriveDeviceId } from "@/lib/drive-session";
+import { uploadDonationProof, MAX_PROOF_BYTES } from "@/lib/donation-upload";
+import { notifyNewDonation } from "@/lib/notify";
+
+export async function submitDonationAction(
+  formData: FormData
+): Promise<{ ok: boolean; error?: string; refCode?: string }> {
+  const driveIdRaw = ((formData.get("driveId") as string) ?? "").trim();
+  const driveId = driveIdRaw === "" || driveIdRaw === "general" ? null : driveIdRaw;
+  const donorName = ((formData.get("donorName") as string) ?? "").trim() || null;
+  const donorContact = ((formData.get("donorContact") as string) ?? "").trim() || null;
+  const amountRaw = (formData.get("amount") as string) ?? "";
+  const amount = Number(amountRaw);
+  const proofFile = formData.get("proof") as File | null;
+
+  if (!Number.isFinite(amount) || amount <= 0) {
+    return { ok: false, error: "Please enter a valid donation amount." };
+  }
+  if (!proofFile || proofFile.size === 0) {
+    return { ok: false, error: "Please attach your proof of transfer." };
+  }
+  if (proofFile.size > MAX_PROOF_BYTES) {
+    return {
+      ok: false,
+      error: `Proof file is too large — the maximum is ${Math.round(
+        MAX_PROOF_BYTES / 1024
+      )} KB. Please compress it and try again.`,
+    };
+  }
+
+  try {
+    const proofUrl = await uploadDonationProof(proofFile);
+    if (!proofUrl) {
+      return {
+        ok: false,
+        error: "That file couldn't be uploaded — use an image or PDF under the size limit.",
+      };
+    }
+
+    const donation = await createDonation({
+      driveId,
+      donorName,
+      donorContact,
+      amount,
+      proofUrl,
+    });
+
+    await addDriveDeviceId("donations", donation.id);
+    try {
+      await notifyNewDonation(donation);
+    } catch {
+      // swallow — donation is saved either way
+    }
+
+    revalidatePath("/drive");
+    revalidatePath("/admin/drive");
+    return { ok: true, refCode: donation.refCode };
+  } catch (err) {
+    console.error("[drive] submitDonationAction failed:", err);
+    const detail = err instanceof Error ? err.message : String(err);
+    return { ok: false, error: `Couldn't submit your donation: ${detail}` };
+  }
+}

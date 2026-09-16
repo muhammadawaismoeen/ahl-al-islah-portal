@@ -23,7 +23,7 @@ export function Navbar({ content = DEFAULT_CONTENT.nav, customLogo }: { content?
       className={cn(
         "fixed top-0 inset-x-0 z-50 transition-all duration-300",
         scrolled
-          ? "bg-cream/85 backdrop-blur-lg border-b border-cream-muted shadow-sm"
+          ? "bg-bg/85 backdrop-blur-lg border-b border-border shadow-sm"
           : "bg-transparent"
       )}
     >
@@ -42,7 +42,7 @@ export function Navbar({ content = DEFAULT_CONTENT.nav, customLogo }: { content?
               {content.siteName}
             </span>
             {content.siteNameArabic && (
-              <span className="arabic-text text-xs text-gold-antique">
+              <span className="arabic-text text-xs text-emerald-deep">
                 {content.siteNameArabic}
               </span>
             )}
@@ -61,7 +61,7 @@ export function Navbar({ content = DEFAULT_CONTENT.nav, customLogo }: { content?
           ))}
           <Link
             href="/become-a-member"
-            className="ml-3 inline-flex items-center gap-2 px-5 py-2 rounded-full bg-gold-gradient text-ink text-sm font-semibold tracking-wide whitespace-nowrap shadow-md hover:shadow-gold-warm/40 hover:scale-[1.03] transition-all"
+            className="ml-3 inline-flex items-center gap-2 px-5 py-2 rounded-full bg-emerald text-ink-on-emerald text-sm font-semibold tracking-wide whitespace-nowrap shadow-md hover:bg-emerald-deep hover:shadow-emerald-deep/30 hover:scale-[1.03] transition-all"
           >
             Become a Member
           </Link>
@@ -81,7 +81,7 @@ export function Navbar({ content = DEFAULT_CONTENT.nav, customLogo }: { content?
       </div>
 
       {open && (
-        <div className="md:hidden border-t border-cream-muted bg-cream/95 backdrop-blur-lg">
+        <div className="md:hidden border-t border-border bg-bg/95 backdrop-blur-lg">
           <nav className="container-prose py-4 flex flex-col gap-1">
             {content.items.map((item) => (
               <Link
@@ -96,7 +96,7 @@ export function Navbar({ content = DEFAULT_CONTENT.nav, customLogo }: { content?
             <Link
               href="/become-a-member"
               onClick={() => setOpen(false)}
-              className="inline-flex items-center justify-center gap-2 mt-3 px-5 py-3 rounded-full bg-gold-gradient text-ink text-sm font-semibold tracking-wide shadow-md"
+              className="inline-flex items-center justify-center gap-2 mt-3 px-5 py-3 rounded-full bg-emerald text-ink-on-emerald text-sm font-semibold tracking-wide shadow-md"
             >
               Become a Member
             </Link>

@@ -8,7 +8,7 @@ export default function NotFound() {
       <Navbar />
       <main className="pt-32 pb-20 min-h-[60vh] flex items-center">
         <div className="container-prose text-center">
-          <div className="arabic-text text-2xl text-gold-antique">
+          <div className="arabic-text text-2xl text-emerald-deep">
             الصفحة غير موجودة
           </div>
           <h1 className="mt-3 heading-serif text-5xl sm:text-7xl font-semibold text-emerald-deep">

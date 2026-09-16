@@ -26,7 +26,7 @@ export default async function AdminSessionsPage() {
           <div className="container-prose max-w-md mx-auto">
             <div className="ornate-card p-8">
               <div className="text-center mb-6">
-                <span className="arabic-text text-gold-antique">لوحة الإدارة</span>
+                <span className="arabic-text text-emerald-deep">لوحة الإدارة</span>
                 <h1 className="heading-serif text-3xl font-semibold text-emerald-deep mt-1">
                   Admin Access
                 </h1>
@@ -55,7 +55,7 @@ export default async function AdminSessionsPage() {
               >
                 <ArrowLeft className="h-3.5 w-3.5" /> Back to Core Members
               </Link>
-              <span className="arabic-text block text-gold-antique">الجلسات</span>
+              <span className="arabic-text block text-emerald-deep">الجلسات</span>
               <h1 className="heading-serif text-4xl font-semibold text-emerald-deep">
                 Sessions
               </h1>
@@ -85,11 +85,11 @@ export default async function AdminSessionsPage() {
                 <li key={s.id}>
                   <Link
                     href={`/admin/sessions/${s.id}`}
-                    className="ornate-card p-5 flex items-start justify-between gap-4 hover:bg-cream-warm/40 transition"
+                    className="ornate-card p-5 flex items-start justify-between gap-4 hover:bg-surface-2/40 transition"
                   >
                     <div className="min-w-0 flex-1">
                       {s.arabicTitle && (
-                        <p className="arabic-text text-sm text-gold-antique mb-0.5">
+                        <p className="arabic-text text-sm text-emerald-deep mb-0.5">
                           {s.arabicTitle}
                         </p>
                       )}

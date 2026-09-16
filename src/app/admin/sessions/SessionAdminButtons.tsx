@@ -44,7 +44,7 @@ export function DeleteSessionButton({
       type="button"
       onClick={handle}
       disabled={pending}
-      className="btn-ghost !py-1.5 !px-3 text-xs text-red-500 hover:text-red-700"
+      className="btn-ghost !py-1.5 !px-3 text-xs text-danger hover:text-danger-700"
     >
       {pending ? (
         <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -84,7 +84,7 @@ export function DeleteActivityButton({
       type="button"
       onClick={handle}
       disabled={pending}
-      className="btn-ghost !py-1 !px-2 text-[11px] text-red-500 hover:text-red-700"
+      className="btn-ghost !py-1 !px-2 text-[11px] text-danger hover:text-danger-700"
       title="Remove activity"
     >
       {pending ? (

@@ -38,10 +38,10 @@ const WING_CONFIG = {
   female: {
     label: "Sisters' Cohort",
     arabic: "جناح الأخوات",
-    dot: "bg-gold-antique",
-    badge: "bg-gold-antique/10 text-gold-antique",
-    accent: "bg-gold-antique text-white",
-    hover: "hover:bg-gold-antique/10 hover:text-gold-antique",
+    dot: "bg-sapphire",
+    badge: "bg-sapphire/10 text-sapphire",
+    accent: "bg-sapphire text-white",
+    hover: "hover:bg-sapphire/10 hover:text-sapphire",
   },
   "male-core": {
     label: "Brothers' Cohort",
@@ -62,10 +62,10 @@ const WING_CONFIG = {
   "deputy-female": {
     label: "Sisters' Cohort · Deputy View",
     arabic: "نائبة رئيسة الأخوات",
-    dot: "bg-gold-antique",
-    badge: "bg-gold-antique/10 text-gold-antique",
-    accent: "bg-gold-antique text-white",
-    hover: "hover:bg-gold-antique/10 hover:text-gold-antique",
+    dot: "bg-sapphire",
+    badge: "bg-sapphire/10 text-sapphire",
+    accent: "bg-sapphire text-white",
+    hover: "hover:bg-sapphire/10 hover:text-sapphire",
   },
 } as const;
 
@@ -97,7 +97,7 @@ export default async function CohortPage({
                 <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-emerald-deep/10 flex items-center justify-center">
                   <Users className="h-6 w-6 text-emerald-deep" />
                 </div>
-                <span className="arabic-text text-gold-antique block mb-1">
+                <span className="arabic-text text-emerald-deep block mb-1">
                   بوابة الرأس
                 </span>
                 <h1 className="heading-serif text-3xl font-semibold text-emerald-deep">
@@ -212,7 +212,7 @@ export default async function CohortPage({
         <div className="container-prose">
 
           {/* Tabs — every role sees Core Members; female head also sees Feedback + Audits */}
-          <div className="mb-6 flex flex-wrap gap-2 border-b border-cream-muted">
+          <div className="mb-6 flex flex-wrap gap-2 border-b border-border">
             <span className="inline-flex items-center gap-1.5 px-4 py-2 text-sm text-emerald-deep font-medium border-b-2 border-emerald-deep">
               <Users className="h-3.5 w-3.5" />
               Core Members
@@ -240,7 +240,7 @@ export default async function CohortPage({
           {/* Header */}
           <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
             <div>
-              <span className="arabic-text text-gold-antique">{wing.arabic}</span>
+              <span className={`arabic-text ${wingFilter === "male" ? "text-emerald-deep" : "text-sapphire"}`}>{wing.arabic}</span>
               <h1 className="heading-serif text-4xl font-semibold text-emerald-deep">
                 {wing.label}
               </h1>
@@ -267,7 +267,7 @@ export default async function CohortPage({
               className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
                 positionFilter === "all"
                   ? wing.accent
-                  : `bg-cream-muted text-ink/60 ${wing.hover}`
+                  : `bg-border text-ink/60 ${wing.hover}`
               }`}
             >
               All ({countAll})
@@ -277,7 +277,7 @@ export default async function CohortPage({
               className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
                 positionFilter === "core"
                   ? wing.accent
-                  : `bg-cream-muted text-ink/60 ${wing.hover}`
+                  : `bg-border text-ink/60 ${wing.hover}`
               }`}
             >
               Core Members ({countCore})
@@ -287,7 +287,7 @@ export default async function CohortPage({
               className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
                 positionFilter === "general"
                   ? wing.accent
-                  : `bg-cream-muted text-ink/60 ${wing.hover}`
+                  : `bg-border text-ink/60 ${wing.hover}`
               }`}
             >
               General Members ({countGeneral})
@@ -306,7 +306,7 @@ export default async function CohortPage({
                   </p>
                 </div>
               ) : (
-                <ul className="divide-y divide-cream-muted">
+                <ul className="divide-y divide-border">
                   {visibleSubmissions.map((s) => {
                     const position = getPositionBySlug(s.positionSlug);
                     const name =
@@ -325,7 +325,7 @@ export default async function CohortPage({
                           className={`block p-4 rounded-xl transition ${
                             isSelected
                               ? "bg-emerald-deep/5"
-                              : "hover:bg-cream-warm/40"
+                              : "hover:bg-surface-2/40"
                           }`}
                         >
                           <div className="flex items-start justify-between gap-3 mb-1">
@@ -396,10 +396,10 @@ function ApplicationDetail({ submission }: { submission: Submission }) {
 
   return (
     <article>
-      <header className="pb-6 border-b border-cream-muted">
+      <header className="pb-6 border-b border-border">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <div className="text-xs uppercase tracking-widest text-gold-antique">
+            <div className="text-xs uppercase tracking-widest text-emerald-deep">
               {position?.title ?? submission.positionTitle}
             </div>
             <h2 className="heading-serif text-3xl font-semibold text-emerald-deep mt-1">
@@ -407,7 +407,7 @@ function ApplicationDetail({ submission }: { submission: Submission }) {
             </h2>
             <p className="text-xs text-ink/50 mt-1">
               Submitted {formatDate(submission.submittedAt)} · Ref{" "}
-              <code className="font-mono bg-cream-muted px-1.5 py-0.5 rounded text-[10px]">
+              <code className="font-mono bg-border px-1.5 py-0.5 rounded text-[10px]">
                 {submission.id}
               </code>
             </p>
@@ -450,7 +450,7 @@ function ApplicationDetail({ submission }: { submission: Submission }) {
         {qs ? (
           qs.sections.map((section) => (
             <section key={section.id}>
-              <h3 className="heading-serif text-lg font-semibold text-emerald-deep mb-3 pb-2 border-b border-cream-muted">
+              <h3 className="heading-serif text-lg font-semibold text-emerald-deep mb-3 pb-2 border-b border-border">
                 {section.title}
               </h3>
               <dl className="space-y-4">
@@ -474,7 +474,7 @@ function ApplicationDetail({ submission }: { submission: Submission }) {
             </section>
           ))
         ) : (
-          <pre className="p-4 rounded-lg bg-cream-muted text-xs overflow-x-auto">
+          <pre className="p-4 rounded-lg bg-border text-xs overflow-x-auto">
             {jsonString}
           </pre>
         )}
