@@ -76,7 +76,7 @@ export default async function DrivePage() {
               </div>
               <div className="h-3 rounded-full bg-surface-2 overflow-hidden border border-border">
                 <div
-                  className="h-full bg-emerald-gradient rounded-full transition-all"
+                  className="h-full bg-emerald rounded-full transition-all"
                   style={{ width: `${progressPct}%` }}
                 />
               </div>

@@ -39,7 +39,7 @@ export function DonateForm({ drives }: { drives: Drive[] }) {
   if (refCode) {
     return (
       <div className="ornate-card p-8 text-center">
-        <div className="inline-flex items-center justify-center h-14 w-14 rounded-full bg-emerald-gradient mb-4">
+        <div className="inline-flex items-center justify-center h-14 w-14 rounded-full bg-emerald mb-4">
           <CheckCircle2 className="h-7 w-7 text-white" />
         </div>
         <h2 className="heading-serif text-2xl font-semibold text-emerald-deep">

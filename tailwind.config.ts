@@ -9,23 +9,26 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Jewel Manuscript — warm ivory base, emerald-dominant accent system.
+        // Approved editorial design system — light, flat, hairline-based.
         // Channel-triple CSS vars piped through rgb(var(--x) / <alpha-value>)
         // so opacity modifiers (bg-emerald/10, border-ink/20, ...) work.
+        // Tailwind key names (ink, border, ...) are kept stable even though
+        // the underlying CSS variables were renamed to match the approved
+        // token spec (--text, --line, ...) — see globals.css.
         bg: "rgb(var(--bg) / <alpha-value>)",
         surface: {
           DEFAULT: "rgb(var(--surface) / <alpha-value>)",
           2: "rgb(var(--surface-2) / <alpha-value>)",
         },
         border: {
-          DEFAULT: "rgb(var(--border) / <alpha-value>)",
-          strong: "rgb(var(--border-strong) / <alpha-value>)",
+          DEFAULT: "rgb(var(--line) / <alpha-value>)",
+          strong: "rgb(var(--line-strong) / <alpha-value>)",
         },
         ink: {
-          DEFAULT: "rgb(var(--ink) / <alpha-value>)",
-          muted: "rgb(var(--ink-muted) / <alpha-value>)",
-          dim: "rgb(var(--ink-dim) / <alpha-value>)",
-          "on-emerald": "rgb(var(--ink-on-emerald) / <alpha-value>)",
+          DEFAULT: "rgb(var(--text) / <alpha-value>)",
+          muted: "rgb(var(--text-dim) / <alpha-value>)",
+          dim: "rgb(var(--text-faint) / <alpha-value>)",
+          "on-emerald": "#FFFFFF",
         },
         emerald: {
           DEFAULT: "rgb(var(--emerald) / <alpha-value>)",
@@ -51,15 +54,10 @@ const config: Config = {
         sans: ["var(--font-inter)", "system-ui", "sans-serif"],
         arabic: ["var(--font-amiri)", "'Traditional Arabic'", "serif"],
       },
-      backgroundImage: {
-        "emerald-gradient":
-          "linear-gradient(135deg, #2F7A52 0%, #1F5A3B 100%)",
-      },
       animation: {
         "fade-in": "fadeIn 0.6s ease-out",
         "fade-up": "fadeUp 0.8s ease-out",
         shimmer: "shimmer 2.5s linear infinite",
-        drift: "drift 16s ease-in-out infinite",
       },
       keyframes: {
         fadeIn: {
@@ -73,10 +71,6 @@ const config: Config = {
         shimmer: {
           "0%": { backgroundPosition: "-200% 0" },
           "100%": { backgroundPosition: "200% 0" },
-        },
-        drift: {
-          "0%, 100%": { transform: "translate(0, 0)" },
-          "50%": { transform: "translate(-16px, 12px)" },
         },
       },
     },

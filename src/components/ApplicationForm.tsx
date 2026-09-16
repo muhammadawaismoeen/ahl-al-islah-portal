@@ -491,7 +491,7 @@ function SuccessState({
     >
       <div className="relative mx-auto w-20 h-20 mb-6">
         <div className="absolute inset-0 rounded-full bg-emerald/20 animate-ping" />
-        <div className="relative h-20 w-20 rounded-full bg-emerald-gradient flex items-center justify-center">
+        <div className="relative h-20 w-20 rounded-full bg-emerald flex items-center justify-center">
           <CheckCircle2 className="h-10 w-10 text-ink-on-emerald" />
         </div>
       </div>

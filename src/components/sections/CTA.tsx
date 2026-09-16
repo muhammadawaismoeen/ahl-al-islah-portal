@@ -14,10 +14,8 @@ export function CTA({ content }: { content: CtaContent }) {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="relative rounded-3xl overflow-hidden"
+          className="relative rounded-sm overflow-hidden bg-emerald-deep"
         >
-          <div className="absolute inset-0 bg-emerald-gradient" />
-
           <div className="relative p-10 sm:p-16 text-center text-bg">
             <div className="arabic-text text-xl text-bg/80 mb-3">
               {content.arabicTitle}

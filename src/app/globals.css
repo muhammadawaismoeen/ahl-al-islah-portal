@@ -4,30 +4,33 @@
 
 @layer base {
   :root {
-    /* Jewel Manuscript design tokens */
-    /* Channel triples (not full color values) so Tailwind's opacity
+    /* Approved editorial design system — light, flat, hairline-based.
+       Channel triples (not full color values) so Tailwind's opacity
        modifiers — bg-emerald/10, border-ink/20, etc. — can compose them
-       into rgb(var(--x) / <alpha-value>) at build time. */
-    --bg: 251 248 243;
-    --surface: 255 255 255;
+       into rgb(var(--x) / <alpha-value>) at build time. Tailwind's
+       theme keys (ink, border, surface, ...) stay as-is; only the CSS
+       variable names/values underneath them follow the approved spec. */
+    --emerald: 47 122 82; /* #2F7A52 — primary action color */
+    --emerald-deep: 31 90 59; /* #1F5A3B */
+    --emerald-soft: rgba(47, 122, 82, 0.08);
+    --sapphire: 27 75 143; /* #1B4B8F — info accent only */
+    --amber: 184 132 46; /* #B8842E — warning/pending accent only */
+
+    --bg: 251 248 243; /* #FBF8F3 — ivory page background */
+    --surface: 255 255 255; /* #FFFFFF */
     --surface-2: 242 238 227;
-    --border: 231 224 210;
-    --border-strong: 216 207 188;
 
-    --ink: 28 35 51;
-    --ink-muted: 92 100 120;
-    --ink-dim: 137 145 163;
+    --text: 28 35 51; /* #1C2333 */
+    --text-dim: 90 94 107; /* #5A5E6B */
+    --text-faint: 140 143 152; /* #8C8F98 */
 
-    --emerald: 47 122 82;
-    --emerald-deep: 31 90 59;
-    --emerald-soft: rgba(47, 122, 82, 0.11);
-    --sapphire: 27 75 143;
-    --amber: 184 132 46;
+    --line: 222 212 190; /* #DED4BE — hairline borders/dividers */
+    --line-strong: 201 188 156; /* #C9BC9C */
+
     --danger: 178 59 50;
-    --danger-soft: rgba(178, 59, 50, 0.12);
-    --ink-on-emerald: 251 248 243;
+    --danger-soft: rgba(178, 59, 50, 0.1);
 
-    --radius: 0.75rem;
+    --radius: 0.125rem; /* 2px flat radius used across buttons/cards */
   }
 
   * {
@@ -54,84 +57,82 @@
   }
 
   .heading-serif {
-    @apply font-serif tracking-tight;
+    font-family: var(--font-fraunces), Georgia, serif;
+    font-weight: 780;
+    font-variation-settings: "opsz" 144;
+    @apply tracking-tight;
   }
 
-  /* Restrained ambient shape — hero-style sections only, one per section */
-  .ambient-blob {
-    @apply pointer-events-none absolute rounded-full blur-3xl bg-emerald/10 animate-drift;
-  }
-
+  /* Simple hairline divider — no decorative flourish */
   .gold-divider {
-    @apply relative mx-auto h-px w-24 my-6;
-    background: linear-gradient(
-      90deg,
-      transparent 0%,
-      rgb(var(--emerald-deep)) 50%,
-      transparent 100%
-    );
-  }
-
-  .gold-divider::before,
-  .gold-divider::after {
-    content: "";
-    position: absolute;
-    top: 50%;
-    width: 4px;
-    height: 4px;
-    background: rgb(var(--emerald-deep));
-    border-radius: 50%;
-    transform: translateY(-50%) rotate(45deg);
-  }
-
-  .gold-divider::before {
-    left: calc(50% - 3rem);
-  }
-
-  .gold-divider::after {
-    right: calc(50% - 3rem);
+    @apply relative mx-auto h-px w-16 my-6 bg-border;
   }
 
   .section-eyebrow {
-    @apply inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium uppercase tracking-widest;
+    @apply inline-flex items-center gap-2 px-3 py-1 rounded-sm text-xs font-medium uppercase tracking-widest;
     @apply bg-emerald-soft text-emerald-deep border border-emerald-deep/20;
   }
 
+  /* Flat, hairline-bordered card — no shadow, no blur, no hover-lift */
   .ornate-card {
-    @apply relative rounded-2xl bg-surface border border-border shadow-sm;
-    @apply transition-all duration-300 hover:-translate-y-[2px];
-    @apply hover:shadow-[0_12px_28px_-12px_rgba(31,90,59,0.22)] hover:border-border-strong;
+    @apply relative rounded-sm bg-surface border border-border;
+    @apply transition-colors duration-200 hover:border-border-strong;
   }
 
+  /* Buttons: 2px radius, 1.5px border, no drop shadows */
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full;
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-sm;
     @apply bg-emerald text-ink-on-emerald font-medium text-sm tracking-wide;
-    @apply transition-all duration-300 hover:bg-emerald-deep;
-    @apply shadow-md hover:shadow-lg hover:shadow-emerald-deep/20;
-    @apply focus:outline-none focus:ring-2 focus:ring-emerald/40 focus:ring-offset-2;
+    @apply border-[1.5px] border-emerald;
+    @apply transition-colors duration-200 hover:bg-emerald-deep hover:border-emerald-deep;
+    @apply focus:outline-none focus:ring-2 focus:ring-emerald/30 focus:ring-offset-2;
     @apply disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full;
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-sm;
     @apply bg-transparent text-emerald-deep font-medium text-sm tracking-wide;
-    @apply border-2 border-emerald-deep/20;
-    @apply transition-all duration-300 hover:border-emerald-deep hover:bg-emerald-deep/5;
-    @apply focus:outline-none focus:ring-2 focus:ring-emerald/40 focus:ring-offset-2;
+    @apply border-[1.5px] border-emerald;
+    @apply transition-colors duration-200 hover:bg-emerald/5;
+    @apply focus:outline-none focus:ring-2 focus:ring-emerald/20 focus:ring-offset-2;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
   .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full;
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-sm;
     @apply text-emerald-deep font-medium text-sm tracking-wide;
-    @apply transition-all duration-300 hover:bg-emerald-deep/5;
+    @apply transition-colors duration-200 hover:bg-emerald/5;
   }
 
   .input-field {
-    @apply w-full px-4 py-3 rounded-xl;
-    @apply bg-surface-2 border border-border;
+    @apply w-full px-4 py-3 rounded-sm;
+    @apply bg-surface border border-border;
     @apply text-ink placeholder:text-ink-dim;
-    @apply transition-all duration-200;
-    @apply focus:outline-none focus:border-emerald/50 focus:ring-2 focus:ring-emerald/10;
+    @apply transition-colors duration-150;
+    @apply focus:outline-none focus:border-emerald;
+  }
+
+  /* Status pill — dot + colored border/text, no filled glow */
+  .pill {
+    @apply inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium whitespace-nowrap;
+  }
+  .pill-ok {
+    @apply pill border-emerald text-emerald-deep;
+  }
+  .pill-pending {
+    @apply pill border-amber text-amber;
+  }
+  .pill-info {
+    @apply pill border-sapphire text-sapphire;
+  }
+  .pill-dot {
+    @apply h-1.5 w-1.5 rounded-full bg-current shrink-0;
+  }
+
+  /* Hairline row divider — for list content (positions, roadmap milestones,
+     sessions, admin tables) instead of card grids */
+  .list-row {
+    @apply border-b border-border last:border-b-0;
   }
 
   .textarea-field {

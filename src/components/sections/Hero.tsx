@@ -7,16 +7,14 @@ import type { HeroContent } from "@/lib/content-types";
 
 export function Hero({ content, customLogo }: { content: HeroContent; customLogo?: string }) {
   return (
-    <section className="relative min-h-[90vh] flex items-center overflow-hidden pt-24 pb-20">
-      <div className="ambient-blob top-10 -right-20 w-[28rem] h-[28rem]" />
-
+    <section className="relative min-h-[90vh] flex items-center pt-24 pb-20">
       <div className="container-prose relative">
         <div className="max-w-4xl mx-auto text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/80 backdrop-blur border border-emerald-deep/20 text-xs font-medium text-emerald-deep tracking-wider uppercase mb-8"
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-surface border border-emerald-deep/20 text-xs font-medium text-emerald-deep tracking-wider uppercase mb-8"
           >
             <Sparkles className="h-3.5 w-3.5 text-emerald-deep" />
             <span>{content.eyebrow}</span>
