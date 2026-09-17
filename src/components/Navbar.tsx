@@ -63,7 +63,7 @@ export function Navbar({ content = DEFAULT_CONTENT.nav, customLogo }: { content?
             href="/become-a-member"
             className="btn-gold ml-3 !px-5 !py-2 text-sm whitespace-nowrap"
           >
-            Become a Member
+            {content.ctaLabel}
           </Link>
         </nav>
 
@@ -98,7 +98,7 @@ export function Navbar({ content = DEFAULT_CONTENT.nav, customLogo }: { content?
               onClick={() => setOpen(false)}
               className="btn-gold mt-3 text-sm"
             >
-              Become a Member
+              {content.ctaLabel}
             </Link>
           </nav>
         </div>

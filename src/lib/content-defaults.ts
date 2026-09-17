@@ -182,7 +182,7 @@ export const DEFAULT_CONTENT: SiteContent = {
       { label: "Drive", href: "/drive" },
       { label: "Feedback", href: "/feedback" },
     ],
-    ctaLabel: "Apply Now",
+    ctaLabel: "Become a Member",
   },
 
   hero: {
