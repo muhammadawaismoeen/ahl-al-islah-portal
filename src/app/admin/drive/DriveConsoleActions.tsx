@@ -1,11 +1,23 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Plus, Lock, Unlock, ScanLine, Check, X, Search } from "lucide-react";
+import {
+  Loader2,
+  Plus,
+  Lock,
+  Unlock,
+  ScanLine,
+  Check,
+  X,
+  Search,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 import { toast } from "sonner";
 import { formatDate } from "@/lib/utils";
-import type { Drive, DriveApplication } from "@/lib/drive-types";
+import { DRIVE_CURRENCY } from "@/lib/drive-config";
+import type { Drive, DriveApplication, Donation } from "@/lib/drive-types";
 import {
   createDriveAction,
   setDriveStatusAction,
@@ -422,6 +434,12 @@ export function CheckInForm() {
   );
 }
 
+export const DONATION_STATUS_STYLE: Record<Donation["status"], string> = {
+  pending: "bg-amber/15 text-amber",
+  verified: "bg-emerald-deep/15 text-emerald-deep",
+  rejected: "bg-danger-100 text-danger-700",
+};
+
 export function DonationReviewButtons({ donationId }: { donationId: string }) {
   const router = useRouter();
   const [pending, setPending] = useState<"verified" | "rejected" | null>(null);
@@ -459,6 +477,143 @@ export function DonationReviewButtons({ donationId }: { donationId: string }) {
         {pending === "rejected" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <X className="h-3.5 w-3.5" />}
         Reject
       </button>
+    </div>
+  );
+}
+
+export function DonationsPanel({
+  donations,
+  driveNameById,
+}: {
+  donations: Donation[];
+  driveNameById: Record<string, string>;
+}) {
+  const [query, setQuery] = useState("");
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  const donationsByEmail = useMemo(() => {
+    const map = new Map<string, Donation[]>();
+    for (const d of donations) {
+      if (!d.donorEmail) continue;
+      const list = map.get(d.donorEmail) ?? [];
+      list.push(d);
+      map.set(d.donorEmail, list);
+    }
+    return map;
+  }, [donations]);
+
+  const q = query.trim().toLowerCase();
+  const filtered = q
+    ? donations.filter(
+        (d) =>
+          (d.donorName ?? "").toLowerCase().includes(q) ||
+          (d.donorEmail ?? "").toLowerCase().includes(q) ||
+          (d.donorContact ?? "").toLowerCase().includes(q) ||
+          d.refCode.toLowerCase().includes(q)
+      )
+    : donations;
+
+  return (
+    <div className="ornate-card p-2">
+      <div className="p-3 pb-1">
+        <div className="relative">
+          <Search className="h-3.5 w-3.5 text-ink/40 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search by donor name, email, contact, or ref code"
+            className="input-field !pl-9 text-sm"
+          />
+        </div>
+      </div>
+      {filtered.length === 0 ? (
+        <p className="p-10 text-sm text-ink/60 text-center">
+          {donations.length === 0 ? "No donations yet." : "No donations match that search."}
+        </p>
+      ) : (
+        <ul className="divide-y divide-border">
+          {filtered.map((d) => {
+            const history = d.donorEmail
+              ? (donationsByEmail.get(d.donorEmail) ?? []).filter((h) => h.id !== d.id)
+              : [];
+            const expanded = expandedId === d.id;
+            return (
+              <li key={d.id} className="p-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="font-medium text-sm text-ink">
+                      {DRIVE_CURRENCY} {d.amount.toLocaleString()} — {d.donorName ?? "Anonymous"}
+                    </p>
+                    <p className="text-xs text-ink/50 mt-0.5">
+                      {d.driveId ? driveNameById[d.driveId] ?? "Drive" : "General fund"}
+                      {" · "}
+                      {d.donorEmail ?? "no email on file"} · {d.donorContact ?? "no contact"} · Ref{" "}
+                      <code className="font-mono">{d.refCode}</code>
+                    </p>
+                    <div className="flex items-center gap-3 mt-1">
+                      <a
+                        href={d.proofUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[11px] text-emerald-deep hover:underline"
+                      >
+                        View proof
+                      </a>
+                      {history.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => setExpandedId(expanded ? null : d.id)}
+                          className="inline-flex items-center gap-1 text-[11px] text-sapphire hover:underline"
+                        >
+                          {expanded ? (
+                            <ChevronUp className="h-3 w-3" />
+                          ) : (
+                            <ChevronDown className="h-3 w-3" />
+                          )}
+                          {history.length} other donation{history.length === 1 ? "" : "s"} from this donor
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span
+                      className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${DONATION_STATUS_STYLE[d.status]}`}
+                    >
+                      {d.status}
+                    </span>
+                    {d.status === "pending" && <DonationReviewButtons donationId={d.id} />}
+                  </div>
+                </div>
+                {expanded && history.length > 0 && (
+                  <div className="mt-3 ml-1 pl-3 border-l-2 border-border space-y-1.5">
+                    {history
+                      .slice()
+                      .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))
+                      .map((h) => (
+                        <div
+                          key={h.id}
+                          className="flex flex-wrap items-center justify-between gap-2 text-xs text-ink/60"
+                        >
+                          <span>
+                            {DRIVE_CURRENCY} {h.amount.toLocaleString()} ·{" "}
+                            {h.driveId ? driveNameById[h.driveId] ?? "Drive" : "General fund"} ·{" "}
+                            {formatDate(h.createdAt)}
+                          </span>
+                          <span
+                            className={`px-1.5 py-0.5 rounded-full text-[10px] font-medium ${DONATION_STATUS_STYLE[h.status]}`}
+                          >
+                            {h.status}
+                          </span>
+                        </div>
+                      ))}
+                  </div>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </div>
   );
 }

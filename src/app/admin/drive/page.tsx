@@ -7,6 +7,7 @@ import {
   Users,
   ScanLine,
   HandCoins,
+  BarChart3,
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -28,8 +29,9 @@ import {
   ItemStockForm,
   ApplicantsPanel,
   CheckInForm,
-  DonationReviewButtons,
+  DonationsPanel,
 } from "./DriveConsoleActions";
+import { FinancialReport } from "./FinancialReport";
 
 export const metadata: Metadata = {
   title: "Qur'an & Seerah Drive — Admin",
@@ -38,7 +40,7 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-type Tab = "drives" | "catalog" | "applicants" | "checkin" | "donations";
+type Tab = "drives" | "catalog" | "applicants" | "checkin" | "donations" | "report";
 
 const TABS: { key: Tab; label: string; icon: typeof BookOpen }[] = [
   { key: "drives", label: "Drives", icon: BookOpen },
@@ -46,13 +48,8 @@ const TABS: { key: Tab; label: string; icon: typeof BookOpen }[] = [
   { key: "applicants", label: "Applicants", icon: Users },
   { key: "checkin", label: "Check-in", icon: ScanLine },
   { key: "donations", label: "Donations", icon: HandCoins },
+  { key: "report", label: "Financial Report", icon: BarChart3 },
 ];
-
-const DONATION_STATUS_STYLE: Record<string, string> = {
-  pending: "bg-amber/15 text-amber",
-  verified: "bg-emerald-deep/15 text-emerald-deep",
-  rejected: "bg-danger-100 text-danger-700",
-};
 
 export default async function AdminDrivePage({
   searchParams,
@@ -234,50 +231,11 @@ export default async function AdminDrivePage({
           )}
 
           {tab === "donations" && (
-            <div className="ornate-card p-2">
-              {donations.length === 0 ? (
-                <p className="p-10 text-sm text-ink/60 text-center">
-                  No donations yet.
-                </p>
-              ) : (
-                <ul className="divide-y divide-border">
-                  {donations.map((d) => (
-                    <li key={d.id} className="p-4 flex flex-wrap items-center justify-between gap-3">
-                      <div className="min-w-0">
-                        <p className="font-medium text-sm text-ink">
-                          {DRIVE_CURRENCY} {d.amount.toLocaleString()} —{" "}
-                          {d.donorName ?? "Anonymous"}
-                        </p>
-                        <p className="text-xs text-ink/50 mt-0.5">
-                          {d.driveId ? driveById.get(d.driveId)?.name ?? "Drive" : "General fund"}
-                          {" · "}
-                          {d.donorContact ?? "no contact"} · Ref{" "}
-                          <code className="font-mono">{d.refCode}</code>
-                        </p>
-                        <a
-                          href={d.proofUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-[11px] text-emerald-deep hover:underline"
-                        >
-                          View proof
-                        </a>
-                      </div>
-                      <div className="flex items-center gap-2 shrink-0">
-                        <span
-                          className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${DONATION_STATUS_STYLE[d.status]}`}
-                        >
-                          {d.status}
-                        </span>
-                        {d.status === "pending" && (
-                          <DonationReviewButtons donationId={d.id} />
-                        )}
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
+            <DonationsPanel donations={donations} driveNameById={driveNameById} />
+          )}
+
+          {tab === "report" && (
+            <FinancialReport donations={donations} drives={drives} />
           )}
         </div>
       </main>
