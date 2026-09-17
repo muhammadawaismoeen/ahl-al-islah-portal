@@ -82,3 +82,39 @@ export async function deleteDoc(
   const [deleted] = (await p.exec()) as [number, number];
   return deleted > 0;
 }
+
+/**
+ * Atomic integer counters, separate from a collection's JSON documents —
+ * for values (like remaining stock) that concurrent requests decrement at
+ * the same time. DECR/INCR are atomic in Redis, unlike a read-modify-write
+ * on a JSON document, so concurrent callers can't both read the same
+ * pre-decrement value and both "win" the last unit.
+ */
+const counterKey = (collection: string, id: string) => `aai:${collection}:${id}:counter`;
+
+/** Seed the counter only if it doesn't exist yet — safe to call on every
+ *  read path so records created before a counter existed self-heal. */
+export async function ensureCounter(
+  collection: string,
+  id: string,
+  initial: number
+): Promise<void> {
+  await redis().set(counterKey(collection, id), initial, { nx: true });
+}
+
+/** Force the counter to a value — for authoritative admin overrides. */
+export async function setCounter(
+  collection: string,
+  id: string,
+  value: number
+): Promise<void> {
+  await redis().set(counterKey(collection, id), value);
+}
+
+export async function decrCounter(collection: string, id: string): Promise<number> {
+  return redis().decr(counterKey(collection, id));
+}
+
+export async function incrCounter(collection: string, id: string): Promise<number> {
+  return redis().incr(counterKey(collection, id));
+}

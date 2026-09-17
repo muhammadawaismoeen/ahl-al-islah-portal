@@ -2,7 +2,16 @@ import { promises as fs } from "fs";
 import path from "path";
 import crypto from "crypto";
 import { unstable_noStore as noStore } from "next/cache";
-import { isRedisStore, setDoc, getDoc, listDocs } from "./redis";
+import {
+  isRedisStore,
+  setDoc,
+  getDoc,
+  listDocs,
+  ensureCounter,
+  setCounter,
+  decrCounter,
+  incrCounter,
+} from "./redis";
 
 export type {
   Drive,
@@ -232,9 +241,15 @@ export async function createDriveItem(input: {
     createdAt: new Date().toISOString(),
   };
   await writeRecord(COLLECTION.items, DIR.items, item);
+  if (isRedisStore()) {
+    await setCounter(COLLECTION.items, item.id, item.totalStock);
+  }
   return item;
 }
 
+/** Admin-only stock edit — an authoritative override, so it force-sets the
+ *  atomic reservation counter rather than going through reserveBook's
+ *  decrement path. */
 export async function updateDriveItemStock(
   id: string,
   patch: Partial<Pick<DriveItem, "totalStock" | "remainingStock" | "perStudentLimit" | "name">>
@@ -243,6 +258,9 @@ export async function updateDriveItemStock(
   if (!item) return null;
   const updated: DriveItem = { ...item, ...patch };
   await writeRecord(COLLECTION.items, DIR.items, updated);
+  if (isRedisStore() && patch.remainingStock !== undefined) {
+    await setCounter(COLLECTION.items, id, updated.remainingStock);
+  }
   return updated;
 }
 
@@ -341,7 +359,26 @@ export async function reserveBook(input: {
   }
 
   const now = new Date().toISOString();
-  const hasStock = item.remainingStock > 0;
+
+  // Atomic decrement so two concurrent applicants can't both read the same
+  // pre-decrement stock count and both win the last copy (see redis.ts).
+  // Filesystem dev fallback has no concurrent writers, so a plain read is fine.
+  let hasStock: boolean;
+  let remainingAfter = item.remainingStock;
+  if (isRedisStore()) {
+    await ensureCounter(COLLECTION.items, item.id, item.remainingStock);
+    const decremented = await decrCounter(COLLECTION.items, item.id);
+    hasStock = decremented >= 0;
+    if (hasStock) {
+      remainingAfter = decremented;
+    } else {
+      await incrCounter(COLLECTION.items, item.id); // undo — no stock consumed
+    }
+  } else {
+    hasStock = item.remainingStock > 0;
+    if (hasStock) remainingAfter = item.remainingStock - 1;
+  }
+
   const application: DriveApplication = {
     id: genId("dap"),
     driveId: input.driveId,
@@ -356,8 +393,11 @@ export async function reserveBook(input: {
   };
 
   if (hasStock) {
-    await updateDriveItemStock(item.id, {
-      remainingStock: item.remainingStock - 1,
+    // Direct write, not updateDriveItemStock — that would force-set the
+    // counter and could clobber a concurrent decrement that landed after ours.
+    await writeRecord(COLLECTION.items, DIR.items, {
+      ...item,
+      remainingStock: remainingAfter,
     });
   }
 
