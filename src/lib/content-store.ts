@@ -1,6 +1,6 @@
 import { promises as fs } from "fs";
 import path from "path";
-import { unstable_noStore as noStore } from "next/cache";
+import { unstable_cache, revalidateTag } from "next/cache";
 import { DEFAULT_CONTENT } from "./content-defaults";
 import type { SiteContent } from "./content-types";
 import { isRedisStore, setDoc, getDoc, deleteDoc } from "./redis";
@@ -8,14 +8,9 @@ import { isRedisStore, setDoc, getDoc, deleteDoc } from "./redis";
 const CONTENT_FILE = path.join(process.cwd(), "data", "content.json");
 const COLLECTION = "content";
 const DOC_ID = "site";
+const CONTENT_TAG = "site-content";
 
-/**
- * Read live content. Uses Upstash Redis in production (when the REST env
- * vars are set), otherwise falls back to the local data/content.json file.
- * Returns compiled-in defaults when neither source has stored content yet.
- */
-export async function getContent(): Promise<SiteContent> {
-  noStore();
+async function readContent(): Promise<SiteContent> {
   try {
     if (isRedisStore()) {
       const stored = await getDoc<Partial<SiteContent>>(COLLECTION, DOC_ID);
@@ -34,6 +29,25 @@ export async function getContent(): Promise<SiteContent> {
   }
 }
 
+// Nearly every page on the site reads nav/hero/footer content, so a live
+// Redis round-trip per request here was the single biggest source of
+// site-wide page-load latency. Cached indefinitely in Next's Data Cache;
+// saveContent()/resetContent() bust it immediately via revalidateTag, so
+// admin edits still show up on the next request.
+const getCachedContent = unstable_cache(readContent, ["site-content"], {
+  tags: [CONTENT_TAG],
+  revalidate: false,
+});
+
+/**
+ * Read live content. Uses Upstash Redis in production (when the REST env
+ * vars are set), otherwise falls back to the local data/content.json file.
+ * Returns compiled-in defaults when neither source has stored content yet.
+ */
+export async function getContent(): Promise<SiteContent> {
+  return getCachedContent();
+}
+
 export async function saveContent(content: SiteContent): Promise<void> {
   if (isRedisStore()) {
     await setDoc(COLLECTION, DOC_ID, content);
@@ -41,6 +55,7 @@ export async function saveContent(content: SiteContent): Promise<void> {
     await fs.mkdir(path.dirname(CONTENT_FILE), { recursive: true });
     await fs.writeFile(CONTENT_FILE, JSON.stringify(content, null, 2), "utf8");
   }
+  revalidateTag(CONTENT_TAG);
 }
 
 export async function resetContent(): Promise<void> {
@@ -52,6 +67,8 @@ export async function resetContent(): Promise<void> {
     }
   } catch {
     // already absent — fine
+  } finally {
+    revalidateTag(CONTENT_TAG);
   }
 }
 
