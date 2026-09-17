@@ -47,6 +47,14 @@ export async function getProofBytes(
 ): Promise<{ bytes: Buffer; contentType: string } | null> {
   const proof = await getStoredProof(id);
   if (!proof) return null;
+
+  // Docs written before the Vercel Blob migration still have base64 bytes
+  // inline and no blobUrl — read those directly rather than 404ing on them.
+  const legacyData = (proof as unknown as { data?: string }).data;
+  if (legacyData) {
+    return { bytes: Buffer.from(legacyData, "base64"), contentType: proof.contentType };
+  }
+
   const result = await get(proof.blobUrl, { access: "private" });
   if (!result?.stream) return null;
   const reader = result.stream.getReader();
