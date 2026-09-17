@@ -55,6 +55,7 @@ const COLLECTION = {
 };
 const DRIVES_TAG = "drive-drives";
 const ITEMS_TAG = "drive-items";
+const STATS_TAG = "drive-stats";
 
 async function ensureDir(dir: string) {
   await fs.mkdir(dir, { recursive: true });
@@ -241,6 +242,7 @@ export async function createDrive(input: {
   };
   await writeRecord(COLLECTION.drives, DIR.drives, drive);
   revalidateTag(DRIVES_TAG);
+  revalidateTag(STATS_TAG);
   return drive;
 }
 
@@ -504,6 +506,7 @@ export async function checkInApplication(
     updatedAt: new Date().toISOString(),
   };
   await writeRecord(COLLECTION.applications, DIR.applications, updated);
+  revalidateTag(STATS_TAG);
   return { ok: true, application: updated };
 }
 
@@ -615,6 +618,7 @@ export async function reviewDonation(
       donation.driveId ? recomputeDriveRaised(donation.driveId) : Promise.resolve(),
       donation.ambassadorId ? recomputeAmbassadorRaised(donation.ambassadorId) : Promise.resolve(),
     ]);
+    revalidateTag(STATS_TAG);
   }
 
   return { ok: true, donation: updated };
@@ -764,23 +768,34 @@ async function recomputeAmbassadorRaised(ambassadorId: string): Promise<void> {
 /*  Aggregate stats — public landing page stat chips                   */
 /* ------------------------------------------------------------------ */
 
+/** Public landing-page stat chips scan the entire applications/donations
+ *  collections — cache the aggregate rather than the raw collections so
+ *  admin queues (which read those uncached) stay live. */
+const getCachedDriveStats = unstable_cache(
+  async (): Promise<DriveStats> => {
+    const [drives, applications, donations] = await Promise.all([
+      listRecordsRaw<Drive>(COLLECTION.drives, DIR.drives),
+      listRecordsRaw<DriveApplication>(COLLECTION.applications, DIR.applications),
+      listRecordsRaw<Donation>(COLLECTION.donations, DIR.donations),
+    ]);
+
+    const booksGivenAllTime = applications.filter(
+      (a) => a.status === "picked-up"
+    ).length;
+    const generalFundTotal = donations
+      .filter((d) => d.status === "verified" && d.driveId === null)
+      .reduce((sum, d) => sum + d.amount, 0);
+
+    return {
+      booksGivenAllTime,
+      drivesRun: drives.length,
+      generalFundTotal,
+    };
+  },
+  ["drive-stats"],
+  { tags: [STATS_TAG], revalidate: false }
+);
+
 export async function computeDriveStats(): Promise<DriveStats> {
-  const [drives, applications, donations] = await Promise.all([
-    listDrives(),
-    listApplications(),
-    listDonations(),
-  ]);
-
-  const booksGivenAllTime = applications.filter(
-    (a) => a.status === "picked-up"
-  ).length;
-  const generalFundTotal = donations
-    .filter((d) => d.status === "verified" && d.driveId === null)
-    .reduce((sum, d) => sum + d.amount, 0);
-
-  return {
-    booksGivenAllTime,
-    drivesRun: drives.length,
-    generalFundTotal,
-  };
+  return getCachedDriveStats();
 }
