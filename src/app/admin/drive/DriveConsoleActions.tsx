@@ -2,9 +2,10 @@
 
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Plus, Lock, Unlock, ScanLine, Check, X } from "lucide-react";
+import { Loader2, Plus, Lock, Unlock, ScanLine, Check, X, Search } from "lucide-react";
 import { toast } from "sonner";
-import type { Drive } from "@/lib/drive-types";
+import { formatDate } from "@/lib/utils";
+import type { Drive, DriveApplication } from "@/lib/drive-types";
 import {
   createDriveAction,
   setDriveStatusAction,
@@ -12,6 +13,7 @@ import {
   createDriveItemAction,
   updateDriveItemAction,
   checkInByCodeAction,
+  confirmApplicationAction,
   reviewDonationAction,
 } from "./actions";
 
@@ -250,6 +252,116 @@ export function ItemStockForm({
         {pending && <Loader2 className="h-3 w-3 animate-spin" />}
         Save
       </button>
+    </div>
+  );
+}
+
+export const APP_STATUS_STYLE: Record<DriveApplication["status"], string> = {
+  "pending-review": "bg-sapphire/15 text-sapphire",
+  confirmed: "bg-emerald-deep/15 text-emerald-deep",
+  waitlisted: "bg-amber/15 text-amber",
+  "picked-up": "bg-ink/15 text-ink/70",
+};
+
+const APP_STATUS_LABEL: Record<DriveApplication["status"], string> = {
+  "pending-review": "Pending review",
+  confirmed: "Confirmed",
+  waitlisted: "Waitlisted",
+  "picked-up": "Picked up",
+};
+
+export function ConfirmApplicationButton({ applicationId }: { applicationId: string }) {
+  const router = useRouter();
+  const [pending, setPending] = useState(false);
+
+  async function handle() {
+    setPending(true);
+    const res = await confirmApplicationAction(applicationId);
+    setPending(false);
+    if (res.ok) {
+      toast.success("Applicant confirmed.");
+      router.refresh();
+    } else {
+      toast.error(res.error ?? "Failed to confirm applicant.");
+    }
+  }
+
+  return (
+    <button type="button" onClick={handle} disabled={pending} className="btn-ghost !py-1 !px-2.5 text-xs text-emerald-deep">
+      {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
+      Confirm
+    </button>
+  );
+}
+
+export function ApplicantsPanel({
+  applications,
+  itemNameById,
+  driveNameById,
+}: {
+  applications: DriveApplication[];
+  itemNameById: Record<string, string>;
+  driveNameById: Record<string, string>;
+}) {
+  const [query, setQuery] = useState("");
+  const q = query.trim().toLowerCase();
+  const filtered = q
+    ? applications.filter(
+        (a) =>
+          a.applicantName.toLowerCase().includes(q) ||
+          a.applicantContact.toLowerCase().includes(q)
+      )
+    : applications;
+
+  return (
+    <div className="ornate-card p-2">
+      <div className="p-3 pb-1">
+        <div className="relative">
+          <Search className="h-3.5 w-3.5 text-ink/40 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search by name or email"
+            className="input-field !pl-9 text-sm"
+          />
+        </div>
+      </div>
+      {filtered.length === 0 ? (
+        <p className="p-10 text-sm text-ink/60 text-center">
+          {applications.length === 0
+            ? "No applications yet."
+            : "No applicants match that search."}
+        </p>
+      ) : (
+        <ul className="divide-y divide-border">
+          {filtered.map((a) => (
+            <li key={a.id} className="p-4 flex flex-wrap items-center justify-between gap-3">
+              <div className="min-w-0">
+                <p className="font-medium text-sm text-ink">{a.applicantName}</p>
+                <p className="text-xs text-ink/50 mt-0.5">
+                  {itemNameById[a.itemId] ?? "Item"} · {driveNameById[a.driveId] ?? "Drive"} ·{" "}
+                  {a.applicantContact}
+                </p>
+                <p className="text-[11px] text-ink/40 mt-0.5">
+                  Code <code className="font-mono">{a.pickupCode}</code> · Applied{" "}
+                  {formatDate(a.createdAt)}
+                </p>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <span
+                  className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${APP_STATUS_STYLE[a.status]}`}
+                >
+                  {APP_STATUS_LABEL[a.status]}
+                </span>
+                {a.status === "pending-review" && (
+                  <ConfirmApplicationButton applicationId={a.id} />
+                )}
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

@@ -61,7 +61,7 @@ export function Navbar({ content = DEFAULT_CONTENT.nav, customLogo }: { content?
           ))}
           <Link
             href="/become-a-member"
-            className="btn-primary ml-3 !px-5 !py-2 text-sm whitespace-nowrap"
+            className="btn-gold ml-3 !px-5 !py-2 text-sm whitespace-nowrap"
           >
             Become a Member
           </Link>
@@ -96,7 +96,7 @@ export function Navbar({ content = DEFAULT_CONTENT.nav, customLogo }: { content?
             <Link
               href="/become-a-member"
               onClick={() => setOpen(false)}
-              className="btn-primary mt-3 text-sm"
+              className="btn-gold mt-3 text-sm"
             >
               Become a Member
             </Link>

@@ -48,6 +48,7 @@ next-env.d.ts
 /data/feedback
 /data/activity-submissions
 /data/counsel
+/data/drive
 
 # uploaded poster images (dev fallback when no Vercel Blob token)
 /public/uploads
@@ -56,6 +57,7 @@ next-env.d.ts
 /.claude
 /.vscode
 /.idea
+/.lavish
 
 .vercel
 .env*.local

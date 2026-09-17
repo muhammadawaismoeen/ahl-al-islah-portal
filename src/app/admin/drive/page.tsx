@@ -26,6 +26,7 @@ import {
   DriveGoalForm,
   CreateItemForm,
   ItemStockForm,
+  ApplicantsPanel,
   CheckInForm,
   DonationReviewButtons,
 } from "./DriveConsoleActions";
@@ -46,12 +47,6 @@ const TABS: { key: Tab; label: string; icon: typeof BookOpen }[] = [
   { key: "checkin", label: "Check-in", icon: ScanLine },
   { key: "donations", label: "Donations", icon: HandCoins },
 ];
-
-const APP_STATUS_STYLE: Record<string, string> = {
-  confirmed: "bg-emerald-deep/15 text-emerald-deep",
-  waitlisted: "bg-amber/15 text-amber",
-  "picked-up": "bg-ink/15 text-ink/70",
-};
 
 const DONATION_STATUS_STYLE: Record<string, string> = {
   pending: "bg-amber/15 text-amber",
@@ -98,7 +93,8 @@ export default async function AdminDrivePage({
     listDonations(),
   ]);
   const driveById = new Map(drives.map((d) => [d.id, d]));
-  const itemById = new Map(items.map((i) => [i.id, i]));
+  const driveNameById = Object.fromEntries(drives.map((d) => [d.id, d.name]));
+  const itemNameById = Object.fromEntries(items.map((i) => [i.id, i.name]));
   const pendingDonations = donations.filter((d) => d.status === "pending").length;
 
   return (
@@ -224,36 +220,11 @@ export default async function AdminDrivePage({
           )}
 
           {tab === "applicants" && (
-            <div className="ornate-card p-2">
-              {applications.length === 0 ? (
-                <p className="p-10 text-sm text-ink/60 text-center">
-                  No applications yet.
-                </p>
-              ) : (
-                <ul className="divide-y divide-border">
-                  {applications.map((a) => (
-                    <li key={a.id} className="p-4 flex flex-wrap items-center justify-between gap-3">
-                      <div className="min-w-0">
-                        <p className="font-medium text-sm text-ink">{a.applicantName}</p>
-                        <p className="text-xs text-ink/50 mt-0.5">
-                          {itemById.get(a.itemId)?.name ?? "Item"} ·{" "}
-                          {driveById.get(a.driveId)?.name ?? "Drive"} · {a.applicantContact}
-                        </p>
-                        <p className="text-[11px] text-ink/40 mt-0.5">
-                          Code <code className="font-mono">{a.pickupCode}</code> · Applied{" "}
-                          {formatDate(a.createdAt)}
-                        </p>
-                      </div>
-                      <span
-                        className={`text-[10px] font-medium px-2 py-0.5 rounded-full shrink-0 ${APP_STATUS_STYLE[a.status]}`}
-                      >
-                        {a.status}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
+            <ApplicantsPanel
+              applications={applications}
+              itemNameById={itemNameById}
+              driveNameById={driveNameById}
+            />
           )}
 
           {tab === "checkin" && (

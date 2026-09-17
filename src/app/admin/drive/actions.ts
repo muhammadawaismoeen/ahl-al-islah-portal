@@ -8,6 +8,7 @@ import {
   createDriveItem,
   updateDriveItemStock,
   checkInApplication,
+  confirmApplication,
   reviewDonation,
   getDriveItem,
 } from "@/lib/drive-store";
@@ -144,6 +145,18 @@ export async function checkInByCodeAction(
     applicantName: result.application.applicantName,
     itemName: item?.name ?? "item",
   };
+}
+
+export async function confirmApplicationAction(
+  id: string
+): Promise<{ ok: boolean; error?: string }> {
+  const authed = await isAuthenticated();
+  if (!authed) return { ok: false, error: "Not authenticated." };
+
+  const result = await confirmApplication(id);
+  if (!result.ok) return { ok: false, error: result.error };
+  refresh();
+  return { ok: true };
 }
 
 export async function reviewDonationAction(

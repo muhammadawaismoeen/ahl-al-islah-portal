@@ -27,6 +27,7 @@ const APP_STATUS: Record<
   ApplicationStatus,
   { label: string; className: string; icon: typeof CheckCircle2 }
 > = {
+  "pending-review": { label: "Pending review", className: "bg-sapphire/15 text-sapphire", icon: Clock3 },
   confirmed: { label: "Confirmed", className: "bg-emerald-deep/15 text-emerald-deep", icon: CheckCircle2 },
   waitlisted: { label: "Waitlisted", className: "bg-amber/15 text-amber", icon: Clock3 },
   "picked-up": { label: "Picked up", className: "bg-ink/15 text-ink/70", icon: PackageCheck },

@@ -58,7 +58,7 @@ export default async function SessionDetailPage({ params }: Props) {
                 <img
                   src={session.posterUrl}
                   alt={`Poster — ${session.title}`}
-                  className="max-h-[28rem] w-auto rounded-sm border border-border"
+                  className="max-h-[28rem] w-auto rounded-2xl border border-border"
                 />
               </div>
             )}

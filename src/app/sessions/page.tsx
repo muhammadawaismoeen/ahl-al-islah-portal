@@ -62,7 +62,7 @@ export default async function SessionsPage() {
                             <img
                               src={s.posterUrl}
                               alt={`Poster — ${s.title}`}
-                              className="w-full sm:w-32 md:w-36 aspect-[3/4] object-cover rounded-sm border border-border"
+                              className="w-full sm:w-32 md:w-36 aspect-[3/4] object-cover rounded-xl border border-border"
                               loading="lazy"
                             />
                           </div>

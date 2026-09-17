@@ -4,33 +4,36 @@
 
 @layer base {
   :root {
-    /* Approved editorial design system — light, flat, hairline-based.
-       Channel triples (not full color values) so Tailwind's opacity
-       modifiers — bg-emerald/10, border-ink/20, etc. — can compose them
-       into rgb(var(--x) / <alpha-value>) at build time. Tailwind's
-       theme keys (ink, border, surface, ...) stay as-is; only the CSS
-       variable names/values underneath them follow the approved spec. */
-    --emerald: 47 122 82; /* #2F7A52 — primary action color */
-    --emerald-deep: 31 90 59; /* #1F5A3B */
-    --emerald-soft: rgba(47, 122, 82, 0.08);
-    --sapphire: 27 75 143; /* #1B4B8F — info accent only */
-    --amber: 184 132 46; /* #B8842E — warning/pending accent only */
+    /* "Jewel Cinematic — Light" design system, replacing the flat/hairline
+       editorial law. Ivory ground throughout (no dark canvas anywhere);
+       jewel-tone accents used sparingly with soft depth (never flat, never
+       glowing on every element — one deliberate glow/gradient moment per
+       screen at most). Channel triples (not full color values) so
+       Tailwind's opacity modifiers — bg-emerald/10, border-ink/20, etc. —
+       can compose them into rgb(var(--x) / <alpha-value>) at build time. */
+    --emerald: 16 150 105; /* #109669 — primary action color */
+    --emerald-deep: 5 122 85; /* #057A55 */
+    --emerald-soft: rgba(16, 150, 105, 0.08);
+    --sapphire: 47 95 214; /* #2F5FD6 — info accent only */
+    --amber: 154 106 15; /* #9A6A0F — gold ink: text/border/pending accent */
+    --gold-fill: 242 193 78; /* #F2C14E — solid gold fill, CTA buttons only */
 
-    --bg: 251 248 243; /* #FBF8F3 — ivory page background */
+    --emerald-glow: rgba(16, 185, 129, 0.22);
+    --gold-glow: rgba(242, 193, 78, 0.28);
+
+    --bg: 250 247 241; /* #FAF7F1 — ivory page background */
     --surface: 255 255 255; /* #FFFFFF */
-    --surface-2: 242 238 227;
+    --surface-2: 241 236 224; /* #F1ECE0 */
 
-    --text: 28 35 51; /* #1C2333 */
-    --text-dim: 90 94 107; /* #5A5E6B */
-    --text-faint: 140 143 152; /* #8C8F98 */
+    --text: 23 36 29; /* #17241D */
+    --text-dim: 85 98 90; /* #55625A */
+    --text-faint: 138 147 140; /* #8A938C */
 
     --line: 222 212 190; /* #DED4BE — hairline borders/dividers */
     --line-strong: 201 188 156; /* #C9BC9C */
 
     --danger: 178 59 50;
     --danger-soft: rgba(178, 59, 50, 0.1);
-
-    --radius: 0.125rem; /* 2px flat radius used across buttons/cards */
   }
 
   * {
@@ -69,47 +72,93 @@
   }
 
   .section-eyebrow {
-    @apply inline-flex items-center gap-2 px-3 py-1 rounded-sm text-xs font-medium uppercase tracking-widest;
-    @apply bg-emerald-soft text-emerald-deep border border-emerald-deep/20;
+    @apply inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium uppercase tracking-widest;
+    @apply bg-amber/10 text-amber border border-amber/25;
   }
 
-  /* Flat, hairline-bordered card — no shadow, no blur, no hover-lift */
+  /* Soft-depth card — rounded, gentle shadow, no flat hairline-only look */
   .ornate-card {
-    @apply relative rounded-sm bg-surface border border-border;
-    @apply transition-colors duration-200 hover:border-border-strong;
+    @apply relative rounded-2xl bg-surface border border-border;
+    @apply shadow-[0_1px_2px_rgba(23,36,29,0.04),0_16px_36px_-20px_rgba(23,36,29,0.16)];
+    @apply transition-all duration-200 hover:border-border-strong hover:shadow-[0_20px_44px_-20px_rgba(23,36,29,0.22)];
   }
 
-  /* Buttons: 2px radius, 1.5px border, no drop shadows */
+  /* Reserved for a single hero/feature moment per screen — translucent,
+     blurred glass surface. Not a default card treatment. */
+  .glass-panel {
+    @apply relative rounded-2xl border border-border;
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+
+  /* Reserved glow — at most one element per screen (the roadmap's active
+     milestone, a hero highlight card, ...). Not a default card treatment. */
+  .glow-ring {
+    box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.14), 0 12px 32px -12px var(--emerald-glow);
+  }
+  .glow-ring-gold {
+    box-shadow: 0 0 0 1px rgba(242, 193, 78, 0.2), 0 12px 32px -12px var(--gold-glow);
+  }
+
+  /* Reserved for the single hero headline only — not a repeatable utility. */
+  .gradient-text-hero {
+    background: linear-gradient(100deg, #9a6a0f 0%, #d9a441 30%, #057a55 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Reserved for hero stat numbers only. */
+  .stat-glow {
+    background: linear-gradient(135deg, rgb(var(--text)), rgb(var(--emerald)));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Buttons: rounded, soft lift on hover, no flat 2px corners */
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-sm;
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl;
     @apply bg-emerald text-ink-on-emerald font-medium text-sm tracking-wide;
-    @apply border-[1.5px] border-emerald;
-    @apply transition-colors duration-200 hover:bg-emerald-deep hover:border-emerald-deep;
+    @apply shadow-[0_6px_18px_-6px_rgba(16,150,105,0.45)];
+    @apply transition-all duration-200 hover:bg-emerald-deep hover:-translate-y-px hover:shadow-[0_10px_24px_-8px_rgba(16,150,105,0.5)];
     @apply focus:outline-none focus:ring-2 focus:ring-emerald/30 focus:ring-offset-2;
-    @apply disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-y-0;
+  }
+
+  /* Gold accent button — reserved for "Become a Member" CTAs only, not the
+     general primary-action button (that stays emerald, see .btn-primary). */
+  .btn-gold {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl;
+    @apply bg-gold text-ink font-medium text-sm tracking-wide;
+    @apply shadow-[0_6px_18px_-6px_rgba(242,193,78,0.5)];
+    @apply transition-all duration-200 hover:brightness-95 hover:-translate-y-px hover:shadow-[0_10px_24px_-8px_rgba(242,193,78,0.55)];
+    @apply focus:outline-none focus:ring-2 focus:ring-gold/40 focus:ring-offset-2;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-y-0;
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-sm;
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl;
     @apply bg-transparent text-emerald-deep font-medium text-sm tracking-wide;
-    @apply border-[1.5px] border-emerald;
-    @apply transition-colors duration-200 hover:bg-emerald/5;
+    @apply border-[1.5px] border-emerald/40;
+    @apply transition-colors duration-200 hover:bg-emerald/5 hover:border-emerald;
     @apply focus:outline-none focus:ring-2 focus:ring-emerald/20 focus:ring-offset-2;
     @apply disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
   .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-sm;
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl;
     @apply text-emerald-deep font-medium text-sm tracking-wide;
     @apply transition-colors duration-200 hover:bg-emerald/5;
   }
 
   .input-field {
-    @apply w-full px-4 py-3 rounded-sm;
+    @apply w-full px-4 py-3 rounded-xl;
     @apply bg-surface border border-border;
     @apply text-ink placeholder:text-ink-dim;
-    @apply transition-colors duration-150;
-    @apply focus:outline-none focus:border-emerald;
+    @apply transition-all duration-150;
+    @apply focus:outline-none focus:border-emerald focus:ring-2 focus:ring-emerald/15;
   }
 
   /* Status pill — dot + colored border/text, no filled glow */

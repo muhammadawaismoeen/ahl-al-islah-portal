@@ -13,7 +13,7 @@ export function CTA({ content }: { content: CtaContent }) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="relative rounded-sm overflow-hidden bg-emerald-deep"
+          className="relative rounded-3xl overflow-hidden bg-emerald-deep shadow-[0_24px_64px_-24px_rgba(5,122,85,0.45)]"
         >
           <div className="relative p-10 sm:p-16 text-center text-bg">
             <div className="arabic-text text-xl text-bg/80 mb-3">
@@ -27,10 +27,7 @@ export function CTA({ content }: { content: CtaContent }) {
             </p>
 
             <div className="mt-10 flex items-center justify-center">
-              <Link
-                href="/become-a-member"
-                className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-sm bg-bg text-emerald-deep font-medium text-sm tracking-wide border-[1.5px] border-bg transition-colors duration-200 hover:bg-bg/90"
-              >
+              <Link href="/become-a-member" className="btn-gold">
                 <Sparkles className="h-4 w-4" />
                 Become a Member
               </Link>

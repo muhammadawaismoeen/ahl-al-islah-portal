@@ -9,12 +9,11 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Approved editorial design system — light, flat, hairline-based.
-        // Channel-triple CSS vars piped through rgb(var(--x) / <alpha-value>)
-        // so opacity modifiers (bg-emerald/10, border-ink/20, ...) work.
-        // Tailwind key names (ink, border, ...) are kept stable even though
-        // the underlying CSS variables were renamed to match the approved
-        // token spec (--text, --line, ...) — see globals.css.
+        // "Jewel Cinematic — Light" design system. Channel-triple CSS vars
+        // piped through rgb(var(--x) / <alpha-value>) so opacity modifiers
+        // (bg-emerald/10, border-ink/20, ...) work. Tailwind key names (ink,
+        // border, ...) are kept stable across re-themes — only the
+        // underlying CSS variable values change — see globals.css.
         bg: "rgb(var(--bg) / <alpha-value>)",
         surface: {
           DEFAULT: "rgb(var(--surface) / <alpha-value>)",
@@ -37,6 +36,7 @@ const config: Config = {
         },
         sapphire: "rgb(var(--sapphire) / <alpha-value>)",
         amber: "rgb(var(--amber) / <alpha-value>)",
+        gold: "rgb(var(--gold-fill) / <alpha-value>)",
         danger: {
           DEFAULT: "rgb(var(--danger) / <alpha-value>)",
           soft: "var(--danger-soft)",

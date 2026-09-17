@@ -34,7 +34,11 @@ export interface DriveItem {
   createdAt: string;
 }
 
-export type ApplicationStatus = "confirmed" | "waitlisted" | "picked-up";
+export type ApplicationStatus =
+  | "pending-review"
+  | "confirmed"
+  | "waitlisted"
+  | "picked-up";
 
 export interface DriveApplication {
   id: string;

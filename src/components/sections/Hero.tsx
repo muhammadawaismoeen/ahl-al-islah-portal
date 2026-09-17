@@ -19,7 +19,7 @@ export function Hero({ content, customLogo }: { content: HeroContent; customLogo
               <img src={customLogo} alt="" className="h-16 w-16 object-contain mb-6" />
             )}
             <span className="section-eyebrow">{content.eyebrow}</span>
-            <h1 className="mt-4 heading-serif text-5xl sm:text-6xl lg:text-7xl font-semibold text-emerald-deep text-balance leading-[1.05]">
+            <h1 className="mt-4 heading-serif text-5xl sm:text-6xl lg:text-7xl font-semibold gradient-text-hero text-balance leading-[1.05]">
               {content.headingLine1}
               <br />
               {content.headingLine2}
@@ -28,7 +28,7 @@ export function Hero({ content, customLogo }: { content: HeroContent; customLogo
               {content.lede}
             </p>
             <div className="mt-8 flex flex-col sm:flex-row items-start sm:items-center gap-4">
-              <Link href="/become-a-member" className="btn-primary">
+              <Link href="/become-a-member" className="btn-gold">
                 {content.primaryCtaLabel}
               </Link>
               <Link href="/model" className="btn-secondary">
@@ -41,12 +41,12 @@ export function Hero({ content, customLogo }: { content: HeroContent; customLogo
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.15 }}
-            className="ornate-card p-8"
+            className="glass-panel glow-ring p-8"
           >
             <p className="heading-serif text-xl sm:text-2xl text-emerald-deep leading-snug">
               &ldquo;{content.quoteText}&rdquo;
             </p>
-            <p className="mt-4 text-sm text-ink/60">{content.quoteCitation}</p>
+            <p className="mt-4 text-sm text-amber">{content.quoteCitation}</p>
           </motion.div>
         </div>
 
@@ -58,7 +58,7 @@ export function Hero({ content, customLogo }: { content: HeroContent; customLogo
         >
           {content.stats.map((stat) => (
             <div key={stat.label} className="text-center sm:text-left">
-              <div className="font-serif text-3xl sm:text-4xl font-semibold text-emerald-deep">
+              <div className="font-serif text-3xl sm:text-4xl font-semibold stat-glow">
                 {stat.value}
               </div>
               <div className="mt-1 text-xs sm:text-sm text-ink/60 uppercase tracking-wider">

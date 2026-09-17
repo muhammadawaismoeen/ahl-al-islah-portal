@@ -287,9 +287,10 @@ function normalizeContact(contact: string): string {
  * Reserve a copy of a catalog item for an applicant. Enforces, server-side:
  *  - the item's per-student limit (by normalized contact, the closest proxy
  *    to "student identity" available without an account system)
- *  - one active (confirmed/waitlisted) application per item per applicant
- * Returns the created application, confirmed if stock is available or
- * waitlisted otherwise, and decrements remaining stock when confirmed.
+ *  - one active application per item per applicant
+ * Returns the created application: pending-review (awaiting Advisor
+ * confirmation) if stock is available, waitlisted otherwise — decrementing
+ * remaining stock in the pending-review case so it isn't double-reserved.
  */
 export async function reserveBook(input: {
   driveId: string;
@@ -331,20 +332,20 @@ export async function reserveBook(input: {
   }
 
   const now = new Date().toISOString();
-  const confirmed = item.remainingStock > 0;
+  const hasStock = item.remainingStock > 0;
   const application: DriveApplication = {
     id: genId("dap"),
     driveId: input.driveId,
     itemId: input.itemId,
     applicantName: input.applicantName,
     applicantContact: input.applicantContact,
-    status: confirmed ? "confirmed" : "waitlisted",
+    status: hasStock ? "pending-review" : "waitlisted",
     pickupCode: genCode("BK"),
     createdAt: now,
     updatedAt: now,
   };
 
-  if (confirmed) {
+  if (hasStock) {
     await updateDriveItemStock(item.id, {
       remainingStock: item.remainingStock - 1,
     });
@@ -367,10 +368,13 @@ export async function checkInApplication(
   if (application.status === "picked-up") {
     return { ok: false, error: "This item has already been picked up." };
   }
-  if (application.status === "waitlisted") {
+  if (application.status !== "confirmed") {
     return {
       ok: false,
-      error: "This application is still waitlisted — confirm stock before check-in.",
+      error:
+        application.status === "waitlisted"
+          ? "This application is still waitlisted — confirm stock before check-in."
+          : "This application is still pending review — confirm it before check-in.",
     };
   }
 
@@ -378,6 +382,30 @@ export async function checkInApplication(
     ...application,
     status: "picked-up" as ApplicationStatus,
     pickedUpAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+  await writeRecord(COLLECTION.applications, DIR.applications, updated);
+  return { ok: true, application: updated };
+}
+
+/** Advisor manually confirms a pending-review applicant. Waitlisted
+ *  applications aren't confirmable here — they only clear once stock frees
+ *  up and a fresh request finds it available (see reserveBook). */
+export async function confirmApplication(
+  id: string
+): Promise<
+  | { ok: true; application: DriveApplication }
+  | { ok: false; error: string }
+> {
+  const application = await getApplication(id);
+  if (!application) return { ok: false, error: "Application not found." };
+  if (application.status !== "pending-review") {
+    return { ok: false, error: "Only pending-review applications can be confirmed." };
+  }
+
+  const updated: DriveApplication = {
+    ...application,
+    status: "confirmed",
     updatedAt: new Date().toISOString(),
   };
   await writeRecord(COLLECTION.applications, DIR.applications, updated);

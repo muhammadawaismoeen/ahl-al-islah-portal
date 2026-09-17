@@ -17,6 +17,11 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 const STATUS_CONFIG = {
+  "pending-review": {
+    label: "Pending review",
+    className: "bg-sapphire/15 text-sapphire",
+    icon: Clock3,
+  },
   confirmed: {
     label: "Confirmed",
     className: "bg-emerald-deep/15 text-emerald-deep",

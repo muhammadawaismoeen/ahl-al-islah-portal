@@ -336,7 +336,7 @@ export const DEFAULT_CONTENT: SiteContent = {
     smallPrint: "Built with ikhlas for Rijal Al-Huda.",
   },
 
-  customLogo: "",
+  customLogo: "/logo.png",
 
   formConfig: buildDefaultFormConfig(),
 

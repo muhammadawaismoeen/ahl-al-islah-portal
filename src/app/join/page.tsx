@@ -87,7 +87,7 @@ export default async function JoinPage() {
               </ul>
               <Link
                 href="/apply/core-member-female"
-                className="inline-flex items-center justify-center gap-2 w-full px-6 py-3 rounded-sm border-[1.5px] border-sapphire bg-sapphire text-white font-medium text-sm tracking-wide transition-colors duration-200 hover:bg-sapphire/90 group"
+                className="inline-flex items-center justify-center gap-2 w-full px-6 py-3 rounded-xl bg-sapphire text-white font-medium text-sm tracking-wide shadow-[0_6px_18px_-6px_rgba(47,95,214,0.45)] transition-all duration-200 hover:brightness-95 hover:-translate-y-px group"
               >
                 Apply — Sisters&apos; Cohort
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />

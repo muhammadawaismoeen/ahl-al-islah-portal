@@ -18,6 +18,18 @@ import {
   GripVertical,
   FileText,
   Copy,
+  Image,
+  Compass,
+  Home,
+  BookOpen,
+  Landmark,
+  CalendarRange,
+  Megaphone,
+  Library,
+  MessageCircle,
+  Handshake,
+  ClipboardList,
+  ClipboardEdit,
 } from "lucide-react";
 import { toast } from "sonner";
 import type {
@@ -146,7 +158,7 @@ function Section({
 }: {
   title: string;
   subtitle?: string;
-  icon?: string;
+  icon?: React.ReactNode;
   defaultOpen?: boolean;
   visible?: boolean;
   onVisibilityChange?: (v: boolean) => void;
@@ -173,7 +185,9 @@ function Section({
         className="w-full flex items-center justify-between p-5 hover:bg-surface-2/30 transition text-left cursor-pointer select-none"
       >
         <div className="flex items-center gap-3 min-w-0 flex-1">
-          {icon && <span className="text-lg shrink-0">{icon}</span>}
+          {icon && (
+            <span className="shrink-0 text-emerald-deep/70">{icon}</span>
+          )}
           <div className="min-w-0">
             <h3 className="heading-serif text-lg font-semibold text-emerald-deep">
               {title}
@@ -327,7 +341,7 @@ export function ContentEditor({
       </div>
 
       {/* ─── Logo ─── */}
-      <Section title="Logo" icon="🖼️" defaultOpen>
+      <Section title="Logo" icon={<Image className="h-5 w-5" />} defaultOpen>
         <div className="space-y-4">
           <Field label="Logo Preview">
             <div className="flex items-center gap-4">
@@ -407,7 +421,7 @@ export function ContentEditor({
       </Section>
 
       {/* ─── Navigation / Header ─── */}
-      <Section title="Header &amp; Navigation" icon="🧭" defaultOpen={true}>
+      <Section title="Header &amp; Navigation" icon={<Compass className="h-5 w-5" />} defaultOpen={true}>
         <div className="grid sm:grid-cols-2 gap-4">
           <Field label="Site Name" help="Shown in header and footer">
             <TextInput
@@ -484,7 +498,7 @@ export function ContentEditor({
       <Section
         title="Hero"
         subtitle={content.hero.headingLine1}
-        icon="🏠"
+        icon={<Home className="h-5 w-5" />}
         defaultOpen={true}
       >
         <Field label="Eyebrow">
@@ -639,7 +653,7 @@ export function ContentEditor({
       <Section
         title="About"
         subtitle={content.about.heading}
-        icon="📖"
+        icon={<BookOpen className="h-5 w-5" />}
         defaultOpen={true}
       >
         <Field label="Eyebrow">
@@ -726,7 +740,7 @@ export function ContentEditor({
       <Section
         title="The Model"
         subtitle={content.model.heading}
-        icon="🏛️"
+        icon={<Landmark className="h-5 w-5" />}
         defaultOpen={true}
       >
         <Field label="Eyebrow">
@@ -816,7 +830,7 @@ export function ContentEditor({
       <Section
         title="Roadmap"
         subtitle={content.roadmap.heading}
-        icon="🗓️"
+        icon={<CalendarRange className="h-5 w-5" />}
         defaultOpen={true}
       >
         <Field label="Eyebrow">
@@ -960,7 +974,7 @@ export function ContentEditor({
       <Section
         title="Call to Action"
         subtitle={content.cta.heading}
-        icon="📢"
+        icon={<Megaphone className="h-5 w-5" />}
         defaultOpen={false}
       >
         <Field label="Arabic Title">
@@ -994,7 +1008,7 @@ export function ContentEditor({
       <Section
         title="Qur'an & Seerah Drive"
         subtitle="/drive, /drive/apply, /drive/donate"
-        icon="📚"
+        icon={<Library className="h-5 w-5" />}
       >
         <Field label="Landing Hero Eyebrow (Arabic)">
           <TextInput
@@ -1183,7 +1197,7 @@ export function ContentEditor({
       </Section>
 
       {/* ─── Feedback Page ─── */}
-      <Section title="Feedback Page" subtitle="/feedback" icon="💬">
+      <Section title="Feedback Page" subtitle="/feedback" icon={<MessageCircle className="h-5 w-5" />}>
         <Field label="Eyebrow (Arabic)">
           <TextInput
             value={content.feedbackPage.eyebrow}
@@ -1206,7 +1220,7 @@ export function ContentEditor({
       </Section>
 
       {/* ─── Become a Member Page ─── */}
-      <Section title="Become a Member Page" subtitle="/become-a-member" icon="🤝">
+      <Section title="Become a Member Page" subtitle="/become-a-member" icon={<Handshake className="h-5 w-5" />}>
         <Field label="Eyebrow (Arabic)">
           <TextInput
             value={content.becomeMemberPage.eyebrow}
@@ -1229,7 +1243,7 @@ export function ContentEditor({
       </Section>
 
       {/* ─── Footer ─── */}
-      <Section title="Footer" subtitle="Always visible" icon="📋" defaultOpen={true}>
+      <Section title="Footer" subtitle="Always visible" icon={<ClipboardList className="h-5 w-5" />} defaultOpen={true}>
         <Field label="Tagline">
           <TextArea
             value={content.footer.tagline}
@@ -1335,7 +1349,7 @@ export function ContentEditor({
       <Section
         title="Application Forms"
         subtitle="Manage form fields for each position"
-        icon="📝"
+        icon={<ClipboardEdit className="h-5 w-5" />}
         defaultOpen={false}
       >
         <FormConfigEditor
