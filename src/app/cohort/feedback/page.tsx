@@ -13,6 +13,7 @@ import {
   CalendarDays,
   Target,
   LogOut,
+  AlertTriangle,
   Users,
   ClipboardList,
 } from "lucide-react";
@@ -458,8 +459,9 @@ function FeedbackDetail({ entry }: { entry: FeedbackEntry }) {
                 entry.preferredChannel === "in-person") &&
                 !entry.whatsapp &&
                 isAnonymous && (
-                  <p className="mt-2 text-emerald-deep italic">
-                    ⚠ Wanted a response but did not leave contact details.
+                  <p className="mt-2 flex items-center gap-1.5 text-emerald-deep italic">
+                    <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+                    Wanted a response but did not leave contact details.
                   </p>
                 )}
             </div>
