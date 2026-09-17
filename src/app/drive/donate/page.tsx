@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { ArrowLeft, HandCoins } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { getContent } from "@/lib/content-store";
+import { auth } from "@/lib/auth";
 import { listDrives } from "@/lib/drive-store";
 import { DonateForm } from "./DonateForm";
 
@@ -15,6 +17,11 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function DriveDonatePage() {
+  const session = await auth();
+  if (!session?.user?.email) {
+    redirect(`/drive/signin?callbackUrl=${encodeURIComponent("/drive/donate")}`);
+  }
+
   const [content, drives] = await Promise.all([getContent(), listDrives()]);
   const openDrives = drives.filter((d) => d.status === "open");
 

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ArrowLeft, Plus, CalendarDays, ListChecks } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { isAuthenticated, login } from "@/app/admin/actions";
+import { isAuthenticated, adminSignIn } from "@/app/admin/actions";
 import { LoginForm } from "@/app/admin/LoginForm";
 import { listSessions } from "@/lib/sessions-store";
 import { formatDate } from "@/lib/utils";
@@ -31,7 +31,7 @@ export default async function AdminSessionsPage() {
                   Admin Access
                 </h1>
               </div>
-              <LoginForm action={login} />
+              <LoginForm action={adminSignIn} />
             </div>
           </div>
         </main>

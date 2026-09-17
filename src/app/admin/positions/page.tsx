@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { LogOut, ArrowLeft } from "lucide-react";
-import { isAuthenticated, login, logout } from "@/app/admin/actions";
+import { isAuthenticated, adminSignIn, logout } from "@/app/admin/actions";
 import { getContent } from "@/lib/content-store";
 import { LoginForm } from "@/app/admin/LoginForm";
 import { PositionsEditor } from "./PositionsEditor";
@@ -30,7 +30,7 @@ export default async function AdminPositionsPage() {
                 Positions editor. Advisor only.
               </p>
             </div>
-            <LoginForm action={login} />
+            <LoginForm action={adminSignIn} />
           </div>
         </div>
       </main>

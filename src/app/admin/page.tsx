@@ -18,7 +18,8 @@ import {
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { isAuthenticated, login, logout } from "./actions";
+import { auth } from "@/lib/auth";
+import { isAuthenticated, adminSignIn, logout } from "./actions";
 import { listSubmissions } from "@/lib/storage";
 import { listMessages } from "@/lib/message-store";
 import { listFeedback } from "@/lib/feedback-store";
@@ -51,9 +52,10 @@ export default async function AdminPage({
 }: {
   searchParams: Promise<{ id?: string; wing?: string; position?: string }>;
 }) {
-  const authed = await isAuthenticated();
+  const [authed, session] = await Promise.all([isAuthenticated(), auth()]);
 
   if (!authed) {
+    const deniedEmail = session?.user?.email;
     return (
       <>
         <Navbar />
@@ -68,10 +70,12 @@ export default async function AdminPage({
                   Admin Access
                 </h1>
                 <p className="text-sm text-ink/60 mt-2">
-                  Review submitted applications. Advisor only.
+                  {deniedEmail
+                    ? `${deniedEmail} isn't on the admin allow-list.`
+                    : "Review submitted applications. Advisor only."}
                 </p>
               </div>
-              <LoginForm action={login} />
+              <LoginForm action={adminSignIn} />
             </div>
           </div>
         </main>

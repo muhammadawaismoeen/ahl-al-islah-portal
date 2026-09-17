@@ -1,10 +1,6 @@
 "use server";
 
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
-
-const COOKIE = "ahl_head_role";
-const MAX_AGE = 60 * 60 * 8; // 8 hours
+import { auth, signIn, signOut } from "@/lib/auth";
 
 export type HeadRole =
   | "male"
@@ -13,91 +9,36 @@ export type HeadRole =
   | "deputy-male"
   | "deputy-female";
 
-export async function getHeadRole(): Promise<HeadRole | null> {
-  const val = (await cookies()).get(COOKIE)?.value;
-  if (
-    val === "male" ||
-    val === "female" ||
-    val === "male-core" ||
-    val === "deputy-male" ||
-    val === "deputy-female"
-  ) {
-    return val;
+/** Reuses the same per-role email env vars the old password login used —
+ *  they already are the allow-list, just re-keyed by Google identity now. */
+function roleForEmail(email: string): HeadRole | null {
+  const normalized = email.toLowerCase();
+  const roleEnvPairs: Array<[HeadRole, string | undefined]> = [
+    ["male", process.env.HEAD_MALE_EMAIL],
+    ["female", process.env.HEAD_FEMALE_EMAIL],
+    ["male-core", process.env.HEAD_MALE_CORE_EMAIL],
+    ["deputy-male", process.env.HEAD_DEPUTY_MALE_EMAIL],
+    ["deputy-female", process.env.HEAD_DEPUTY_FEMALE_EMAIL],
+  ];
+  for (const [role, roleEmail] of roleEnvPairs) {
+    if (roleEmail && roleEmail.trim().toLowerCase() === normalized) {
+      return role;
+    }
   }
   return null;
 }
 
-export async function loginHead(
-  formData: FormData
-): Promise<{ ok: false; error: string } | void> {
-  const email = ((formData.get("email") as string) ?? "").trim().toLowerCase();
-  const password = ((formData.get("password") as string) ?? "").trim();
+export async function getHeadRole(): Promise<HeadRole | null> {
+  const session = await auth();
+  const email = session?.user?.email;
+  if (!email) return null;
+  return roleForEmail(email);
+}
 
-  const maleEmail = (process.env.HEAD_MALE_EMAIL ?? "").toLowerCase();
-  const malePass = process.env.HEAD_MALE_PASSWORD ?? "";
-  const femaleEmail = (process.env.HEAD_FEMALE_EMAIL ?? "").toLowerCase();
-  const femalePass = process.env.HEAD_FEMALE_PASSWORD ?? "";
-  const maleCoreEmail = (process.env.HEAD_MALE_CORE_EMAIL ?? "").toLowerCase();
-  const maleCorePass = process.env.HEAD_MALE_CORE_PASSWORD ?? "";
-  const deputyMaleEmail = (
-    process.env.HEAD_DEPUTY_MALE_EMAIL ?? ""
-  ).toLowerCase();
-  const deputyMalePass = process.env.HEAD_DEPUTY_MALE_PASSWORD ?? "";
-  const deputyFemaleEmail = (
-    process.env.HEAD_DEPUTY_FEMALE_EMAIL ?? ""
-  ).toLowerCase();
-  const deputyFemalePass = process.env.HEAD_DEPUTY_FEMALE_PASSWORD ?? "";
-
-  let role: HeadRole | null = null;
-
-  if (maleEmail && malePass && email === maleEmail && password === malePass) {
-    role = "male";
-  } else if (
-    femaleEmail &&
-    femalePass &&
-    email === femaleEmail &&
-    password === femalePass
-  ) {
-    role = "female";
-  } else if (
-    maleCoreEmail &&
-    maleCorePass &&
-    email === maleCoreEmail &&
-    password === maleCorePass
-  ) {
-    role = "male-core";
-  } else if (
-    deputyMaleEmail &&
-    deputyMalePass &&
-    email === deputyMaleEmail &&
-    password === deputyMalePass
-  ) {
-    role = "deputy-male";
-  } else if (
-    deputyFemaleEmail &&
-    deputyFemalePass &&
-    email === deputyFemaleEmail &&
-    password === deputyFemalePass
-  ) {
-    role = "deputy-female";
-  }
-
-  if (!role) {
-    return { ok: false, error: "Incorrect email or password." };
-  }
-
-  (await cookies()).set(COOKIE, role, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/",
-    maxAge: MAX_AGE,
-  });
-
-  redirect("/cohort");
+export async function headSignIn() {
+  await signIn("google", { redirectTo: "/cohort" });
 }
 
 export async function logoutHead() {
-  (await cookies()).delete(COOKIE);
-  redirect("/cohort");
+  await signOut({ redirectTo: "/cohort" });
 }

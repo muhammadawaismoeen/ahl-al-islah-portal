@@ -4,12 +4,15 @@ import { BookOpen, HandCoins, CheckCircle2, Clock3, PackageCheck, XCircle } from
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { getContent } from "@/lib/content-store";
+import { auth } from "@/lib/auth";
 import { getDriveDeviceIds } from "@/lib/drive-session";
 import {
   getApplication,
   getDonation,
   getDrive,
   getDriveItem,
+  listApplicationsByEmail,
+  listDonationsByEmail,
 } from "@/lib/drive-store";
 import type { ApplicationStatus, DonationStatus } from "@/lib/drive-types";
 import { DRIVE_CURRENCY } from "@/lib/drive-config";
@@ -47,19 +50,32 @@ export default async function DriveMePage({
 }: {
   searchParams: Promise<{ tab?: string }>;
 }) {
-  const [content, ids, { tab: tabParam }] = await Promise.all([
+  const [content, ids, session, { tab: tabParam }] = await Promise.all([
     getContent(),
     getDriveDeviceIds(),
+    auth(),
     searchParams,
   ]);
   const tab = tabParam === "donations" ? "donations" : "applications";
+  const email = session?.user?.email;
 
-  const applications = (
-    await Promise.all(ids.applications.map((id) => getApplication(id)))
-  ).filter((a): a is NonNullable<typeof a> => a !== null);
-  const donations = (
-    await Promise.all(ids.donations.map((id) => getDonation(id)))
-  ).filter((d): d is NonNullable<typeof d> => d !== null);
+  // Hybrid lookup: device cookie covers records from before Google sign-in
+  // was mandatory, email covers everything since — merged and de-duped so
+  // nobody's history disappears going forward.
+  const [byCookieApps, byEmailApps, byCookieDonations, byEmailDonations] =
+    await Promise.all([
+      Promise.all(ids.applications.map((id) => getApplication(id))),
+      email ? listApplicationsByEmail(email) : Promise.resolve([]),
+      Promise.all(ids.donations.map((id) => getDonation(id))),
+      email ? listDonationsByEmail(email) : Promise.resolve([]),
+    ]);
+
+  const applications = dedupeById([...byCookieApps, ...byEmailApps]).sort(
+    (a, b) => b.createdAt.localeCompare(a.createdAt)
+  );
+  const donations = dedupeById([...byCookieDonations, ...byEmailDonations]).sort(
+    (a, b) => b.createdAt.localeCompare(a.createdAt)
+  );
 
   const [appDrives, appItems] = await Promise.all([
     Promise.all(applications.map((a) => getDrive(a.driveId))),
@@ -193,6 +209,16 @@ export default async function DriveMePage({
       />
     </>
   );
+}
+
+function dedupeById<T extends { id: string } | null>(
+  records: T[]
+): NonNullable<T>[] {
+  const seen = new Map<string, NonNullable<T>>();
+  for (const r of records) {
+    if (r) seen.set(r.id, r as NonNullable<T>);
+  }
+  return Array.from(seen.values());
 }
 
 function EmptyState({

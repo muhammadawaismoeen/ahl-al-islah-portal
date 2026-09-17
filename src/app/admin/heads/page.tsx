@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { isAuthenticated, login, logout } from "@/app/admin/actions";
+import { isAuthenticated, adminSignIn, logout } from "@/app/admin/actions";
 import { listSubmissions } from "@/lib/storage";
 import { listMessages } from "@/lib/message-store";
 import { listFeedback } from "@/lib/feedback-store";
@@ -64,7 +64,7 @@ export default async function AdminHeadsPage({
                   Review submitted applications. Advisor only.
                 </p>
               </div>
-              <LoginForm action={login} />
+              <LoginForm action={adminSignIn} />
             </div>
           </div>
         </main>

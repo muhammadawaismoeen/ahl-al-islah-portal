@@ -1,43 +1,27 @@
 "use server";
 
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import { auth, signIn, signOut } from "@/lib/auth";
 
-const COOKIE = "ahl_admin";
-const MAX_AGE = 60 * 60 * 8; // 8 hours
+/** Comma-separated Google emails allowed into /admin — e.g.
+ *  "you@gmail.com,colleague@gmail.com". Set in .env.local and Vercel. */
+function adminEmails(): string[] {
+  return (process.env.ADMIN_EMAILS ?? "")
+    .split(",")
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+}
 
-export async function login(formData: FormData) {
-  const password = (formData.get("password") as string) ?? "";
-  const expected = process.env.ADMIN_PASSWORD;
-
-  if (!expected) {
-    return {
-      ok: false,
-      error:
-        "ADMIN_PASSWORD is not set for this deployment. On Vercel: Settings → Environment Variables → add ADMIN_PASSWORD for Production, then redeploy. (Local dev: set it in .env.local.)",
-    };
-  }
-  if (password !== expected) {
-    return { ok: false, error: "Incorrect password." };
-  }
-
-  (await cookies()).set(COOKIE, "authenticated", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/",
-    maxAge: MAX_AGE,
-  });
-
-  redirect("/admin");
+export async function adminSignIn() {
+  await signIn("google", { redirectTo: "/admin" });
 }
 
 export async function logout() {
-  (await cookies()).delete(COOKIE);
-  redirect("/admin");
+  await signOut({ redirectTo: "/admin" });
 }
 
 export async function isAuthenticated(): Promise<boolean> {
-  const c = (await cookies()).get(COOKIE);
-  return c?.value === "authenticated";
+  const session = await auth();
+  const email = session?.user?.email?.toLowerCase();
+  if (!email) return false;
+  return adminEmails().includes(email);
 }

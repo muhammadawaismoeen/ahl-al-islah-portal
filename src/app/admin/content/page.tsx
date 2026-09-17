@@ -4,7 +4,7 @@ import { LogOut, ArrowLeft } from "lucide-react";
 import { isAuthenticated, logout } from "@/app/admin/actions";
 import { getContent } from "@/lib/content-store";
 import { LoginForm } from "@/app/admin/LoginForm";
-import { login } from "@/app/admin/actions";
+import { adminSignIn } from "@/app/admin/actions";
 import { ContentEditor } from "./ContentEditor";
 
 export const metadata: Metadata = {
@@ -31,7 +31,7 @@ export default async function ContentPage() {
                 Content editor. Advisor only.
               </p>
             </div>
-            <LoginForm action={login} />
+            <LoginForm action={adminSignIn} />
           </div>
         </div>
       </main>

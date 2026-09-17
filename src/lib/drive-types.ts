@@ -46,6 +46,9 @@ export interface DriveApplication {
   itemId: string;
   applicantName: string;
   applicantContact: string;
+  /** Google account email of the signed-in applicant. Absent on records
+   *  created before Google sign-in became mandatory. */
+  applicantEmail?: string;
   status: ApplicationStatus;
   /** Shown as a QR code on the ticket page and matched at the pickup table —
    *  a ticket number, not a secret credential, so it's stored in plaintext. */
@@ -63,6 +66,9 @@ export interface Donation {
   driveId: string | null;
   donorName: string | null;
   donorContact: string | null;
+  /** Google account email of the signed-in donor. Absent on records
+   *  created before Google sign-in became mandatory. */
+  donorEmail?: string;
   amount: number;
   proofUrl: string;
   status: DonationStatus;

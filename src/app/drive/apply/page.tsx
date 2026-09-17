@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { ArrowLeft, BookOpen } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { getContent } from "@/lib/content-store";
+import { auth } from "@/lib/auth";
 import { getActiveDrive, listDriveItems } from "@/lib/drive-store";
 import { ApplyForm } from "./ApplyForm";
 
@@ -15,6 +17,11 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function DriveApplyPage() {
+  const session = await auth();
+  if (!session?.user?.email) {
+    redirect(`/drive/signin?callbackUrl=${encodeURIComponent("/drive/apply")}`);
+  }
+
   const content = await getContent();
   const drive = await getActiveDrive();
   const items = drive ? await listDriveItems(drive.id) : [];

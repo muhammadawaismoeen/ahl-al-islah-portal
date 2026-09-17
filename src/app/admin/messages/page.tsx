@@ -5,7 +5,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { isAuthenticated } from "@/app/admin/actions";
 import { LoginForm } from "@/app/admin/LoginForm";
-import { login } from "@/app/admin/actions";
+import { adminSignIn } from "@/app/admin/actions";
 import { listMessages, ROLE_LABELS } from "@/lib/message-store";
 import type { AdvisorMessage } from "@/lib/message-store";
 import { formatDate } from "@/lib/utils";
@@ -42,7 +42,7 @@ export default async function MessagesPage({
                 <span className="arabic-text text-emerald-deep">لوحة الإدارة</span>
                 <h1 className="heading-serif text-3xl font-semibold text-emerald-deep mt-1">Admin Access</h1>
               </div>
-              <LoginForm action={login} />
+              <LoginForm action={adminSignIn} />
             </div>
           </div>
         </main>

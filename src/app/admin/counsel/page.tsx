@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { isAuthenticated, login } from "@/app/admin/actions";
+import { isAuthenticated, adminSignIn } from "@/app/admin/actions";
 import { LoginForm } from "@/app/admin/LoginForm";
 import { listThreads, COHORT_LABELS } from "@/lib/counsel-store";
 import type { CounselThread, CounselMessage } from "@/lib/counsel-types";
@@ -61,7 +61,7 @@ export default async function AdminCounselPage({
                   Admin Access
                 </h1>
               </div>
-              <LoginForm action={login} />
+              <LoginForm action={adminSignIn} />
             </div>
           </div>
         </main>

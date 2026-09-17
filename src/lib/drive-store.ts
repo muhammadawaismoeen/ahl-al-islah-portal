@@ -261,6 +261,14 @@ export async function listApplications(
   return scoped.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
 
+export async function listApplicationsByEmail(
+  email: string
+): Promise<DriveApplication[]> {
+  const normalized = email.trim().toLowerCase();
+  const all = await listApplications();
+  return all.filter((a) => a.applicantEmail?.toLowerCase() === normalized);
+}
+
 export async function getApplication(
   id: string
 ): Promise<DriveApplication | null> {
@@ -297,6 +305,7 @@ export async function reserveBook(input: {
   itemId: string;
   applicantName: string;
   applicantContact: string;
+  applicantEmail: string;
 }): Promise<
   | { ok: true; application: DriveApplication }
   | { ok: false; error: string }
@@ -339,6 +348,7 @@ export async function reserveBook(input: {
     itemId: input.itemId,
     applicantName: input.applicantName,
     applicantContact: input.applicantContact,
+    applicantEmail: input.applicantEmail,
     status: hasStock ? "pending-review" : "waitlisted",
     pickupCode: genCode("BK"),
     createdAt: now,
@@ -432,6 +442,12 @@ export async function getDonation(id: string): Promise<Donation | null> {
   return getRecord<Donation>(COLLECTION.donations, DIR.donations, id);
 }
 
+export async function listDonationsByEmail(email: string): Promise<Donation[]> {
+  const normalized = email.trim().toLowerCase();
+  const all = await listDonations();
+  return all.filter((d) => d.donorEmail?.toLowerCase() === normalized);
+}
+
 export async function findDonationByRefCode(
   code: string
 ): Promise<Donation | null> {
@@ -444,6 +460,7 @@ export async function createDonation(input: {
   driveId: string | null;
   donorName: string | null;
   donorContact: string | null;
+  donorEmail: string;
   amount: number;
   proofUrl: string;
 }): Promise<Donation> {
@@ -452,6 +469,7 @@ export async function createDonation(input: {
     driveId: input.driveId,
     donorName: input.donorName,
     donorContact: input.donorContact,
+    donorEmail: input.donorEmail,
     amount: input.amount,
     proofUrl: input.proofUrl,
     status: "pending",

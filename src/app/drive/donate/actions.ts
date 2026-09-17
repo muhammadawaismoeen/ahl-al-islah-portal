@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { auth } from "@/lib/auth";
 import { createDonation } from "@/lib/drive-store";
 import { addDriveDeviceId } from "@/lib/drive-session";
 import { uploadDonationProof, MAX_PROOF_BYTES } from "@/lib/donation-upload";
@@ -9,6 +10,12 @@ import { notifyNewDonation } from "@/lib/notify";
 export async function submitDonationAction(
   formData: FormData
 ): Promise<{ ok: boolean; error?: string; refCode?: string }> {
+  const session = await auth();
+  const donorEmail = session?.user?.email;
+  if (!donorEmail) {
+    return { ok: false, error: "Please sign in with Google to continue." };
+  }
+
   const driveIdRaw = ((formData.get("driveId") as string) ?? "").trim();
   const driveId = driveIdRaw === "" || driveIdRaw === "general" ? null : driveIdRaw;
   const donorName = ((formData.get("donorName") as string) ?? "").trim() || null;
@@ -45,6 +52,7 @@ export async function submitDonationAction(
       driveId,
       donorName,
       donorContact,
+      donorEmail,
       amount,
       proofUrl,
     });

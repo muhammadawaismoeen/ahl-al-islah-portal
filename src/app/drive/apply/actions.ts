@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { auth } from "@/lib/auth";
 import { reserveBook } from "@/lib/drive-store";
 import { addDriveDeviceId } from "@/lib/drive-session";
 import { notifyNewBookApplication } from "@/lib/notify";
@@ -11,6 +12,12 @@ export async function reserveBookAction(input: {
   applicantName: string;
   applicantContact: string;
 }): Promise<{ ok: boolean; error?: string; applicationId?: string }> {
+  const session = await auth();
+  const applicantEmail = session?.user?.email;
+  if (!applicantEmail) {
+    return { ok: false, error: "Please sign in with Google to continue." };
+  }
+
   const name = input.applicantName.trim();
   const contact = input.applicantContact.trim();
 
@@ -30,6 +37,7 @@ export async function reserveBookAction(input: {
       itemId: input.itemId,
       applicantName: name,
       applicantContact: contact,
+      applicantEmail,
     });
     if (!result.ok) return { ok: false, error: result.error };
 

@@ -12,6 +12,7 @@ import {
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { getContent } from "@/lib/content-store";
+import { auth } from "@/lib/auth";
 import { getHeadRole, logoutHead } from "./actions";
 import { CohortLoginForm } from "./LoginForm";
 import { listSubmissions } from "@/lib/storage";
@@ -83,11 +84,15 @@ export default async function CohortPage({
 }: {
   searchParams: Promise<{ id?: string; position?: string }>;
 }) {
-  const content = await getContent();
-  const role = await getHeadRole();
+  const [content, role, session] = await Promise.all([
+    getContent(),
+    getHeadRole(),
+    auth(),
+  ]);
 
   /* ── Not logged in ───────────────────────────────────────────── */
   if (!role) {
+    const deniedEmail = session?.user?.email;
     return (
       <>
         <Navbar content={content.nav} customLogo={content.customLogo} />
@@ -105,7 +110,9 @@ export default async function CohortPage({
                   Cohort Portal
                 </h1>
                 <p className="text-sm text-ink/60 mt-2">
-                  Sign in with the credentials provided by the Advisor.
+                  {deniedEmail
+                    ? `${deniedEmail} isn't on the Head/Deputy allow-list.`
+                    : "Sign in with your Google account."}
                 </p>
               </div>
               <CohortLoginForm />

@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { isAuthenticated, login } from "@/app/admin/actions";
+import { isAuthenticated, adminSignIn } from "@/app/admin/actions";
 import { LoginForm } from "@/app/admin/LoginForm";
 import {
   listSubmissions,
@@ -57,7 +57,7 @@ export default async function ActivitySubmissionsPage({
                   Admin Access
                 </h1>
               </div>
-              <LoginForm action={login} />
+              <LoginForm action={adminSignIn} />
             </div>
           </div>
         </main>
