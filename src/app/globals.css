@@ -34,6 +34,8 @@
 
     --danger: 178 59 50;
     --danger-soft: rgba(178, 59, 50, 0.1);
+
+    --admin-sidebar-w: 16rem;
   }
 
   * {

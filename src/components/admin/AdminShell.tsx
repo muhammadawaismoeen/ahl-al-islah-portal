@@ -33,7 +33,9 @@ export async function AdminShell({ children }: { children: React.ReactNode }) {
         adminEmail={session?.user?.email}
         logoutAction={logout}
       />
-      <div className="lg:pl-64">
+      <div
+        className="transition-[padding] duration-200 ease-out lg:pl-[var(--admin-sidebar-w,16rem)]"
+      >
         <main className="pt-20 lg:pt-8 pb-16 px-4 sm:px-6 lg:px-10">{children}</main>
       </div>
     </div>
