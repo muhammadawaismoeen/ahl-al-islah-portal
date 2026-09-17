@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
-import { createDonation } from "@/lib/drive-store";
+import { createDonation, listAmbassadors } from "@/lib/drive-store";
 import { addDriveDeviceId } from "@/lib/drive-session";
 import { uploadDonationProof, MAX_PROOF_BYTES } from "@/lib/donation-upload";
 import { notifyNewDonation } from "@/lib/notify";
@@ -23,6 +23,7 @@ export async function submitDonationAction(
   const amountRaw = (formData.get("amount") as string) ?? "";
   const amount = Number(amountRaw);
   const proofFile = formData.get("proof") as File | null;
+  const ambassadorIdRaw = ((formData.get("ambassadorId") as string) ?? "").trim();
 
   if (!Number.isFinite(amount) || amount <= 0) {
     return { ok: false, error: "Please enter a valid donation amount." };
@@ -37,6 +38,18 @@ export async function submitDonationAction(
         MAX_PROOF_BYTES / 1024
       )} KB. Please compress it and try again.`,
     };
+  }
+
+  let ambassadorId: string | null = null;
+  if (ambassadorIdRaw) {
+    const ambassadors = await listAmbassadors(driveId ?? undefined);
+    const match = ambassadors.find(
+      (a) => a.id === ambassadorIdRaw && a.status === "approved"
+    );
+    if (!match) {
+      return { ok: false, error: "That Ambassador isn't available for this drive." };
+    }
+    ambassadorId = match.id;
   }
 
   try {
@@ -55,6 +68,7 @@ export async function submitDonationAction(
       donorEmail,
       amount,
       proofUrl,
+      ambassadorId,
     });
 
     await addDriveDeviceId("donations", donation.id);

@@ -22,6 +22,8 @@ export type {
   Donation,
   DonationStatus,
   DriveStats,
+  Ambassador,
+  AmbassadorStatus,
 } from "./drive-types";
 
 import type {
@@ -31,7 +33,10 @@ import type {
   ApplicationStatus,
   Donation,
   DriveStats,
+  Ambassador,
 } from "./drive-types";
+import { getDriveSettings, computeSuggestedTarget } from "./drive-settings";
+import { isAmbassadorEmail } from "./drive-config";
 
 const DATA_ROOT = path.join(process.cwd(), "data", "drive");
 const DIR = {
@@ -39,12 +44,14 @@ const DIR = {
   items: path.join(DATA_ROOT, "items"),
   applications: path.join(DATA_ROOT, "applications"),
   donations: path.join(DATA_ROOT, "donations"),
+  ambassadors: path.join(DATA_ROOT, "ambassadors"),
 };
 const COLLECTION = {
   drives: "drive-drives",
   items: "drive-items",
   applications: "drive-applications",
   donations: "drive-donations",
+  ambassadors: "drive-ambassadors",
 };
 
 async function ensureDir(dir: string) {
@@ -143,13 +150,22 @@ async function getRecord<T>(
 /*  Drives                                                              */
 /* ------------------------------------------------------------------ */
 
+/** Records written before `applicationsOpen` existed default to open, so
+ *  applications don't silently close for drives created pre-migration. */
+function withDriveDefaults(drive: Drive): Drive {
+  return { ...drive, applicationsOpen: drive.applicationsOpen ?? true };
+}
+
 export async function listDrives(): Promise<Drive[]> {
   const drives = await listRecords<Drive>(COLLECTION.drives, DIR.drives);
-  return drives.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  return drives
+    .map(withDriveDefaults)
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
 
 export async function getDrive(id: string): Promise<Drive | null> {
-  return getRecord<Drive>(COLLECTION.drives, DIR.drives, id);
+  const drive = await getRecord<Drive>(COLLECTION.drives, DIR.drives, id);
+  return drive ? withDriveDefaults(drive) : null;
 }
 
 /** Most recently created open drive — the one the public landing page and
@@ -178,6 +194,7 @@ export async function createDrive(input: {
     raisedAmount: 0,
     pickupLocation: input.pickupLocation,
     pickupNote: input.pickupNote,
+    applicationsOpen: true,
     createdAt: now,
     updatedAt: now,
   };
@@ -197,6 +214,7 @@ export async function updateDrive(
       | "goalAmount"
       | "pickupLocation"
       | "pickupNote"
+      | "applicationsOpen"
     >
   >
 ): Promise<Drive | null> {
@@ -328,6 +346,11 @@ export async function reserveBook(input: {
   | { ok: true; application: DriveApplication }
   | { ok: false; error: string }
 > {
+  const drive = await getDrive(input.driveId);
+  if (!drive || !drive.applicationsOpen) {
+    return { ok: false, error: "Applications aren't open for this drive right now." };
+  }
+
   const item = await getDriveItem(input.itemId);
   if (!item || item.driveId !== input.driveId) {
     return { ok: false, error: "That catalog item no longer exists." };
@@ -503,6 +526,7 @@ export async function createDonation(input: {
   donorEmail: string;
   amount: number;
   proofUrl: string;
+  ambassadorId?: string | null;
 }): Promise<Donation> {
   const donation: Donation = {
     id: genId("dnt"),
@@ -514,6 +538,7 @@ export async function createDonation(input: {
     proofUrl: input.proofUrl,
     status: "pending",
     refCode: genCode("DN"),
+    ambassadorId: input.ambassadorId ?? null,
     createdAt: new Date().toISOString(),
   };
   await writeRecord(COLLECTION.donations, DIR.donations, donation);
@@ -539,8 +564,11 @@ export async function reviewDonation(
   };
   await writeRecord(COLLECTION.donations, DIR.donations, updated);
 
-  if (decision === "verified" && donation.driveId) {
-    await recomputeDriveRaised(donation.driveId);
+  if (decision === "verified") {
+    await Promise.all([
+      donation.driveId ? recomputeDriveRaised(donation.driveId) : Promise.resolve(),
+      donation.ambassadorId ? recomputeAmbassadorRaised(donation.ambassadorId) : Promise.resolve(),
+    ]);
   }
 
   return { ok: true, donation: updated };
@@ -560,6 +588,129 @@ async function recomputeDriveRaised(driveId: string): Promise<void> {
     raisedAmount: raised,
     updatedAt: new Date().toISOString(),
   });
+}
+
+/* ------------------------------------------------------------------ */
+/*  Drive Ambassadors                                                   */
+/* ------------------------------------------------------------------ */
+
+export async function listAmbassadors(driveId?: string): Promise<Ambassador[]> {
+  const all = await listRecords<Ambassador>(COLLECTION.ambassadors, DIR.ambassadors);
+  const scoped = driveId ? all.filter((a) => a.driveId === driveId) : all;
+  return scoped.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+}
+
+export async function getAmbassador(id: string): Promise<Ambassador | null> {
+  return getRecord<Ambassador>(COLLECTION.ambassadors, DIR.ambassadors, id);
+}
+
+export async function listAmbassadorsByEmail(email: string): Promise<Ambassador[]> {
+  const normalized = email.trim().toLowerCase();
+  const all = await listAmbassadors();
+  return all.filter((a) => a.email.toLowerCase() === normalized);
+}
+
+/**
+ * Register a student as an Ambassador for a drive. Admin-approval is
+ * required before the registration goes live (status starts "pending"),
+ * and registration is gated to the college's official student email domain
+ * — both non-negotiable per the program's design.
+ */
+export async function registerAmbassador(input: {
+  driveId: string;
+  name: string;
+  email: string;
+  contact?: string;
+  ownTarget: number;
+  /** Which figure the ambassador picked as their real target — must equal
+   *  either ownTarget or the computed suggestedTarget; anything else is
+   *  rejected server-side rather than trusted from the client. */
+  chosenTarget: number;
+}): Promise<{ ok: true; ambassador: Ambassador } | { ok: false; error: string }> {
+  if (!isAmbassadorEmail(input.email)) {
+    return {
+      ok: false,
+      error:
+        "Ambassador registration is only open to Akhtar Saeed Medical and Dental College student accounts.",
+    };
+  }
+  if (!Number.isFinite(input.ownTarget) || input.ownTarget <= 0) {
+    return { ok: false, error: "Please enter a valid target amount." };
+  }
+
+  const existing = await listAmbassadors(input.driveId);
+  const alreadyRegistered = existing.some(
+    (a) => a.email.toLowerCase() === input.email.toLowerCase() && a.status !== "rejected"
+  );
+  if (alreadyRegistered) {
+    return { ok: false, error: "You're already registered as an Ambassador for this drive." };
+  }
+
+  const settings = await getDriveSettings();
+  const suggestedTarget = computeSuggestedTarget(input.ownTarget, settings.ihsanPercentage);
+  const chosenTarget =
+    input.chosenTarget === suggestedTarget ? suggestedTarget : input.ownTarget;
+  const isIhsanLevel = chosenTarget === suggestedTarget;
+
+  const now = new Date().toISOString();
+  const ambassador: Ambassador = {
+    id: genId("amb"),
+    driveId: input.driveId,
+    name: input.name,
+    email: input.email,
+    contact: input.contact,
+    ownTarget: input.ownTarget,
+    suggestedTarget,
+    chosenTarget,
+    isIhsanLevel,
+    raisedAmount: 0,
+    status: "pending",
+    createdAt: now,
+    updatedAt: now,
+  };
+  await writeRecord(COLLECTION.ambassadors, DIR.ambassadors, ambassador);
+  return { ok: true, ambassador };
+}
+
+export async function reviewAmbassador(
+  id: string,
+  decision: "approved" | "rejected",
+  reviewedBy: string
+): Promise<{ ok: true; ambassador: Ambassador } | { ok: false; error: string }> {
+  const ambassador = await getAmbassador(id);
+  if (!ambassador) return { ok: false, error: "Ambassador registration not found." };
+  if (ambassador.status !== "pending") {
+    return { ok: false, error: "This registration has already been reviewed." };
+  }
+
+  const updated: Ambassador = {
+    ...ambassador,
+    status: decision,
+    reviewedBy,
+    reviewedAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+  await writeRecord(COLLECTION.ambassadors, DIR.ambassadors, updated);
+  return { ok: true, ambassador: updated };
+}
+
+async function recomputeAmbassadorRaised(ambassadorId: string): Promise<void> {
+  const ambassador = await getAmbassador(ambassadorId);
+  if (!ambassador) return;
+  const donations = await listDonations(ambassador.driveId);
+  const raised = donations
+    .filter((d) => d.ambassadorId === ambassadorId && d.status === "verified")
+    .reduce((sum, d) => sum + d.amount, 0);
+
+  const updated: Ambassador = {
+    ...ambassador,
+    raisedAmount: raised,
+    updatedAt: new Date().toISOString(),
+  };
+  if (raised >= ambassador.chosenTarget && !ambassador.certificateIssuedAt) {
+    updated.certificateIssuedAt = new Date().toISOString();
+  }
+  await writeRecord(COLLECTION.ambassadors, DIR.ambassadors, updated);
 }
 
 /* ------------------------------------------------------------------ */

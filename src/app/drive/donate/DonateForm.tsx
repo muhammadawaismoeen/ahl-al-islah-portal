@@ -1,23 +1,33 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
-import { Loader2, HandCoins, CheckCircle2, Upload, Landmark } from "lucide-react";
+import { useMemo, useRef, useState, useTransition } from "react";
+import { Loader2, HandCoins, CheckCircle2, Upload, Landmark, Wallet, Award } from "lucide-react";
 import { toast } from "sonner";
-import type { Drive } from "@/lib/drive-types";
-import { BANK_TRANSFER_DETAILS, DRIVE_CURRENCY, MAX_PROOF_BYTES } from "@/lib/drive-config";
+import type { Ambassador, Drive, PaymentMethod } from "@/lib/drive-types";
+import { DRIVE_CURRENCY, MAX_PROOF_BYTES } from "@/lib/drive-config";
 import { submitDonationAction } from "./actions";
 
 export function DonateForm({
   drives,
+  ambassadors,
+  paymentMethods,
   donateCtaLabel,
 }: {
   drives: Drive[];
+  ambassadors: Ambassador[];
+  paymentMethods: PaymentMethod[];
   donateCtaLabel: string;
 }) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [refCode, setRefCode] = useState<string | null>(null);
+  const [driveId, setDriveId] = useState("general");
+
+  const ambassadorsForDrive = useMemo(
+    () => ambassadors.filter((a) => a.driveId === driveId),
+    [ambassadors, driveId]
+  );
 
   function handleSubmit(formData: FormData) {
     setError(null);
@@ -70,7 +80,13 @@ export function DonateForm({
         <label htmlFor="driveId" className="label-field">
           Category
         </label>
-        <select id="driveId" name="driveId" className="input-field">
+        <select
+          id="driveId"
+          name="driveId"
+          className="input-field"
+          value={driveId}
+          onChange={(e) => setDriveId(e.target.value)}
+        >
           <option value="general">General donation</option>
           {drives.map((d) => (
             <option key={d.id} value={d.id}>
@@ -79,6 +95,28 @@ export function DonateForm({
           ))}
         </select>
       </div>
+
+      {ambassadorsForDrive.length > 0 && (
+        <div>
+          <label htmlFor="ambassadorId" className="label-field">
+            Select Ambassador (optional)
+          </label>
+          <select id="ambassadorId" name="ambassadorId" className="input-field" defaultValue="">
+            <option value="">No Ambassador</option>
+            {ambassadorsForDrive.map((a) => (
+              <option key={a.id} value={a.id}>
+                {a.name}
+                {a.isIhsanLevel ? " — Ihsan-level" : ""}
+              </option>
+            ))}
+          </select>
+          <p className="help-text flex items-center gap-1">
+            <Award className="h-3 w-3 text-emerald-deep" />
+            Donating on behalf of an Ambassador? Choose their name so it
+            counts toward their target.
+          </p>
+        </div>
+      )}
 
       <div className="grid sm:grid-cols-2 gap-4">
         <div>
@@ -116,23 +154,54 @@ export function DonateForm({
         />
       </div>
 
-      <div className="ornate-card p-5 bg-surface-2/40">
-        <p className="flex items-center gap-2 text-sm font-medium text-ink/75 mb-3">
+      <div className="space-y-3">
+        <p className="flex items-center gap-2 text-sm font-medium text-ink/75">
           <Landmark className="h-4 w-4 text-emerald-deep" />
-          Bank transfer details
+          Payment details
         </p>
-        <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 text-sm">
-          <dt className="text-ink/50">Bank</dt>
-          <dd className="text-ink/85">{BANK_TRANSFER_DETAILS.bankName}</dd>
-          <dt className="text-ink/50">Title</dt>
-          <dd className="text-ink/85">{BANK_TRANSFER_DETAILS.accountTitle}</dd>
-          <dt className="text-ink/50">Account #</dt>
-          <dd className="text-ink/85 font-mono">{BANK_TRANSFER_DETAILS.accountNumber}</dd>
-          <dt className="text-ink/50">IBAN</dt>
-          <dd className="text-ink/85 font-mono">{BANK_TRANSFER_DETAILS.iban}</dd>
-          <dt className="text-ink/50">Branch</dt>
-          <dd className="text-ink/85">{BANK_TRANSFER_DETAILS.branch}</dd>
-        </dl>
+        {paymentMethods.length === 0 ? (
+          <div className="ornate-card p-5 bg-surface-2/40">
+            <p className="text-sm text-ink/60">
+              Payment details aren&apos;t configured yet — please check back soon.
+            </p>
+          </div>
+        ) : (
+          paymentMethods.map((m) => (
+            <div key={m.id} className="ornate-card p-5 bg-surface-2/40">
+              <p className="flex items-center gap-2 text-sm font-medium text-ink/75 mb-3">
+                {m.kind === "bank" ? (
+                  <Landmark className="h-4 w-4 text-emerald-deep" />
+                ) : (
+                  <Wallet className="h-4 w-4 text-emerald-deep" />
+                )}
+                {m.label}
+              </p>
+              <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 text-sm">
+                <dt className="text-ink/50">Title</dt>
+                <dd className="text-ink/85">{m.accountTitle}</dd>
+                <dt className="text-ink/50">
+                  {m.kind === "bank" ? "Account #" : "Wallet #"}
+                </dt>
+                <dd className="text-ink/85 font-mono">{m.accountNumber}</dd>
+                {m.iban && (
+                  <>
+                    <dt className="text-ink/50">IBAN</dt>
+                    <dd className="text-ink/85 font-mono">{m.iban}</dd>
+                  </>
+                )}
+                {m.branch && (
+                  <>
+                    <dt className="text-ink/50">Branch</dt>
+                    <dd className="text-ink/85">{m.branch}</dd>
+                  </>
+                )}
+              </dl>
+              {m.instructions && (
+                <p className="text-xs text-ink/50 mt-2">{m.instructions}</p>
+              )}
+            </div>
+          ))
+        )}
       </div>
 
       <div>

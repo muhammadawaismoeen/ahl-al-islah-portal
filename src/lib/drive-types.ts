@@ -20,6 +20,10 @@ export interface Drive {
   raisedAmount: number;
   pickupLocation: string;
   pickupNote?: string;
+  /** Gates /drive/apply independently of `status` — a drive can stay open
+   *  for donations while applications are paused. Records written before
+   *  this field existed are treated as `true` (see withDriveDefaults). */
+  applicationsOpen: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -77,6 +81,9 @@ export interface Donation {
   /** Reference code the donor can quote when following up — same plaintext
    *  ticket-number reasoning as DriveApplication.pickupCode. */
   refCode: string;
+  /** Ambassador the donor credited via the "Select Ambassador" dropdown, if
+   *  any. null/absent = not attributed to an ambassador. */
+  ambassadorId?: string | null;
   createdAt: string;
 }
 
@@ -84,4 +91,68 @@ export interface DriveStats {
   booksGivenAllTime: number;
   drivesRun: number;
   generalFundTotal: number;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Drive Ambassadors                                                   */
+/* ------------------------------------------------------------------ */
+
+export type AmbassadorStatus = "pending" | "approved" | "rejected";
+
+export interface Ambassador {
+  id: string;
+  driveId: string;
+  name: string;
+  /** Must end with the college domain gate — see AMBASSADOR_EMAIL_DOMAIN in
+   *  drive-config.ts. Google account email of the signed-in student. */
+  email: string;
+  contact?: string;
+  /** The target the ambassador typed in themselves. */
+  ownTarget: number;
+  /** Portal-suggested target above `ownTarget`, computed from the
+   *  admin-configured Ihsan percentage — see computeSuggestedTarget in
+   *  drive-calc.ts. */
+  suggestedTarget: number;
+  /** Whichever of ownTarget/suggestedTarget the ambassador picked as their
+   *  real, committed target. */
+  chosenTarget: number;
+  /** True when chosenTarget is the portal-suggested (higher) figure. */
+  isIhsanLevel: boolean;
+  /** Sum of verified donations attributed to this ambassador. */
+  raisedAmount: number;
+  status: AmbassadorStatus;
+  /** Set the first time raisedAmount reaches chosenTarget — gates the
+   *  certificate download and never clears once set. */
+  certificateIssuedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+  reviewedBy?: string;
+  reviewedAt?: string;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Payment methods + Drive settings                                    */
+/* ------------------------------------------------------------------ */
+
+export type PaymentMethodKind = "bank" | "wallet";
+
+export interface PaymentMethod {
+  id: string;
+  kind: PaymentMethodKind;
+  /** Short display name, e.g. "Meezan Bank" or "JazzCash". */
+  label: string;
+  accountTitle: string;
+  accountNumber: string;
+  iban?: string;
+  branch?: string;
+  /** Freeform extra note shown under the method, e.g. wallet instructions. */
+  instructions?: string;
+  createdAt: string;
+}
+
+export interface DriveSettings {
+  /** Percentage above an ambassador's own target used to compute the
+   *  suggested Ihsan-level target, e.g. 20 = own target x 1.2. */
+  ihsanPercentage: number;
+  paymentMethods: PaymentMethod[];
 }

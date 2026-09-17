@@ -11,8 +11,14 @@ import {
   confirmApplication,
   reviewDonation,
   getDriveItem,
+  reviewAmbassador,
 } from "@/lib/drive-store";
-import type { DriveStatus } from "@/lib/drive-types";
+import {
+  setIhsanPercentage,
+  addPaymentMethod,
+  deletePaymentMethod,
+} from "@/lib/drive-settings";
+import type { DriveStatus, PaymentMethodKind } from "@/lib/drive-types";
 
 function refresh() {
   revalidatePath("/admin/drive");
@@ -56,6 +62,19 @@ export async function setDriveStatusAction(
   if (!authed) return { ok: false, error: "Not authenticated." };
 
   const updated = await updateDrive(id, { status });
+  if (!updated) return { ok: false, error: "Drive not found." };
+  refresh();
+  return { ok: true };
+}
+
+export async function setApplicationsOpenAction(
+  id: string,
+  applicationsOpen: boolean
+): Promise<{ ok: boolean; error?: string }> {
+  const authed = await isAuthenticated();
+  if (!authed) return { ok: false, error: "Not authenticated." };
+
+  const updated = await updateDrive(id, { applicationsOpen });
   if (!updated) return { ok: false, error: "Drive not found." };
   refresh();
   return { ok: true };
@@ -168,6 +187,70 @@ export async function reviewDonationAction(
 
   const result = await reviewDonation(id, decision, "Admin");
   if (!result.ok) return { ok: false, error: result.error };
+  refresh();
+  return { ok: true };
+}
+
+export async function reviewAmbassadorAction(
+  id: string,
+  decision: "approved" | "rejected"
+): Promise<{ ok: boolean; error?: string }> {
+  const authed = await isAuthenticated();
+  if (!authed) return { ok: false, error: "Not authenticated." };
+
+  const result = await reviewAmbassador(id, decision, "Admin");
+  if (!result.ok) return { ok: false, error: result.error };
+  refresh();
+  return { ok: true };
+}
+
+export async function setIhsanPercentageAction(
+  value: number
+): Promise<{ ok: boolean; error?: string }> {
+  const authed = await isAuthenticated();
+  if (!authed) return { ok: false, error: "Not authenticated." };
+  if (!Number.isFinite(value) || value < 0) {
+    return { ok: false, error: "Please enter a valid percentage." };
+  }
+
+  await setIhsanPercentage(value);
+  refresh();
+  return { ok: true };
+}
+
+export async function addPaymentMethodAction(
+  formData: FormData
+): Promise<{ ok: boolean; error?: string }> {
+  const authed = await isAuthenticated();
+  if (!authed) return { ok: false, error: "Not authenticated." };
+
+  const kind = ((formData.get("kind") as string) ?? "bank") as PaymentMethodKind;
+  const label = ((formData.get("label") as string) ?? "").trim();
+  const accountTitle = ((formData.get("accountTitle") as string) ?? "").trim();
+  const accountNumber = ((formData.get("accountNumber") as string) ?? "").trim();
+  const iban = ((formData.get("iban") as string) ?? "").trim() || undefined;
+  const branch = ((formData.get("branch") as string) ?? "").trim() || undefined;
+  const instructions = ((formData.get("instructions") as string) ?? "").trim() || undefined;
+
+  if (kind !== "bank" && kind !== "wallet") {
+    return { ok: false, error: "Please choose a valid method type." };
+  }
+  if (label.length < 2) return { ok: false, error: "Please enter a label." };
+  if (accountTitle.length < 2) return { ok: false, error: "Please enter an account title." };
+  if (accountNumber.length < 2) return { ok: false, error: "Please enter an account number." };
+
+  await addPaymentMethod({ kind, label, accountTitle, accountNumber, iban, branch, instructions });
+  refresh();
+  return { ok: true };
+}
+
+export async function deletePaymentMethodAction(
+  id: string
+): Promise<{ ok: boolean; error?: string }> {
+  const authed = await isAuthenticated();
+  if (!authed) return { ok: false, error: "Not authenticated." };
+
+  await deletePaymentMethod(id);
   refresh();
   return { ok: true };
 }

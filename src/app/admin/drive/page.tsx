@@ -8,6 +8,8 @@ import {
   ScanLine,
   HandCoins,
   BarChart3,
+  Award,
+  Wallet,
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -18,12 +20,15 @@ import {
   listDriveItems,
   listApplications,
   listDonations,
+  listAmbassadors,
 } from "@/lib/drive-store";
+import { getDriveSettings } from "@/lib/drive-settings";
 import { DRIVE_CURRENCY } from "@/lib/drive-config";
 import { formatDate } from "@/lib/utils";
 import {
   CreateDriveForm,
   DriveStatusToggle,
+  ApplicationsToggle,
   DriveGoalForm,
   CreateItemForm,
   ItemStockForm,
@@ -31,6 +36,12 @@ import {
   CheckInForm,
   DonationsPanel,
 } from "./DriveConsoleActions";
+import {
+  AmbassadorsPanel,
+  IhsanPercentageForm,
+  AddPaymentMethodForm,
+  PaymentMethodsList,
+} from "./AmbassadorPaymentPanels";
 import { FinancialReport } from "./FinancialReport";
 
 export const metadata: Metadata = {
@@ -40,7 +51,15 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-type Tab = "drives" | "catalog" | "applicants" | "checkin" | "donations" | "report";
+type Tab =
+  | "drives"
+  | "catalog"
+  | "applicants"
+  | "checkin"
+  | "donations"
+  | "ambassadors"
+  | "payments"
+  | "report";
 
 const TABS: { key: Tab; label: string; icon: typeof BookOpen }[] = [
   { key: "drives", label: "Drives", icon: BookOpen },
@@ -48,6 +67,8 @@ const TABS: { key: Tab; label: string; icon: typeof BookOpen }[] = [
   { key: "applicants", label: "Applicants", icon: Users },
   { key: "checkin", label: "Check-in", icon: ScanLine },
   { key: "donations", label: "Donations", icon: HandCoins },
+  { key: "ambassadors", label: "Ambassadors", icon: Award },
+  { key: "payments", label: "Payment Settings", icon: Wallet },
   { key: "report", label: "Financial Report", icon: BarChart3 },
 ];
 
@@ -83,16 +104,20 @@ export default async function AdminDrivePage({
   const { tab: tabParam } = await searchParams;
   const tab: Tab = TABS.some((t) => t.key === tabParam) ? (tabParam as Tab) : "drives";
 
-  const [drives, items, applications, donations] = await Promise.all([
-    listDrives(),
-    listDriveItems(),
-    listApplications(),
-    listDonations(),
-  ]);
+  const [drives, items, applications, donations, ambassadors, driveSettings] =
+    await Promise.all([
+      listDrives(),
+      listDriveItems(),
+      listApplications(),
+      listDonations(),
+      listAmbassadors(),
+      getDriveSettings(),
+    ]);
   const driveById = new Map(drives.map((d) => [d.id, d]));
   const driveNameById = Object.fromEntries(drives.map((d) => [d.id, d.name]));
   const itemNameById = Object.fromEntries(items.map((i) => [i.id, i.name]));
   const pendingDonations = donations.filter((d) => d.status === "pending").length;
+  const pendingAmbassadors = ambassadors.filter((a) => a.status === "pending").length;
 
   return (
     <>
@@ -135,6 +160,11 @@ export default async function AdminDrivePage({
                       {pendingDonations}
                     </span>
                   )}
+                  {t.key === "ambassadors" && pendingAmbassadors > 0 && (
+                    <span className="absolute -top-1.5 -right-1.5 h-4 w-4 rounded-full bg-amber text-white text-[9px] font-bold flex items-center justify-center">
+                      {pendingAmbassadors}
+                    </span>
+                  )}
                 </Link>
               );
             })}
@@ -175,6 +205,18 @@ export default async function AdminDrivePage({
                         {DRIVE_CURRENCY} {d.raisedAmount.toLocaleString()} raised of{" "}
                         {DRIVE_CURRENCY} {d.goalAmount.toLocaleString()} goal
                       </p>
+                      <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+                        <span
+                          className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${
+                            d.applicationsOpen
+                              ? "bg-emerald-deep/15 text-emerald-deep"
+                              : "bg-ink/15 text-ink/60"
+                          }`}
+                        >
+                          Applications {d.applicationsOpen ? "open" : "closed"}
+                        </span>
+                        <ApplicationsToggle drive={d} />
+                      </div>
                       <DriveGoalForm drive={d} />
                     </div>
                   ))
@@ -232,6 +274,20 @@ export default async function AdminDrivePage({
 
           {tab === "donations" && (
             <DonationsPanel donations={donations} driveNameById={driveNameById} />
+          )}
+
+          {tab === "ambassadors" && (
+            <AmbassadorsPanel ambassadors={ambassadors} driveNameById={driveNameById} />
+          )}
+
+          {tab === "payments" && (
+            <div className="grid lg:grid-cols-[1.4fr_1fr] gap-6">
+              <PaymentMethodsList methods={driveSettings.paymentMethods} />
+              <div className="space-y-6">
+                <AddPaymentMethodForm />
+                <IhsanPercentageForm ihsanPercentage={driveSettings.ihsanPercentage} />
+              </div>
+            </div>
           )}
 
           {tab === "report" && (

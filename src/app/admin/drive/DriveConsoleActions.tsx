@@ -21,6 +21,7 @@ import type { Drive, DriveApplication, Donation } from "@/lib/drive-types";
 import {
   createDriveAction,
   setDriveStatusAction,
+  setApplicationsOpenAction,
   updateDriveGoalAction,
   createDriveItemAction,
   updateDriveItemAction,
@@ -116,6 +117,37 @@ export function DriveStatusToggle({ drive }: { drive: Drive }) {
         <Unlock className="h-3.5 w-3.5" />
       )}
       {isOpen ? "Close" : "Reopen"}
+    </button>
+  );
+}
+
+export function ApplicationsToggle({ drive }: { drive: Drive }) {
+  const router = useRouter();
+  const [pending, setPending] = useState(false);
+  const isOpen = drive.applicationsOpen;
+
+  async function handle() {
+    setPending(true);
+    const res = await setApplicationsOpenAction(drive.id, !isOpen);
+    setPending(false);
+    if (res.ok) {
+      toast.success(isOpen ? "Applications closed." : "Applications opened.");
+      router.refresh();
+    } else {
+      toast.error(res.error ?? "Failed to update applications.");
+    }
+  }
+
+  return (
+    <button type="button" onClick={handle} disabled={pending} className="btn-ghost !py-1.5 !px-3 text-xs">
+      {pending ? (
+        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+      ) : isOpen ? (
+        <Lock className="h-3.5 w-3.5" />
+      ) : (
+        <Unlock className="h-3.5 w-3.5" />
+      )}
+      {isOpen ? "Close applications" : "Open applications"}
     </button>
   );
 }

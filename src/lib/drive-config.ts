@@ -14,10 +14,13 @@ export const DRIVE_CURRENCY = "Rs.";
  *  server-only `fs`/Redis code into the browser bundle. */
 export const MAX_PROOF_BYTES = 600 * 1024;
 
-export const BANK_TRANSFER_DETAILS = {
-  bankName: "Meezan Bank",
-  accountTitle: "Ahl Al-Islah — Rijal Al-Huda",
-  accountNumber: "0123-4567891-01",
-  iban: "PK00MEZN0001234567891",
-  branch: "Main Branch",
-};
+/** Ambassador registration is restricted to Akhtar Saeed Medical and Dental
+ *  College's official student email domain — an explicit, non-negotiable
+ *  gate requested alongside admin-approval for the program. */
+export const AMBASSADOR_EMAIL_DOMAIN = "@amdc.edu.pk";
+
+export function isAmbassadorEmail(email: string): boolean {
+  return email.trim().toLowerCase().endsWith(AMBASSADOR_EMAIL_DOMAIN);
+}
+
+export const DEFAULT_IHSAN_PERCENTAGE = 20;

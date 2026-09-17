@@ -61,6 +61,16 @@ export default async function DriveApplyPage() {
                 .
               </p>
             </div>
+          ) : !drive.applicationsOpen ? (
+            <div className="ornate-card p-8 text-center">
+              <p className="text-sm text-ink/60">
+                We&apos;ll open applications soon. In the meantime, you can{" "}
+                <Link href="/drive/donate" className="text-emerald-deep hover:underline">
+                  donate to the general fund
+                </Link>
+                .
+              </p>
+            </div>
           ) : items.length === 0 ? (
             <div className="ornate-card p-8 text-center">
               <p className="text-sm text-ink/60">

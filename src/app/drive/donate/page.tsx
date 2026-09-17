@@ -6,7 +6,8 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { getContent } from "@/lib/content-store";
 import { auth } from "@/lib/auth";
-import { listDrives } from "@/lib/drive-store";
+import { listDrives, listAmbassadors } from "@/lib/drive-store";
+import { getDriveSettings } from "@/lib/drive-settings";
 import { DonateForm } from "./DonateForm";
 
 export const metadata: Metadata = {
@@ -22,8 +23,14 @@ export default async function DriveDonatePage() {
     redirect(`/drive/signin?callbackUrl=${encodeURIComponent("/drive/donate")}`);
   }
 
-  const [content, drives] = await Promise.all([getContent(), listDrives()]);
+  const [content, drives, ambassadors, driveSettings] = await Promise.all([
+    getContent(),
+    listDrives(),
+    listAmbassadors(),
+    getDriveSettings(),
+  ]);
   const openDrives = drives.filter((d) => d.status === "open");
+  const approvedAmbassadors = ambassadors.filter((a) => a.status === "approved");
 
   return (
     <>
@@ -52,6 +59,8 @@ export default async function DriveDonatePage() {
 
           <DonateForm
             drives={openDrives}
+            ambassadors={approvedAmbassadors}
+            paymentMethods={driveSettings.paymentMethods}
             donateCtaLabel={content.drive.donateCtaLabel}
           />
         </div>

@@ -1,6 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { BookOpen, MapPin, CalendarDays, HandCoins, Library, HeartHandshake } from "lucide-react";
+import {
+  BookOpen,
+  MapPin,
+  CalendarDays,
+  HandCoins,
+  Library,
+  HeartHandshake,
+  Lock,
+  Award,
+  Trophy,
+} from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { getContent } from "@/lib/content-store";
@@ -27,6 +37,7 @@ export default async function DrivePage() {
   const raised = drive?.raisedAmount ?? 0;
   const progressPct = goal > 0 ? Math.min(100, Math.round((raised / goal) * 100)) : 0;
   const { drive: driveCopy } = content;
+  const applicationsOpen = drive?.applicationsOpen ?? false;
 
   return (
     <>
@@ -89,14 +100,49 @@ export default async function DrivePage() {
           )}
 
           {/* CTAs */}
+          <div className="flex flex-col items-center gap-3 mb-4">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              {applicationsOpen ? (
+                <Link href="/drive/apply" className="btn-primary">
+                  <BookOpen className="h-4 w-4" />
+                  {driveCopy.applyCtaLabel}
+                </Link>
+              ) : (
+                <button
+                  type="button"
+                  disabled
+                  className="btn-primary !bg-ink/20 !text-ink/50 cursor-not-allowed hover:!bg-ink/20"
+                >
+                  <Lock className="h-4 w-4" />
+                  {driveCopy.applyCtaLabel}
+                </button>
+              )}
+              <Link href="/drive/donate" className="btn-secondary">
+                <HandCoins className="h-4 w-4" />
+                {driveCopy.donateCtaLabel}
+              </Link>
+            </div>
+            {!applicationsOpen && (
+              <p className="text-xs text-ink/50">We&apos;ll open applications soon.</p>
+            )}
+          </div>
+
+          {/* Ambassador program */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-14">
-            <Link href="/drive/apply" className="btn-primary">
-              <BookOpen className="h-4 w-4" />
-              {driveCopy.applyCtaLabel}
+            <Link
+              href="/drive/ambassador"
+              className="inline-flex items-center gap-1.5 text-xs text-emerald-deep hover:underline"
+            >
+              <Award className="h-3.5 w-3.5" />
+              Become a Drive Ambassador
             </Link>
-            <Link href="/drive/donate" className="btn-secondary">
-              <HandCoins className="h-4 w-4" />
-              {driveCopy.donateCtaLabel}
+            <span className="hidden sm:inline text-ink/20">·</span>
+            <Link
+              href="/drive/leaderboard"
+              className="inline-flex items-center gap-1.5 text-xs text-emerald-deep hover:underline"
+            >
+              <Trophy className="h-3.5 w-3.5" />
+              Ambassador leaderboard
             </Link>
           </div>
 
