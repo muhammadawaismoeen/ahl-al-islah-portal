@@ -23,12 +23,6 @@ const amiri = Amiri({
   display: "swap",
 });
 
-// Most visitors are in Pakistan/South Asia; bom1 (Mumbai) is the closest
-// available Vercel function region, cutting the cross-continental hop to
-// the default iad1 (US East) region. Inherited by every route unless a
-// page overrides it.
-export const preferredRegion = "bom1";
-
 export const metadata: Metadata = {
   title: {
     default: "Ahl Al-Islah — People of Reform",
