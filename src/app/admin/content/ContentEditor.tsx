@@ -18,7 +18,7 @@ import {
   GripVertical,
   FileText,
   Copy,
-  Image,
+  Image as ImageIcon,
   Compass,
   Home,
   BookOpen,
@@ -341,7 +341,7 @@ export function ContentEditor({
       </div>
 
       {/* ─── Logo ─── */}
-      <Section title="Logo" icon={<Image className="h-5 w-5" />} defaultOpen>
+      <Section title="Logo" icon={<ImageIcon className="h-5 w-5" />} defaultOpen>
         <div className="space-y-4">
           <Field label="Logo Preview">
             <div className="flex items-center gap-4">
