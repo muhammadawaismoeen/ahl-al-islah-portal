@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { LogOut, ArrowLeft } from "lucide-react";
-import { isAuthenticated, adminSignIn, logout } from "@/app/admin/actions";
+import { isAuthenticated } from "@/app/admin/actions";
 import { getContent } from "@/lib/content-store";
-import { LoginForm } from "@/app/admin/LoginForm";
+import { AdminShell } from "@/components/admin/AdminShell";
+import { AdminLoginScreen } from "@/components/admin/AdminLoginScreen";
 import { PositionsEditor } from "./PositionsEditor";
 
 export const metadata: Metadata = {
@@ -17,42 +16,16 @@ export default async function AdminPositionsPage() {
   const authed = await isAuthenticated();
 
   if (!authed) {
-    return (
-      <main className="pt-32 pb-20">
-        <div className="container-prose max-w-md mx-auto">
-          <div className="ornate-card p-8">
-            <div className="text-center mb-6">
-              <span className="arabic-text text-emerald-deep">لوحة الإدارة</span>
-              <h1 className="heading-serif text-3xl font-semibold text-emerald-deep mt-1">
-                Admin Access
-              </h1>
-              <p className="text-sm text-ink/60 mt-2">
-                Positions editor. Advisor only.
-              </p>
-            </div>
-            <LoginForm action={adminSignIn} />
-          </div>
-        </div>
-      </main>
-    );
+    return <AdminLoginScreen subtitle="Positions editor. Advisor only." />;
   }
 
   const content = await getContent();
 
   return (
-    <main className="pt-8 pb-20">
-      <div className="container-prose">
+    <AdminShell>
+      <div>
         <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
           <div>
-            <div className="flex items-center gap-3 mb-2">
-              <Link
-                href="/admin"
-                className="inline-flex items-center gap-1.5 text-xs text-ink/50 hover:text-emerald-deep transition"
-              >
-                <ArrowLeft className="h-3.5 w-3.5" />
-                Core Members
-              </Link>
-            </div>
             <span className="arabic-text text-emerald-deep">المناصب</span>
             <h1 className="heading-serif text-4xl font-semibold text-emerald-deep">
               Positions
@@ -62,16 +35,10 @@ export default async function AdminPositionsPage() {
               Changes are live immediately after saving.
             </p>
           </div>
-          <form action={logout}>
-            <button type="submit" className="btn-secondary !py-2 !px-4 text-xs">
-              <LogOut className="h-3.5 w-3.5" />
-              Sign out
-            </button>
-          </form>
         </div>
 
         <PositionsEditor initialPositions={content.positions} />
       </div>
-    </main>
+    </AdminShell>
   );
 }

@@ -1,34 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import {
-  LogOut,
-  Mail,
-  Phone,
-  Download,
-  Pencil,
-  MessageCircle,
-  MessageSquareHeart,
-  CalendarDays,
-  ClipboardList,
-  Users,
-  Crown,
-  ArrowLeft,
-  LifeBuoy,
-  Briefcase,
-} from "lucide-react";
-import { Navbar } from "@/components/Navbar";
-import { Footer } from "@/components/Footer";
-import { isAuthenticated, adminSignIn, logout } from "@/app/admin/actions";
+import { Mail, Phone, Download, Crown } from "lucide-react";
+import { isAuthenticated } from "@/app/admin/actions";
 import { listSubmissions } from "@/lib/storage";
-import { listMessages } from "@/lib/message-store";
-import { listFeedback } from "@/lib/feedback-store";
-import { listSubmissions as listActivitySubmissions } from "@/lib/activity-submissions-store";
-import { listThreads as listCounselThreads } from "@/lib/counsel-store";
 import { getAllPositions } from "@/lib/positions";
 import type { Position } from "@/lib/positions";
 import { getQuestionSet } from "@/lib/questions";
-import { LoginForm } from "@/app/admin/LoginForm";
 import { formatDate } from "@/lib/utils";
+import { AdminShell } from "@/components/admin/AdminShell";
+import { AdminLoginScreen } from "@/components/admin/AdminLoginScreen";
 
 export const metadata: Metadata = {
   title: "Admin · Heads",
@@ -47,45 +27,14 @@ export default async function AdminHeadsPage({
   const authed = await isAuthenticated();
 
   if (!authed) {
-    return (
-      <>
-        <Navbar />
-        <main className="pt-32 pb-20">
-          <div className="container-prose max-w-md mx-auto">
-            <div className="ornate-card p-8">
-              <div className="text-center mb-6">
-                <span className="arabic-text text-emerald-deep">
-                  لوحة الإدارة
-                </span>
-                <h1 className="heading-serif text-3xl font-semibold text-emerald-deep mt-1">
-                  Admin Access
-                </h1>
-                <p className="text-sm text-ink/60 mt-2">
-                  Review submitted applications. Advisor only.
-                </p>
-              </div>
-              <LoginForm action={adminSignIn} />
-            </div>
-          </div>
-        </main>
-        <Footer />
-      </>
-    );
+    return <AdminLoginScreen subtitle="Review submitted applications. Advisor only." />;
   }
 
-  const [allSubmissions, messages, feedback, activitySubmissions, counselThreads, positions] = await Promise.all([
+  const [allSubmissions, positions] = await Promise.all([
     listSubmissions(),
-    listMessages(),
-    listFeedback(),
-    listActivitySubmissions(),
-    listCounselThreads(),
     getAllPositions(),
   ]);
   const positionsMap = new Map(positions.map((p) => [p.slug, p]));
-  const unreadMessages = messages.filter((m) => m.status === "unread").length;
-  const unreadFeedback = feedback.filter((f) => f.status === "unread").length;
-  const unreadActivities = activitySubmissions.filter((a) => a.status === "unread").length;
-  const unreadCounsel = counselThreads.filter((t) => t.advisorHasUnread).length;
 
   const headSubmissions = allSubmissions.filter((s) => isHeadSlug(s.positionSlug));
 
@@ -114,18 +63,10 @@ export default async function AdminHeadsPage({
   }
 
   return (
-    <>
-      <Navbar />
-      <main className="pt-28 pb-20">
-        <div className="container-prose">
+    <AdminShell>
+      <div>
           <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
             <div>
-              <Link
-                href="/admin"
-                className="inline-flex items-center gap-1.5 text-xs text-ink/50 hover:text-emerald-deep mb-2 transition"
-              >
-                <ArrowLeft className="h-3.5 w-3.5" /> Core Members
-              </Link>
               <span className="arabic-text text-emerald-deep">رؤساء</span>
               <h1 className="heading-serif text-4xl font-semibold text-emerald-deep">
                 Heads
@@ -134,97 +75,6 @@ export default async function AdminHeadsPage({
                 {filtered.length} of {countAll} head application
                 {countAll === 1 ? "" : "s"}
               </p>
-            </div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <Link
-                href="/admin"
-                className="btn-ghost !py-2 !px-4 text-xs"
-              >
-                <Users className="h-3.5 w-3.5" />
-                Core Members
-              </Link>
-              <span
-                className="btn-primary !py-2 !px-4 text-xs cursor-default"
-                aria-current="page"
-              >
-                <Crown className="h-3.5 w-3.5" />
-                Heads
-              </span>
-              <Link
-                href="/admin/messages"
-                className="btn-ghost !py-2 !px-4 text-xs relative"
-              >
-                <MessageCircle className="h-3.5 w-3.5" />
-                Inbox
-                {unreadMessages > 0 && (
-                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-amber text-white text-[9px] font-bold flex items-center justify-center">
-                    {unreadMessages}
-                  </span>
-                )}
-              </Link>
-              <Link
-                href="/admin/feedback"
-                className="btn-ghost !py-2 !px-4 text-xs relative"
-              >
-                <MessageSquareHeart className="h-3.5 w-3.5" />
-                Feedback
-                {unreadFeedback > 0 && (
-                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-amber text-white text-[9px] font-bold flex items-center justify-center">
-                    {unreadFeedback}
-                  </span>
-                )}
-              </Link>
-              <Link
-                href="/admin/counsel"
-                className="btn-ghost !py-2 !px-4 text-xs relative"
-              >
-                <LifeBuoy className="h-3.5 w-3.5" />
-                Counsel
-                {unreadCounsel > 0 && (
-                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-amber text-white text-[9px] font-bold flex items-center justify-center">
-                    {unreadCounsel}
-                  </span>
-                )}
-              </Link>
-              <Link
-                href="/admin/activity-submissions"
-                className="btn-ghost !py-2 !px-4 text-xs relative"
-              >
-                <ClipboardList className="h-3.5 w-3.5" />
-                Audits
-                {unreadActivities > 0 && (
-                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-amber text-white text-[9px] font-bold flex items-center justify-center">
-                    {unreadActivities}
-                  </span>
-                )}
-              </Link>
-              <Link
-                href="/admin/sessions"
-                className="btn-ghost !py-2 !px-4 text-xs"
-              >
-                <CalendarDays className="h-3.5 w-3.5" />
-                Sessions
-              </Link>
-              <Link
-                href="/admin/positions"
-                className="btn-ghost !py-2 !px-4 text-xs"
-              >
-                <Briefcase className="h-3.5 w-3.5" />
-                Positions
-              </Link>
-              <Link
-                href="/admin/content"
-                className="btn-ghost !py-2 !px-4 text-xs"
-              >
-                <Pencil className="h-3.5 w-3.5" />
-                Content Editor
-              </Link>
-              <form action={logout}>
-                <button type="submit" className="btn-secondary !py-2 !px-4 text-xs">
-                  <LogOut className="h-3.5 w-3.5" />
-                  Sign out
-                </button>
-              </form>
             </div>
           </div>
 
@@ -332,10 +182,8 @@ export default async function AdminHeadsPage({
               )}
             </div>
           </div>
-        </div>
-      </main>
-      <Footer />
-    </>
+      </div>
+    </AdminShell>
   );
 }
 

@@ -2,13 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import { Navbar } from "@/components/Navbar";
-import { Footer } from "@/components/Footer";
-import { isAuthenticated, adminSignIn } from "@/app/admin/actions";
-import { LoginForm } from "@/app/admin/LoginForm";
+import { isAuthenticated } from "@/app/admin/actions";
 import { getSession } from "@/lib/sessions-store";
 import { addActivityAction } from "../../../actions";
 import { ActivityForm } from "../../../ActivityForm";
+import { AdminShell } from "@/components/admin/AdminShell";
+import { AdminLoginScreen } from "@/components/admin/AdminLoginScreen";
 
 export const metadata: Metadata = {
   title: "New Activity — Admin",
@@ -24,25 +23,7 @@ interface Props {
 export default async function NewActivityPage({ params }: Props) {
   const authed = await isAuthenticated();
   if (!authed) {
-    return (
-      <>
-        <Navbar />
-        <main className="pt-32 pb-20">
-          <div className="container-prose max-w-md mx-auto">
-            <div className="ornate-card p-8">
-              <div className="text-center mb-6">
-                <span className="arabic-text text-emerald-deep">لوحة الإدارة</span>
-                <h1 className="heading-serif text-3xl font-semibold text-emerald-deep mt-1">
-                  Admin Access
-                </h1>
-              </div>
-              <LoginForm action={adminSignIn} />
-            </div>
-          </div>
-        </main>
-        <Footer />
-      </>
-    );
+    return <AdminLoginScreen />;
   }
 
   const { id } = await params;
@@ -52,10 +33,8 @@ export default async function NewActivityPage({ params }: Props) {
   const boundAction = addActivityAction.bind(null, session.id);
 
   return (
-    <>
-      <Navbar />
-      <main className="pt-28 pb-20">
-        <div className="container-prose max-w-3xl mx-auto">
+    <AdminShell>
+      <div className="max-w-3xl mx-auto">
           <Link
             href={`/admin/sessions/${session.id}`}
             className="inline-flex items-center gap-1.5 text-xs text-ink/50 hover:text-emerald-deep mb-4 transition"
@@ -72,9 +51,7 @@ export default async function NewActivityPage({ params }: Props) {
           </p>
 
           <ActivityForm action={boundAction} submitLabel="Add activity" />
-        </div>
-      </main>
-      <Footer />
-    </>
+      </div>
+    </AdminShell>
   );
 }

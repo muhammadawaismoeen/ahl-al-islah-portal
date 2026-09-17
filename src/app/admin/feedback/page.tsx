@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import {
-  ArrowLeft,
   Phone,
   Clock,
   MessageSquareHeart,
@@ -13,10 +12,7 @@ import {
   Target,
   AlertTriangle,
 } from "lucide-react";
-import { Navbar } from "@/components/Navbar";
-import { Footer } from "@/components/Footer";
-import { isAuthenticated, adminSignIn } from "@/app/admin/actions";
-import { LoginForm } from "@/app/admin/LoginForm";
+import { isAuthenticated } from "@/app/admin/actions";
 import {
   listFeedback,
   RESPONSE_CHANNEL_LABELS,
@@ -27,6 +23,8 @@ import { listSessions } from "@/lib/sessions-store";
 import { formatDate } from "@/lib/utils";
 import { DeleteFeedbackButton, MarkFeedbackReadButton } from "./FeedbackActions";
 import { SessionFilter } from "./SessionFilter";
+import { AdminShell } from "@/components/admin/AdminShell";
+import { AdminLoginScreen } from "@/components/admin/AdminLoginScreen";
 
 export const metadata: Metadata = {
   title: "Feedback Inbox — Admin",
@@ -48,25 +46,7 @@ export default async function FeedbackAdminPage({
   const authed = await isAuthenticated();
 
   if (!authed) {
-    return (
-      <>
-        <Navbar />
-        <main className="pt-32 pb-20">
-          <div className="container-prose max-w-md mx-auto">
-            <div className="ornate-card p-8">
-              <div className="text-center mb-6">
-                <span className="arabic-text text-emerald-deep">لوحة الإدارة</span>
-                <h1 className="heading-serif text-3xl font-semibold text-emerald-deep mt-1">
-                  Admin Access
-                </h1>
-              </div>
-              <LoginForm action={adminSignIn} />
-            </div>
-          </div>
-        </main>
-        <Footer />
-      </>
-    );
+    return <AdminLoginScreen />;
   }
 
   const [allEntries, sessions] = await Promise.all([
@@ -97,20 +77,12 @@ export default async function FeedbackAdminPage({
   }
 
   return (
-    <>
-      <Navbar />
-      <main className="pt-28 pb-20">
-        <div className="container-prose">
+    <AdminShell>
+      <div>
 
           {/* Header */}
           <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
             <div>
-              <Link
-                href="/admin"
-                className="inline-flex items-center gap-1.5 text-xs text-ink/50 hover:text-emerald-deep mb-2 transition"
-              >
-                <ArrowLeft className="h-3.5 w-3.5" /> Back to Core Members
-              </Link>
               <span className="arabic-text block text-emerald-deep">ملاحظاتكم</span>
               <h1 className="heading-serif text-4xl font-semibold text-emerald-deep">
                 Feedback Inbox
@@ -247,10 +219,8 @@ export default async function FeedbackAdminPage({
               )}
             </div>
           </div>
-        </div>
-      </main>
-      <Footer />
-    </>
+      </div>
+    </AdminShell>
   );
 }
 
