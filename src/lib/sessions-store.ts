@@ -1,7 +1,7 @@
 import { promises as fs } from "fs";
 import path from "path";
 import crypto from "crypto";
-import { unstable_noStore as noStore } from "next/cache";
+import { unstable_cache, revalidateTag } from "next/cache";
 import { isRedisStore, setDoc, getDoc, listDocs, deleteDoc } from "./redis";
 import type { Session, Activity } from "./sessions-types";
 
@@ -9,6 +9,7 @@ export type { Session, Activity } from "./sessions-types";
 
 const DATA_DIR = path.join(process.cwd(), "data", "sessions");
 const COLLECTION = "sessions";
+const SESSIONS_TAG = "sessions";
 
 async function ensureDir() {
   await fs.mkdir(DATA_DIR, { recursive: true });
@@ -38,23 +39,22 @@ export function slugify(title: string): string {
 async function writeSession(record: Session): Promise<void> {
   if (isRedisStore()) {
     await setDoc(COLLECTION, record.id, record);
-    return;
+  } else {
+    await ensureDir();
+    await fs.writeFile(
+      path.join(DATA_DIR, `${record.id}.json`),
+      JSON.stringify(record, null, 2),
+      "utf8"
+    );
   }
-  await ensureDir();
-  await fs.writeFile(
-    path.join(DATA_DIR, `${record.id}.json`),
-    JSON.stringify(record, null, 2),
-    "utf8"
-  );
+  revalidateTag(SESSIONS_TAG);
 }
 
 /* ------------------------------------------------------------------ */
 /*  listSessions                                                       */
 /* ------------------------------------------------------------------ */
 
-export async function listSessions(): Promise<Session[]> {
-  noStore();
-
+async function readAllSessions(): Promise<Session[]> {
   if (isRedisStore()) {
     try {
       const records = await listDocs<Session>(COLLECTION);
@@ -89,13 +89,20 @@ export async function listSessions(): Promise<Session[]> {
     .sort((a, b) => b.date.localeCompare(a.date));
 }
 
+const getCachedSessions = unstable_cache(readAllSessions, ["sessions-list"], {
+  tags: [SESSIONS_TAG],
+  revalidate: false,
+});
+
+export async function listSessions(): Promise<Session[]> {
+  return getCachedSessions();
+}
+
 /* ------------------------------------------------------------------ */
 /*  getSession (by id)                                                 */
 /* ------------------------------------------------------------------ */
 
-export async function getSession(id: string): Promise<Session | null> {
-  noStore();
-
+async function readSessionDoc(id: string): Promise<Session | null> {
   if (isRedisStore()) {
     try {
       return await getDoc<Session>(COLLECTION, id);
@@ -112,6 +119,15 @@ export async function getSession(id: string): Promise<Session | null> {
   } catch {
     return null;
   }
+}
+
+const getCachedSession = unstable_cache(readSessionDoc, ["session-doc"], {
+  tags: [SESSIONS_TAG],
+  revalidate: false,
+});
+
+export async function getSession(id: string): Promise<Session | null> {
+  return getCachedSession(id);
 }
 
 /* ------------------------------------------------------------------ */
@@ -196,20 +212,24 @@ export async function updateSession(
 /* ------------------------------------------------------------------ */
 
 export async function deleteSession(id: string): Promise<boolean> {
+  let ok: boolean;
   if (isRedisStore()) {
     try {
-      return await deleteDoc(COLLECTION, id);
+      ok = await deleteDoc(COLLECTION, id);
     } catch (err) {
       console.error("[sessions-store] deleteSession failed:", err);
-      return false;
+      ok = false;
+    }
+  } else {
+    try {
+      await fs.unlink(path.join(DATA_DIR, `${id}.json`));
+      ok = true;
+    } catch {
+      ok = false;
     }
   }
-  try {
-    await fs.unlink(path.join(DATA_DIR, `${id}.json`));
-    return true;
-  } catch {
-    return false;
-  }
+  if (ok) revalidateTag(SESSIONS_TAG);
+  return ok;
 }
 
 /* ------------------------------------------------------------------ */

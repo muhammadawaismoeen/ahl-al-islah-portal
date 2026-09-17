@@ -1,7 +1,7 @@
 import { promises as fs } from "fs";
 import path from "path";
 import crypto from "crypto";
-import { unstable_noStore as noStore } from "next/cache";
+import { unstable_noStore as noStore, unstable_cache, revalidateTag } from "next/cache";
 import {
   isRedisStore,
   setDoc,
@@ -53,6 +53,8 @@ const COLLECTION = {
   donations: "drive-donations",
   ambassadors: "drive-ambassadors",
 };
+const DRIVES_TAG = "drive-drives";
+const ITEMS_TAG = "drive-items";
 
 async function ensureDir(dir: string) {
   await fs.mkdir(dir, { recursive: true });
@@ -92,9 +94,7 @@ async function writeRecord<T extends { id: string }>(
   );
 }
 
-async function listRecords<T>(collection: string, dir: string): Promise<T[]> {
-  noStore();
-
+async function listRecordsRaw<T>(collection: string, dir: string): Promise<T[]> {
   if (isRedisStore()) {
     try {
       return await listDocs<T>(collection);
@@ -121,13 +121,11 @@ async function listRecords<T>(collection: string, dir: string): Promise<T[]> {
   return records.filter((r) => r !== null) as T[];
 }
 
-async function getRecord<T>(
+async function getRecordRaw<T>(
   collection: string,
   dir: string,
   id: string
 ): Promise<T | null> {
-  noStore();
-
   if (isRedisStore()) {
     try {
       return await getDoc<T>(collection, id);
@@ -146,6 +144,49 @@ async function getRecord<T>(
   }
 }
 
+/** For collections that stay uncached (applications/donations/ambassadors) —
+ *  always read fresh, same as before. */
+async function listRecords<T>(collection: string, dir: string): Promise<T[]> {
+  noStore();
+  return listRecordsRaw<T>(collection, dir);
+}
+
+async function getRecord<T>(
+  collection: string,
+  dir: string,
+  id: string
+): Promise<T | null> {
+  noStore();
+  return getRecordRaw<T>(collection, dir, id);
+}
+
+/* Drives and catalog items are read far more often than they're written
+ * (public landing/donate/apply pages vs. admin-only edits), so their reads
+ * go through the Next Data Cache and get invalidated explicitly on write. */
+const getCachedDrives = unstable_cache(
+  () => listRecordsRaw<Drive>(COLLECTION.drives, DIR.drives),
+  ["drive-drives-list"],
+  { tags: [DRIVES_TAG], revalidate: false }
+);
+
+const getCachedDrive = unstable_cache(
+  (id: string) => getRecordRaw<Drive>(COLLECTION.drives, DIR.drives, id),
+  ["drive-drive-doc"],
+  { tags: [DRIVES_TAG], revalidate: false }
+);
+
+const getCachedItems = unstable_cache(
+  () => listRecordsRaw<DriveItem>(COLLECTION.items, DIR.items),
+  ["drive-items-list"],
+  { tags: [ITEMS_TAG], revalidate: false }
+);
+
+const getCachedItem = unstable_cache(
+  (id: string) => getRecordRaw<DriveItem>(COLLECTION.items, DIR.items, id),
+  ["drive-item-doc"],
+  { tags: [ITEMS_TAG], revalidate: false }
+);
+
 /* ------------------------------------------------------------------ */
 /*  Drives                                                              */
 /* ------------------------------------------------------------------ */
@@ -157,14 +198,14 @@ function withDriveDefaults(drive: Drive): Drive {
 }
 
 export async function listDrives(): Promise<Drive[]> {
-  const drives = await listRecords<Drive>(COLLECTION.drives, DIR.drives);
+  const drives = await getCachedDrives();
   return drives
     .map(withDriveDefaults)
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
 
 export async function getDrive(id: string): Promise<Drive | null> {
-  const drive = await getRecord<Drive>(COLLECTION.drives, DIR.drives, id);
+  const drive = await getCachedDrive(id);
   return drive ? withDriveDefaults(drive) : null;
 }
 
@@ -199,6 +240,7 @@ export async function createDrive(input: {
     updatedAt: now,
   };
   await writeRecord(COLLECTION.drives, DIR.drives, drive);
+  revalidateTag(DRIVES_TAG);
   return drive;
 }
 
@@ -226,6 +268,7 @@ export async function updateDrive(
     updatedAt: new Date().toISOString(),
   };
   await writeRecord(COLLECTION.drives, DIR.drives, updated);
+  revalidateTag(DRIVES_TAG);
   return updated;
 }
 
@@ -234,13 +277,13 @@ export async function updateDrive(
 /* ------------------------------------------------------------------ */
 
 export async function listDriveItems(driveId?: string): Promise<DriveItem[]> {
-  const items = await listRecords<DriveItem>(COLLECTION.items, DIR.items);
+  const items = await getCachedItems();
   const scoped = driveId ? items.filter((i) => i.driveId === driveId) : items;
   return scoped.sort((a, b) => a.createdAt.localeCompare(b.createdAt));
 }
 
 export async function getDriveItem(id: string): Promise<DriveItem | null> {
-  return getRecord<DriveItem>(COLLECTION.items, DIR.items, id);
+  return getCachedItem(id);
 }
 
 export async function createDriveItem(input: {
@@ -262,6 +305,7 @@ export async function createDriveItem(input: {
   if (isRedisStore()) {
     await setCounter(COLLECTION.items, item.id, item.totalStock);
   }
+  revalidateTag(ITEMS_TAG);
   return item;
 }
 
@@ -279,6 +323,7 @@ export async function updateDriveItemStock(
   if (isRedisStore() && patch.remainingStock !== undefined) {
     await setCounter(COLLECTION.items, id, updated.remainingStock);
   }
+  revalidateTag(ITEMS_TAG);
   return updated;
 }
 
@@ -422,6 +467,7 @@ export async function reserveBook(input: {
       ...item,
       remainingStock: remainingAfter,
     });
+    revalidateTag(ITEMS_TAG);
   }
 
   await writeRecord(COLLECTION.applications, DIR.applications, application);
@@ -588,6 +634,7 @@ async function recomputeDriveRaised(driveId: string): Promise<void> {
     raisedAmount: raised,
     updatedAt: new Date().toISOString(),
   });
+  revalidateTag(DRIVES_TAG);
 }
 
 /* ------------------------------------------------------------------ */
