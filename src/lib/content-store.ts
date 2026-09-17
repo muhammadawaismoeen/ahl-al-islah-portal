@@ -85,12 +85,11 @@ function mergeWithDefaults(stored: Partial<SiteContent>): SiteContent {
   return {
     hero: { ...DEFAULT_CONTENT.hero, ...(stored.hero ?? {}) },
     about: { ...DEFAULT_CONTENT.about, ...(stored.about ?? {}) },
-    structure: { ...DEFAULT_CONTENT.structure, ...(stored.structure ?? {}) },
+    model: { ...DEFAULT_CONTENT.model, ...(stored.model ?? {}) },
     roadmap: { ...DEFAULT_CONTENT.roadmap, ...(stored.roadmap ?? {}) },
     cta: { ...DEFAULT_CONTENT.cta, ...(stored.cta ?? {}) },
     footer: { ...DEFAULT_CONTENT.footer, ...(stored.footer ?? {}) },
     nav: mergedNav,
-    visibility: { ...DEFAULT_CONTENT.visibility, ...(stored.visibility ?? {}) },
     customLogo: stored.customLogo ?? DEFAULT_CONTENT.customLogo,
     formConfig: { ...DEFAULT_CONTENT.formConfig, ...(stored.formConfig ?? {}) },
     positions:

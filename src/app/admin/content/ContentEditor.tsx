@@ -22,7 +22,6 @@ import {
 import { toast } from "sonner";
 import type {
   SiteContent,
-  SectionVisibility,
   FormConfig,
   FormQuestionSet,
   FormSection,
@@ -247,17 +246,6 @@ export function ContentEditor({
       setContent((prev) => ({
         ...prev,
         [section]: { ...(prev[section] as object), ...(patch as object) },
-      }));
-      setDirty(true);
-    },
-    []
-  );
-
-  const setVis = useCallback(
-    (key: keyof SectionVisibility, val: boolean) => {
-      setContent((prev) => ({
-        ...prev,
-        visibility: { ...prev.visibility, [key]: val },
       }));
       setDirty(true);
     },
@@ -495,11 +483,9 @@ export function ContentEditor({
       {/* ─── Hero ─── */}
       <Section
         title="Hero"
-        subtitle={content.hero.englishTitle}
+        subtitle={content.hero.headingLine1}
         icon="🏠"
         defaultOpen={true}
-        visible={content.visibility.hero}
-        onVisibilityChange={(v) => setVis("hero", v)}
       >
         <Field label="Eyebrow">
           <TextInput
@@ -508,46 +494,53 @@ export function ContentEditor({
           />
         </Field>
         <div className="grid sm:grid-cols-2 gap-4">
-          <Field label="Arabic Title">
+          <Field label="Heading — line 1">
             <TextInput
-              value={content.hero.arabicTitle}
-              onChange={(v) => set("hero", { arabicTitle: v })}
+              value={content.hero.headingLine1}
+              onChange={(v) => set("hero", { headingLine1: v })}
             />
           </Field>
-          <Field label="English Title">
+          <Field label="Heading — line 2">
             <TextInput
-              value={content.hero.englishTitle}
-              onChange={(v) => set("hero", { englishTitle: v })}
+              value={content.hero.headingLine2}
+              onChange={(v) => set("hero", { headingLine2: v })}
             />
           </Field>
         </div>
-        <Field label="Tagline">
-          <TextInput
-            value={content.hero.tagline}
-            onChange={(v) => set("hero", { tagline: v })}
-          />
-        </Field>
-        <Field label="Description">
+        <Field label="Lede">
           <TextArea
-            value={content.hero.description}
-            onChange={(v) => set("hero", { description: v })}
-            rows={4}
+            value={content.hero.lede}
+            onChange={(v) => set("hero", { lede: v })}
+            rows={3}
           />
         </Field>
         <div className="grid sm:grid-cols-2 gap-4">
-          <Field label="Primary CTA Label">
+          <Field label="Primary CTA Label" help="Links to /become-a-member">
             <TextInput
               value={content.hero.primaryCtaLabel}
               onChange={(v) => set("hero", { primaryCtaLabel: v })}
             />
           </Field>
-          <Field label="Secondary CTA Label">
+          <Field label="Secondary CTA Label" help="Links to /model">
             <TextInput
               value={content.hero.secondaryCtaLabel}
               onChange={(v) => set("hero", { secondaryCtaLabel: v })}
             />
           </Field>
         </div>
+        <Field label="Qur'an Quote" help="Surah Ar-Ra'd, 13:11">
+          <TextArea
+            value={content.hero.quoteText}
+            onChange={(v) => set("hero", { quoteText: v })}
+            rows={2}
+          />
+        </Field>
+        <Field label="Quote Citation">
+          <TextInput
+            value={content.hero.quoteCitation}
+            onChange={(v) => set("hero", { quoteCitation: v })}
+          />
+        </Field>
         <div>
           <p className="text-xs uppercase tracking-wider text-ink/50 font-medium mb-2">
             Stats
@@ -598,16 +591,56 @@ export function ContentEditor({
             <Plus className="h-3 w-3" /> Add stat
           </button>
         </div>
+        <div>
+          <p className="text-xs uppercase tracking-wider text-ink/50 font-medium mb-2">
+            Cohort Teaser
+          </p>
+          {content.hero.cohorts.map((cohort, i) => (
+            <div
+              key={i}
+              className="p-3 rounded-lg border border-border mb-3 space-y-2"
+            >
+              <div className="grid sm:grid-cols-2 gap-2">
+                <TextInput
+                  value={cohort.label}
+                  onChange={(v) => {
+                    const cohorts = [...content.hero.cohorts];
+                    cohorts[i] = { ...cohorts[i], label: v };
+                    set("hero", { cohorts });
+                  }}
+                  placeholder="Label, e.g. Brothers' Cohort"
+                />
+                <TextInput
+                  value={cohort.title}
+                  onChange={(v) => {
+                    const cohorts = [...content.hero.cohorts];
+                    cohorts[i] = { ...cohorts[i], title: v };
+                    set("hero", { cohorts });
+                  }}
+                  placeholder="Title, e.g. Weekly halaqah, Fridays"
+                />
+              </div>
+              <TextArea
+                value={cohort.text}
+                onChange={(v) => {
+                  const cohorts = [...content.hero.cohorts];
+                  cohorts[i] = { ...cohorts[i], text: v };
+                  set("hero", { cohorts });
+                }}
+                rows={2}
+                placeholder="Description"
+              />
+            </div>
+          ))}
+        </div>
       </Section>
 
       {/* ─── About ─── */}
       <Section
-        title="About / Vision & Mission"
+        title="About"
         subtitle={content.about.heading}
         icon="📖"
         defaultOpen={true}
-        visible={content.visibility.about}
-        onVisibilityChange={(v) => setVis("about", v)}
       >
         <Field label="Eyebrow">
           <TextInput
@@ -628,115 +661,47 @@ export function ContentEditor({
             rows={4}
           />
         </Field>
-        <div className="grid sm:grid-cols-2 gap-4">
-          <Field label="Vision Arabic">
-            <TextInput
-              value={content.about.visionArabic}
-              onChange={(v) => set("about", { visionArabic: v })}
-            />
-          </Field>
-          <Field label="Vision Title">
-            <TextInput
-              value={content.about.visionTitle}
-              onChange={(v) => set("about", { visionTitle: v })}
-            />
-          </Field>
-        </div>
-        <Field label="Vision Body">
-          <TextArea
-            value={content.about.visionBody}
-            onChange={(v) => set("about", { visionBody: v })}
-            rows={4}
-          />
-        </Field>
-        <div className="grid sm:grid-cols-2 gap-4">
-          <Field label="Mission Arabic">
-            <TextInput
-              value={content.about.missionArabic}
-              onChange={(v) => set("about", { missionArabic: v })}
-            />
-          </Field>
-          <Field label="Mission Title">
-            <TextInput
-              value={content.about.missionTitle}
-              onChange={(v) => set("about", { missionTitle: v })}
-            />
-          </Field>
-        </div>
-        <Field label="Mission Body">
-          <TextArea
-            value={content.about.missionBody}
-            onChange={(v) => set("about", { missionBody: v })}
-            rows={4}
-          />
-        </Field>
-        <Field label="Values Heading">
-          <TextInput
-            value={content.about.valuesHeading}
-            onChange={(v) => set("about", { valuesHeading: v })}
-          />
-        </Field>
         <div>
           <p className="text-xs uppercase tracking-wider text-ink/50 font-medium mb-2">
-            Values
+            Pillars
           </p>
-          {content.about.values.map((val, i) => (
+          {content.about.pillars.map((pillar, i) => (
             <div
               key={i}
               className="p-3 rounded-lg border border-border mb-3 space-y-2"
             >
               <div className="flex items-center justify-between">
                 <span className="text-xs font-medium text-emerald-deep">
-                  Value {i + 1}
+                  Pillar {i + 1}
                 </span>
                 <button
                   type="button"
                   onClick={() => {
-                    const values = content.about.values.filter(
+                    const pillars = content.about.pillars.filter(
                       (_, idx) => idx !== i
                     );
-                    set("about", { values });
+                    set("about", { pillars });
                   }}
                   className="p-1 text-danger-400 hover:text-danger-600 transition"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
                 </button>
               </div>
-              <div className="grid grid-cols-3 gap-2">
-                <TextInput
-                  value={val.icon}
-                  onChange={(v) => {
-                    const values = [...content.about.values];
-                    values[i] = { ...values[i], icon: v };
-                    set("about", { values });
-                  }}
-                  placeholder="Icon name"
-                />
-                <TextInput
-                  value={val.arabic}
-                  onChange={(v) => {
-                    const values = [...content.about.values];
-                    values[i] = { ...values[i], arabic: v };
-                    set("about", { values });
-                  }}
-                  placeholder="Arabic"
-                />
-                <TextInput
-                  value={val.title}
-                  onChange={(v) => {
-                    const values = [...content.about.values];
-                    values[i] = { ...values[i], title: v };
-                    set("about", { values });
-                  }}
-                  placeholder="Title"
-                />
-              </div>
-              <TextArea
-                value={val.text}
+              <TextInput
+                value={pillar.title}
                 onChange={(v) => {
-                  const values = [...content.about.values];
-                  values[i] = { ...values[i], text: v };
-                  set("about", { values });
+                  const pillars = [...content.about.pillars];
+                  pillars[i] = { ...pillars[i], title: v };
+                  set("about", { pillars });
+                }}
+                placeholder="Title"
+              />
+              <TextArea
+                value={pillar.text}
+                onChange={(v) => {
+                  const pillars = [...content.about.pillars];
+                  pillars[i] = { ...pillars[i], text: v };
+                  set("about", { pillars });
                 }}
                 rows={2}
                 placeholder="Description"
@@ -747,159 +712,104 @@ export function ContentEditor({
             type="button"
             onClick={() => {
               set("about", {
-                values: [
-                  ...content.about.values,
-                  { icon: "Heart", arabic: "", title: "", text: "" },
+                pillars: [...content.about.pillars, { title: "", text: "" }],
+              });
+            }}
+            className="text-xs text-emerald-deep hover:underline flex items-center gap-1 mt-1"
+          >
+            <Plus className="h-3 w-3" /> Add pillar
+          </button>
+        </div>
+      </Section>
+
+      {/* ─── The Model ─── */}
+      <Section
+        title="The Model"
+        subtitle={content.model.heading}
+        icon="🏛️"
+        defaultOpen={true}
+      >
+        <Field label="Eyebrow">
+          <TextInput
+            value={content.model.eyebrow}
+            onChange={(v) => set("model", { eyebrow: v })}
+          />
+        </Field>
+        <Field label="Heading">
+          <TextInput
+            value={content.model.heading}
+            onChange={(v) => set("model", { heading: v })}
+          />
+        </Field>
+        <Field label="Lead Paragraph">
+          <TextArea
+            value={content.model.lead}
+            onChange={(v) => set("model", { lead: v })}
+            rows={3}
+          />
+        </Field>
+        <div>
+          <p className="text-xs uppercase tracking-wider text-ink/50 font-medium mb-2">
+            Stages
+          </p>
+          {content.model.stages.map((stage, i) => (
+            <div
+              key={i}
+              className="p-3 rounded-lg border border-border mb-3 space-y-2"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-emerald-deep">
+                  Stage {i + 1}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const stages = content.model.stages.filter(
+                      (_, idx) => idx !== i
+                    );
+                    set("model", { stages });
+                  }}
+                  className="p-1 text-danger-400 hover:text-danger-600 transition"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
+              </div>
+              <TextInput
+                value={stage.title}
+                onChange={(v) => {
+                  const stages = [...content.model.stages];
+                  stages[i] = { ...stages[i], title: v };
+                  set("model", { stages });
+                }}
+                placeholder="Title, e.g. Tazkiyah — self-purification"
+              />
+              <TextArea
+                value={stage.description}
+                onChange={(v) => {
+                  const stages = [...content.model.stages];
+                  stages[i] = { ...stages[i], description: v };
+                  set("model", { stages });
+                }}
+                rows={2}
+                placeholder="Description"
+              />
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={() => {
+              set("model", {
+                stages: [
+                  ...content.model.stages,
+                  { title: "", description: "" },
                 ],
               });
             }}
             className="text-xs text-emerald-deep hover:underline flex items-center gap-1 mt-1"
           >
-            <Plus className="h-3 w-3" /> Add value
+            <Plus className="h-3 w-3" /> Add stage
           </button>
         </div>
-      </Section>
-
-      {/* ─── Structure ─── */}
-      <Section
-        title="Organizational Model"
-        subtitle={content.structure.heading}
-        icon="🏛️"
-        defaultOpen={true}
-        visible={content.visibility.structure}
-        onVisibilityChange={(v) => setVis("structure", v)}
-      >
-        <Field label="Eyebrow">
-          <TextInput
-            value={content.structure.eyebrow}
-            onChange={(v) => set("structure", { eyebrow: v })}
-          />
-        </Field>
-        <Field label="Heading">
-          <TextInput
-            value={content.structure.heading}
-            onChange={(v) => set("structure", { heading: v })}
-          />
-        </Field>
-        <Field label="Description">
-          <TextArea
-            value={content.structure.description}
-            onChange={(v) => set("structure", { description: v })}
-            rows={4}
-          />
-        </Field>
-        <div className="grid sm:grid-cols-3 gap-4">
-          <Field label="Advisor Label">
-            <TextInput
-              value={content.structure.advisorLabel}
-              onChange={(v) => set("structure", { advisorLabel: v })}
-            />
-          </Field>
-          <Field label="Advisor Arabic">
-            <TextInput
-              value={content.structure.advisorArabic}
-              onChange={(v) => set("structure", { advisorArabic: v })}
-            />
-          </Field>
-          <Field label="Advisor Tagline">
-            <TextInput
-              value={content.structure.advisorTagline}
-              onChange={(v) => set("structure", { advisorTagline: v })}
-            />
-          </Field>
-        </div>
-        <div className="grid sm:grid-cols-2 gap-6">
-          <div className="space-y-3">
-            <h4 className="text-xs uppercase tracking-wider text-emerald-deep font-medium">
-              Brothers&apos; Cohort
-            </h4>
-            <Field label="Label">
-              <TextInput
-                value={content.structure.maleWingLabel}
-                onChange={(v) => set("structure", { maleWingLabel: v })}
-              />
-            </Field>
-            <Field label="Arabic">
-              <TextInput
-                value={content.structure.maleWingArabic}
-                onChange={(v) => set("structure", { maleWingArabic: v })}
-              />
-            </Field>
-            <Field label="Head Role Title">
-              <TextInput
-                value={content.structure.maleWingRoleTitle}
-                onChange={(v) => set("structure", { maleWingRoleTitle: v })}
-              />
-            </Field>
-            <Field label="Roles (one per line)">
-              <TextArea
-                value={content.structure.maleWingRoles.join("\n")}
-                onChange={(v) =>
-                  set("structure", {
-                    maleWingRoles: v.split("\n").filter(Boolean),
-                  })
-                }
-                rows={5}
-              />
-            </Field>
-          </div>
-          <div className="space-y-3">
-            <h4 className="text-xs uppercase tracking-wider text-sapphire font-medium">
-              Sisters&apos; Cohort
-            </h4>
-            <Field label="Label">
-              <TextInput
-                value={content.structure.femaleWingLabel}
-                onChange={(v) => set("structure", { femaleWingLabel: v })}
-              />
-            </Field>
-            <Field label="Arabic">
-              <TextInput
-                value={content.structure.femaleWingArabic}
-                onChange={(v) => set("structure", { femaleWingArabic: v })}
-              />
-            </Field>
-            <Field label="Head Role Title">
-              <TextInput
-                value={content.structure.femaleWingRoleTitle}
-                onChange={(v) =>
-                  set("structure", { femaleWingRoleTitle: v })
-                }
-              />
-            </Field>
-            <Field label="Roles (one per line)">
-              <TextArea
-                value={content.structure.femaleWingRoles.join("\n")}
-                onChange={(v) =>
-                  set("structure", {
-                    femaleWingRoles: v.split("\n").filter(Boolean),
-                  })
-                }
-                rows={5}
-              />
-            </Field>
-          </div>
-        </div>
-        <Field label="Why This Model Works — Heading">
-          <TextInput
-            value={content.structure.whyWorksHeading}
-            onChange={(v) => set("structure", { whyWorksHeading: v })}
-          />
-        </Field>
-        <Field label="Why This Model Works — Items (one per line)">
-          <TextArea
-            value={content.structure.whyWorksItems.join("\n\n")}
-            onChange={(v) =>
-              set("structure", {
-                whyWorksItems: v
-                  .split("\n\n")
-                  .map((s) => s.trim())
-                  .filter(Boolean),
-              })
-            }
-            rows={10}
-          />
-        </Field>
       </Section>
 
       {/* ─── Roadmap ─── */}
@@ -908,8 +818,6 @@ export function ContentEditor({
         subtitle={content.roadmap.heading}
         icon="🗓️"
         defaultOpen={true}
-        visible={content.visibility.roadmap}
-        onVisibilityChange={(v) => setVis("roadmap", v)}
       >
         <Field label="Eyebrow">
           <TextInput
@@ -995,15 +903,33 @@ export function ContentEditor({
                 rows={3}
                 placeholder="Description"
               />
-              <TextInput
-                value={phase.metric}
-                onChange={(v) => {
-                  const phases = [...content.roadmap.phases];
-                  phases[i] = { ...phases[i], metric: v };
-                  set("roadmap", { phases });
-                }}
-                placeholder="Success metric"
-              />
+              <div className="grid grid-cols-2 gap-2">
+                <TextInput
+                  value={phase.metric}
+                  onChange={(v) => {
+                    const phases = [...content.roadmap.phases];
+                    phases[i] = { ...phases[i], metric: v };
+                    set("roadmap", { phases });
+                  }}
+                  placeholder="Success metric"
+                />
+                <select
+                  className="input-field"
+                  value={phase.status}
+                  onChange={(e) => {
+                    const phases = [...content.roadmap.phases];
+                    phases[i] = {
+                      ...phases[i],
+                      status: e.target.value as typeof phase.status,
+                    };
+                    set("roadmap", { phases });
+                  }}
+                >
+                  <option value="done">Done</option>
+                  <option value="active">Active</option>
+                  <option value="planned">Planned</option>
+                </select>
+              </div>
             </div>
           ))}
           <button
@@ -1018,6 +944,7 @@ export function ContentEditor({
                     title: "",
                     description: "",
                     metric: "",
+                    status: "planned",
                   },
                 ],
               });
@@ -1034,9 +961,7 @@ export function ContentEditor({
         title="Call to Action"
         subtitle={content.cta.heading}
         icon="📢"
-        defaultOpen={true}
-        visible={content.visibility.cta}
-        onVisibilityChange={(v) => setVis("cta", v)}
+        defaultOpen={false}
       >
         <Field label="Arabic Title">
           <TextInput

@@ -7,46 +7,34 @@
 
 export interface HeroContent {
   eyebrow: string;
-  arabicTitle: string;
-  englishTitle: string;
-  tagline: string;
-  description: string;
+  headingLine1: string;
+  headingLine2: string;
+  lede: string;
   primaryCtaLabel: string;
   secondaryCtaLabel: string;
+  quoteText: string;
+  quoteCitation: string;
   stats: Array<{ value: string; label: string }>;
+  cohorts: Array<{ label: string; title: string; text: string }>;
 }
 
 export interface AboutContent {
   eyebrow: string;
   heading: string;
   lead: string;
-  visionArabic: string;
-  visionTitle: string;
-  visionBody: string;
-  missionArabic: string;
-  missionTitle: string;
-  missionBody: string;
-  valuesHeading: string;
-  values: Array<{ icon: string; arabic: string; title: string; text: string }>;
+  pillars: Array<{ title: string; text: string }>;
 }
 
-export interface StructureContent {
+export interface ModelStage {
+  title: string;
+  description: string;
+}
+
+export interface ModelContent {
   eyebrow: string;
   heading: string;
-  description: string;
-  advisorLabel: string;
-  advisorArabic: string;
-  advisorTagline: string;
-  maleWingLabel: string;
-  maleWingArabic: string;
-  maleWingRoleTitle: string;
-  maleWingRoles: string[];
-  femaleWingLabel: string;
-  femaleWingArabic: string;
-  femaleWingRoleTitle: string;
-  femaleWingRoles: string[];
-  whyWorksHeading: string;
-  whyWorksItems: string[];
+  lead: string;
+  stages: ModelStage[];
 }
 
 export interface RoadmapPhase {
@@ -55,6 +43,7 @@ export interface RoadmapPhase {
   title: string;
   description: string;
   metric: string;
+  status: "done" | "active" | "planned";
 }
 
 export interface RoadmapContent {
@@ -87,18 +76,6 @@ export interface NavContent {
   siteNameArabic: string;
   items: Array<{ label: string; href: string }>;
   ctaLabel: string;
-}
-
-/**
- * Controls which sections are visible on the public landing page.
- * Toggled from the admin content editor.
- */
-export interface SectionVisibility {
-  hero: boolean;
-  about: boolean;
-  structure: boolean;
-  roadmap: boolean;
-  cta: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -217,12 +194,11 @@ export interface BecomeMemberPageContent {
 export interface SiteContent {
   hero: HeroContent;
   about: AboutContent;
-  structure: StructureContent;
+  model: ModelContent;
   roadmap: RoadmapContent;
   cta: CtaContent;
   footer: FooterContent;
   nav: NavContent;
-  visibility: SectionVisibility;
   customLogo: string; // base64 data URL, or empty string for default SVG
   formConfig: FormConfig;
   positions: Position[];

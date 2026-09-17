@@ -1,83 +1,56 @@
 "use client";
 
 import { motion } from "framer-motion";
-import type { RoadmapContent } from "@/lib/content-types";
+import type { RoadmapContent, RoadmapPhase } from "@/lib/content-types";
+
+const STATUS_LABEL: Record<RoadmapPhase["status"], string> = {
+  done: "Done",
+  active: "Active",
+  planned: "Planned",
+};
+
+const STATUS_PILL: Record<RoadmapPhase["status"], string> = {
+  done: "pill-ok",
+  active: "pill-info",
+  planned: "pill-pending",
+};
 
 export function Roadmap({ content }: { content: RoadmapContent }) {
   return (
-    <section id="roadmap" className="relative py-24 sm:py-32">
-      <div className="container-prose">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="max-w-3xl mx-auto text-center"
-        >
-          <span className="section-eyebrow">{content.eyebrow}</span>
-          <h2 className="mt-6 heading-serif text-4xl sm:text-5xl font-semibold text-emerald-deep text-balance">
-            {content.heading}
-          </h2>
-          <div className="gold-divider" />
-          <p className="mt-4 text-lg text-ink/70 leading-relaxed">
-            {content.description}
-          </p>
-        </motion.div>
-
-        <div className="mt-16 max-w-4xl mx-auto">
-          <div className="relative">
-            <div
-              className="absolute left-6 sm:left-1/2 top-0 bottom-0 w-px bg-border-strong"
-              aria-hidden
-            />
-
-            <div className="space-y-8">
-              {content.phases.map((phase, i) => (
-                <motion.div
-                  key={phase.phase + i}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: i * 0.08 }}
-                  className={`relative flex flex-col sm:flex-row gap-6 ${
-                    i % 2 === 0 ? "sm:flex-row" : "sm:flex-row-reverse"
-                  }`}
-                >
-                  <div className="absolute left-6 sm:left-1/2 top-6 -translate-x-1/2 z-10">
-                    <div className="relative">
-                      <div className="relative h-4 w-4 rounded-full bg-emerald-deep border-2 border-bg" />
-                    </div>
-                  </div>
-
-                  <div
-                    className={`pl-16 sm:pl-0 sm:w-1/2 ${
-                      i % 2 === 0
-                        ? "sm:pr-12 sm:text-right"
-                        : "sm:pl-12 sm:text-left"
-                    }`}
-                  >
-                    <div className="ornate-card p-6">
-                      <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-emerald-deep font-medium mb-2 justify-start">
-                        <span>{phase.phase}</span>
-                        <span className="text-ink/30">·</span>
-                        <span>{phase.timeframe}</span>
-                      </div>
-                      <h3 className="heading-serif text-2xl font-semibold text-emerald-deep mb-2">
-                        {phase.title}
-                      </h3>
-                      <p className="text-sm text-ink/70 leading-relaxed mb-3 text-left">
-                        {phase.description}
-                      </p>
-                      <p className="text-xs text-emerald-deep italic leading-relaxed text-left">
-                        {phase.metric}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="hidden sm:block sm:w-1/2" />
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </div>
+    <div className="container-prose max-w-3xl mx-auto">
+      <div className="text-center">
+        <span className="section-eyebrow">{content.eyebrow}</span>
+        <h1 className="mt-6 heading-serif text-4xl sm:text-5xl font-semibold text-emerald-deep text-balance">
+          {content.heading}
+        </h1>
+        <div className="gold-divider" />
+        {content.description && (
+          <p className="mt-4 text-lg text-ink/70 leading-relaxed">{content.description}</p>
+        )}
       </div>
-    </section>
+
+      <div className="row-list mt-12">
+        {content.phases.map((phase, i) => (
+          <motion.div
+            key={phase.phase + i}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: i * 0.06 }}
+            className="row-item"
+          >
+            <div>
+              <div className="heading-serif text-lg font-semibold text-emerald-deep">
+                {phase.title}
+              </div>
+              <div className="mt-1 text-xs text-ink/50">{phase.timeframe}</div>
+            </div>
+            <span className={STATUS_PILL[phase.status]}>
+              <span className="pill-dot" />
+              {STATUS_LABEL[phase.status]}
+            </span>
+          </motion.div>
+        ))}
+      </div>
+    </div>
   );
 }

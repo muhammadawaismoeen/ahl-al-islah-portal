@@ -174,11 +174,11 @@ export const DEFAULT_CONTENT: SiteContent = {
     siteName: "Ahl Al-Islah",
     siteNameArabic: "أهل الإصلاح",
     items: [
-      { label: "About", href: "/#about" },
-      { label: "Model", href: "/#structure" },
+      { label: "About", href: "/about" },
+      { label: "Model", href: "/model" },
       { label: "Sessions", href: "/sessions" },
       { label: "Positions", href: "/positions" },
-      { label: "Roadmap", href: "/#roadmap" },
+      { label: "Roadmap", href: "/roadmap" },
       { label: "Drive", href: "/drive" },
       { label: "Feedback", href: "/feedback" },
     ],
@@ -186,164 +186,120 @@ export const DEFAULT_CONTENT: SiteContent = {
   },
 
   hero: {
-    eyebrow: "Powered by Rijal Al-Huda · under HSE",
-    arabicTitle: "أهل الإصلاح",
-    englishTitle: "Ahl Al-Islah",
-    tagline: "People of Reform",
-    description:
-      "A student-led community within Humanity Still Exists (HSE), cultivating character, purpose, and service in medical education — through dedicated brothers' and sisters' programming, rooted in the Prophetic spirit of excellence.",
-    primaryCtaLabel: "Apply for a Position",
-    secondaryCtaLabel: "Learn More",
+    eyebrow: "Ahl Al-Islah · أَهل الِإصلاح",
+    headingLine1: "Character,",
+    headingLine2: "purpose, service.",
+    lede: "A student-led community within Humanity Still Exists (HSE), powered by Rijal Al-Huda — cultivating character, purpose, and service in medical education.",
+    primaryCtaLabel: "Become a Member",
+    secondaryCtaLabel: "Read the Model",
+    quoteText:
+      "Indeed, Allah does not change the condition of a people until they change what is within themselves.",
+    quoteCitation: "— Surah Ar-Ra'd, 13:11",
     stats: [
-      { value: "2", label: "Dedicated cohorts" },
-      { value: "1", label: "Unified mission" },
-      { value: "6", label: "Core values" },
+      { value: "1,200", label: "Books given" },
+      { value: "4", label: "Drives run" },
+      { value: "Rs. 94k", label: "General fund" },
+      { value: "2", label: "Active cohorts" },
       { value: "86", label: "Sessions done" },
+    ],
+    cohorts: [
+      {
+        label: "Brothers' Cohort",
+        title: "Weekly halaqah, Fridays",
+        text: "Character-building sessions rooted in the Rijal Al-Huda model, open to all HSE-affiliated brothers.",
+      },
+      {
+        label: "Sisters' Cohort",
+        title: "Weekly circle, Sundays",
+        text: "A parallel track for sisters, same model, led by senior cohort members.",
+      },
     ],
   },
 
   about: {
-    eyebrow: "Vision & Mission",
-    heading: "A seed planted with sincerity",
-    lead: "Ahl Al-Islah exists to provide a welcoming, values-driven space for Muslim medical students to strengthen their faith, build meaningful peer relationships, develop holistic life skills rooted in the Sunnah, and serve their community with professionalism and excellence.",
-    visionArabic: "الرؤية",
-    visionTitle: "Vision",
-    visionBody:
-      "To cultivate a generation of Muslim medical professionals — women and men — who are as strong in their Deen as they are in their profession, and who carry themselves with dignity and service in every setting.",
-    missionArabic: "الرسالة",
-    missionTitle: "Mission",
-    missionBody:
-      "Provide a welcoming space for Muslim medical students to strengthen their faith, build meaningful peer relationships within their respective cohorts, develop life skills rooted in the Sunnah, and serve the campus with excellence and care.",
-    valuesHeading: "Six pillars that shape every decision",
-    values: [
+    eyebrow: "Who we are",
+    heading: "About Ahl Al-Islah",
+    lead: "Ahl Al-Islah is a student-led community within Humanity Still Exists (HSE) at AMDC, built around the Rijal Al-Huda character model. We run weekly cohort sessions, seasonal drives, and small acts of organised service — the aim isn't attendance, it's formation.",
+    pillars: [
       {
-        icon: "Heart",
-        arabic: "الإخلاص",
-        title: "Ikhlas",
-        text: "Sincerity. Everything we do is for the sake of Allah alone.",
+        title: "Character",
+        text: "Weekly sessions grounded in adab, sincerity, and self-accountability before anything programmatic.",
       },
       {
-        icon: "BookOpen",
-        arabic: "الحكمة",
-        title: "Hikmah",
-        text: "Wisdom. We operate with strategic patience and contextual intelligence.",
+        title: "Purpose",
+        text: "Every cohort member is tied to a role — nobody attends without a function within the community.",
       },
       {
-        icon: "Users",
-        arabic: "الأخوة",
-        title: "Ukhuwwah",
-        text: "Genuine peer bonds that sustain us through medical school and beyond.",
-      },
-      {
-        icon: "Sun",
-        arabic: "الإحسان",
-        title: "Ihsan",
-        text: "Excellence. Every event, every interaction reflects our best effort.",
-      },
-      {
-        icon: "Sparkles",
-        arabic: "الخدمة",
-        title: "Khidmah",
-        text: "Service. We serve the campus and community, earning respect through action.",
-      },
-      {
-        icon: "Shield",
-        arabic: "الحياء",
-        title: "Haya'",
-        text: "Modesty and dignity — a mark of professionalism in every interaction.",
+        title: "Service",
+        text: "Drives, donations, and campus outreach are the visible output of what happens in the room.",
       },
     ],
   },
 
-  structure: {
-    eyebrow: "Organizational Model",
-    heading: "Parallel Programming, Unified Leadership",
-    description:
-      "One department serving all Muslim medical students through two dedicated cohorts — brothers' and sisters' — each with its own leadership, programming, and community. A single Advisor unifies both cohorts under one vision, ensuring consistent quality and alignment across the department.",
-    advisorLabel: "Advisor",
-    advisorArabic: "المستشار",
-    advisorTagline: "Unified Coordinator",
-    maleWingLabel: "Brothers' Cohort",
-    maleWingArabic: "جناح الإخوة",
-    maleWingRoleTitle: "Head, Brothers' Cohort",
-    maleWingRoles: [
-      "Deputy Head",
-      "Da'wah & Content Lead",
-      "Outreach & Engagement Lead",
-      "Logistics & Operations Lead",
-      "Secretary",
-    ],
-    femaleWingLabel: "Sisters' Cohort",
-    femaleWingArabic: "جناح الأخوات",
-    femaleWingRoleTitle: "Head, Sisters' Cohort",
-    femaleWingRoles: [
-      "Deputy Head",
-      "Da'wah & Content Lead",
-      "Outreach & Engagement Lead",
-      "Logistics & Operations Lead",
-      "Secretary",
-    ],
-    whyWorksHeading: "Why this model works",
-    whyWorksItems: [
-      "Dedicated programming — each cohort receives focused attention tailored to its needs, not a compromised one-size-fits-all approach.",
-      "Consistent vision — both cohorts receive the same strategic direction, curriculum quality, and leadership support from the Advisor.",
-      "Streamlined coordination — a single Advisor reduces role confusion and keeps decisions moving.",
-      "Strong peer leadership — each cohort develops its own leaders, mentors, and community organically.",
-      "Scalable — new members join their cohort seamlessly; the model holds as the department grows.",
-      "Prophetic inspiration — the Prophet (ﷺ) taught and guided both men and women of the Ummah, through dedicated sessions and trusted channels.",
+  model: {
+    eyebrow: "Rijal Al-Huda",
+    heading: "The Model",
+    lead: "Four stages every cohort member moves through, in order — nobody skips ahead.",
+    stages: [
+      {
+        title: "Tazkiyah — self-purification",
+        description:
+          "Weekly reflection, honest self-audit, and a mentor check-in before anything else is asked of a member.",
+      },
+      {
+        title: "Ta'lim — grounded knowledge",
+        description:
+          "Structured study of seerah, fiqh essentials, and the Qur'an — not passive listening, but retained and tested.",
+      },
+      {
+        title: "Tarbiyah — mentorship",
+        description:
+          "Every member is paired with a senior cohort member who is accountable for their growth, not just their attendance.",
+      },
+      {
+        title: "Khidmah — service",
+        description:
+          "The model closes with organised service — drives, campus outreach — as the visible proof of the first three stages.",
+      },
     ],
   },
 
   roadmap: {
-    eyebrow: "12-Month Roadmap",
-    heading: "Patient, Phased, Purposeful",
-    description:
-      "Both cohorts develop in parallel. Each phase builds trust, competence, and credibility — with the Advisor ensuring consistent quality across both cohorts from day one.",
+    eyebrow: "Where we're headed",
+    heading: "Roadmap",
+    description: "",
     phases: [
       {
-        phase: "Phase 1",
-        timeframe: "Weeks 1–4",
-        title: "Foundation",
-        description:
-          "Appoint Heads for both cohorts. Build each cohort's core team. Draft the department charter. Establish meeting rhythms and cohort-specific communication channels.",
-        metric:
-          "Both cohorts have appointed leadership · Charter approved by HSE",
+        phase: "Milestone 1",
+        timeframe: "Sep 2025",
+        title: "Cohort structure launched",
+        description: "",
+        metric: "",
+        status: "done",
       },
       {
-        phase: "Phase 2",
-        timeframe: "Weeks 5–8",
-        title: "Soft Launch",
-        description:
-          "First brotherhood and sisterhood gatherings. Weekly halaqahs per cohort. One universally appealing event per cohort (e.g., Exam Stress workshop).",
-        metric:
-          "Weekly attendance of 8+ per cohort · Positive word-of-mouth",
+        phase: "Milestone 2",
+        timeframe: "Jan 2026",
+        title: "Mentor-pairing programme",
+        description: "",
+        metric: "",
+        status: "done",
       },
       {
-        phase: "Phase 3",
-        timeframe: "Months 3–4",
-        title: "Credibility",
-        description:
-          "Host a flagship event with thoughtful programming. Structured Seerah circles. Engage faculty allies per cohort. Establish monthly reporting rhythm.",
-        metric:
-          "50+ attendees at flagship · Faculty engaged per cohort · HSE leadership satisfied",
+        phase: "Milestone 3",
+        timeframe: "Ramadan 2027",
+        title: "Qur'an & Seerah Drive",
+        description: "",
+        metric: "",
+        status: "active",
       },
       {
-        phase: "Phase 4",
-        timeframe: "Months 5–8",
-        title: "Expand",
-        description:
-          "Launch signature recurring programs per cohort. Peer mentorship pairs. Community service projects with parallel teams. Collaborations with other HSE departments.",
-        metric:
-          "25+ consistent members per cohort · Members showing personal growth",
-      },
-      {
-        phase: "Phase 5",
-        timeframe: "Months 9–12",
-        title: "Legacy",
-        description:
-          "Document operations manuals per cohort. Each Head trains their own successor. Establish Ahl Al-Islah as a campus brand synonymous with professionalism, values, and service.",
-        metric:
-          "Both cohorts self-sustaining · Successors identified and trained",
+        phase: "Milestone 4",
+        timeframe: "Planned — no date set",
+        title: "Second campus chapter",
+        description: "",
+        metric: "",
+        status: "planned",
       },
     ],
   },
@@ -364,9 +320,9 @@ export const DEFAULT_CONTENT: SiteContent = {
     quoteAttribution: "— Surah Ar-Ra'd, 13:11",
     exploreHeading: "Explore",
     exploreLinks: [
-      { label: "About", href: "/#about" },
-      { label: "Model", href: "/#structure" },
-      { label: "Roadmap", href: "/#roadmap" },
+      { label: "About", href: "/about" },
+      { label: "Model", href: "/model" },
+      { label: "Roadmap", href: "/roadmap" },
       { label: "Open Positions", href: "/positions" },
       { label: "Qur'an & Seerah Drive", href: "/drive" },
     ],
@@ -378,14 +334,6 @@ export const DEFAULT_CONTENT: SiteContent = {
       "Under HSE / Rijal Al-Huda",
     ],
     smallPrint: "Built with ikhlas for Rijal Al-Huda.",
-  },
-
-  visibility: {
-    hero: true,
-    about: true,
-    structure: true,
-    roadmap: true,
-    cta: true,
   },
 
   customLogo: "",

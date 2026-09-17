@@ -1,17 +1,24 @@
+import type { Metadata } from "next";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { Hero } from "@/components/sections/Hero";
+import { About } from "@/components/sections/About";
 import { getContent } from "@/lib/content-store";
+
+export const metadata: Metadata = {
+  title: "About — Ahl Al-Islah",
+  description:
+    "Ahl Al-Islah is a student-led community within Humanity Still Exists (HSE), built around the Rijal Al-Huda character model.",
+};
 
 export const dynamic = "force-dynamic";
 
-export default async function HomePage() {
+export default async function AboutPage() {
   const content = await getContent();
   return (
     <>
       <Navbar content={content.nav} customLogo={content.customLogo} />
-      <main>
-        <Hero content={content.hero} customLogo={content.customLogo} />
+      <main className="pt-32 pb-20">
+        <About content={content.about} />
       </main>
       <Footer content={content.footer} navContent={content.nav} customLogo={content.customLogo} />
     </>

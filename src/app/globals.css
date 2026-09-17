@@ -135,6 +135,22 @@
     @apply border-b border-border last:border-b-0;
   }
 
+  /* Flat hairline-divided list — roadmap milestones, dense row content */
+  .row-list {
+    @apply divide-y divide-border;
+  }
+  .row-item {
+    @apply flex items-center justify-between gap-4 py-4;
+  }
+
+  /* Flat hairline-divided list — ordered process steps (e.g. the Model) */
+  .index-list {
+    @apply divide-y divide-border;
+  }
+  .index-row {
+    @apply py-6;
+  }
+
   .textarea-field {
     @apply input-field resize-none;
   }
