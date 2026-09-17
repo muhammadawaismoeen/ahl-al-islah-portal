@@ -1,7 +1,7 @@
 import { promises as fs } from "fs";
 import path from "path";
 import crypto from "crypto";
-import { put, get, del } from "@vercel/blob";
+import { put, del } from "@vercel/blob";
 import { isRedisStore, setDoc, getDoc, deleteDoc } from "./redis";
 import { MAX_PROOF_BYTES } from "./drive-config";
 
@@ -13,14 +13,18 @@ const COLLECTION = "donation-proofs";
 export const PROOF_URL_PREFIX = "/api/donation-proofs/";
 
 /** Metadata for a donation proof-of-transfer file. The file bytes themselves
- *  live in Vercel Blob (private access); this doc just points at them and is
- *  served, admin-only, by /api/donation-proofs/[id]. */
+ *  live in Vercel Blob (public access — the project's store doesn't support
+ *  private blobs); this doc just points at them and is served, admin-only,
+ *  by /api/donation-proofs/[id]. */
 export interface StoredProof {
   id: string;
   contentType: string;
   size: number;
   createdAt: string;
-  /** Vercel Blob URL, private access — not fetchable without BLOB_READ_WRITE_TOKEN */
+  /** Vercel Blob URL. The store is public-access (same as posters), so this
+   *  URL alone is fetchable by anyone who has it — confidentiality relies on
+   *  the id being long and unguessable, not on auth. The admin-gated
+   *  /api/donation-proofs/[id] route is the only path that's login-checked. */
   blobUrl: string;
 }
 
@@ -40,8 +44,8 @@ export async function getStoredProof(id: string): Promise<StoredProof | null> {
 }
 
 /** Reads the actual file bytes for a stored proof, for the admin-gated
- *  download route. The Blob URL is private, so this is the only path that
- *  can produce readable bytes for it. */
+ *  download route — proxies the public Blob URL so the app can still enforce
+ *  a login check before anyone sees the bytes through the normal UI. */
 export async function getProofBytes(
   id: string
 ): Promise<{ bytes: Buffer; contentType: string } | null> {
@@ -55,14 +59,10 @@ export async function getProofBytes(
     return { bytes: Buffer.from(legacyData, "base64"), contentType: proof.contentType };
   }
 
-  const result = await get(proof.blobUrl, { access: "private" });
-  if (!result?.stream) return null;
-  const reader = result.stream.getReader();
-  const chunks: Buffer[] = [];
-  for (let chunk = await reader.read(); !chunk.done; chunk = await reader.read()) {
-    chunks.push(Buffer.from(chunk.value));
-  }
-  return { bytes: Buffer.concat(chunks), contentType: proof.contentType };
+  const response = await fetch(proof.blobUrl);
+  if (!response.ok) return null;
+  const bytes = Buffer.from(await response.arrayBuffer());
+  return { bytes, contentType: proof.contentType };
 }
 
 /**
@@ -79,16 +79,16 @@ export async function uploadDonationProof(
     return null;
 
   const ext = safeExt(file.name);
-  const id = `${Date.now().toString(36)}-${crypto
-    .randomBytes(4)
-    .toString("hex")}`;
+  // The blob store is public-access, so this id doubles as the confidentiality
+  // boundary for the file itself — 20 random bytes makes it infeasible to guess.
+  const id = crypto.randomBytes(20).toString("hex");
   const bytes = Buffer.from(await file.arrayBuffer());
 
   if (isRedisStore()) {
     const contentType =
       file.type || (ext === "pdf" ? "application/pdf" : `image/${ext === "jpg" ? "jpeg" : ext}`);
     const blob = await put(`donation-proofs/${id}.${ext}`, bytes, {
-      access: "private",
+      access: "public",
       contentType,
     });
     const proof: StoredProof = {
