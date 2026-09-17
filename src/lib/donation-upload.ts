@@ -1,6 +1,7 @@
 import { promises as fs } from "fs";
 import path from "path";
 import crypto from "crypto";
+import { put, get, del } from "@vercel/blob";
 import { isRedisStore, setDoc, getDoc, deleteDoc } from "./redis";
 import { MAX_PROOF_BYTES } from "./drive-config";
 
@@ -11,15 +12,16 @@ const ALLOWED_EXT = new Set(["jpg", "jpeg", "png", "webp", "pdf"]);
 const COLLECTION = "donation-proofs";
 export const PROOF_URL_PREFIX = "/api/donation-proofs/";
 
-/** A donation proof-of-transfer file stored in Redis and served, admin-only,
- *  by /api/donation-proofs/[id]. */
+/** Metadata for a donation proof-of-transfer file. The file bytes themselves
+ *  live in Vercel Blob (private access); this doc just points at them and is
+ *  served, admin-only, by /api/donation-proofs/[id]. */
 export interface StoredProof {
   id: string;
   contentType: string;
   size: number;
   createdAt: string;
-  /** base64-encoded file bytes */
-  data: string;
+  /** Vercel Blob URL, private access — not fetchable without BLOB_READ_WRITE_TOKEN */
+  blobUrl: string;
 }
 
 function safeExt(name: string, fallback = "jpg"): string {
@@ -37,9 +39,27 @@ export async function getStoredProof(id: string): Promise<StoredProof | null> {
   }
 }
 
+/** Reads the actual file bytes for a stored proof, for the admin-gated
+ *  download route. The Blob URL is private, so this is the only path that
+ *  can produce readable bytes for it. */
+export async function getProofBytes(
+  id: string
+): Promise<{ bytes: Buffer; contentType: string } | null> {
+  const proof = await getStoredProof(id);
+  if (!proof) return null;
+  const result = await get(proof.blobUrl, { access: "private" });
+  if (!result?.stream) return null;
+  const reader = result.stream.getReader();
+  const chunks: Buffer[] = [];
+  for (let chunk = await reader.read(); !chunk.done; chunk = await reader.read()) {
+    chunks.push(Buffer.from(chunk.value));
+  }
+  return { bytes: Buffer.concat(chunks), contentType: proof.contentType };
+}
+
 /**
  * Upload a proof-of-transfer file (image or PDF). Returns a public URL
- * string (/api/donation-proofs/<id> in prod via Redis, /uploads/... in dev)
+ * string (/api/donation-proofs/<id> in prod via Blob, /uploads/... in dev)
  * or null when the input is empty / rejected.
  */
 export async function uploadDonationProof(
@@ -57,13 +77,18 @@ export async function uploadDonationProof(
   const bytes = Buffer.from(await file.arrayBuffer());
 
   if (isRedisStore()) {
+    const contentType =
+      file.type || (ext === "pdf" ? "application/pdf" : `image/${ext === "jpg" ? "jpeg" : ext}`);
+    const blob = await put(`donation-proofs/${id}.${ext}`, bytes, {
+      access: "private",
+      contentType,
+    });
     const proof: StoredProof = {
       id,
-      contentType:
-        file.type || (ext === "pdf" ? "application/pdf" : `image/${ext === "jpg" ? "jpeg" : ext}`),
+      contentType,
       size: bytes.length,
       createdAt: new Date().toISOString(),
-      data: bytes.toString("base64"),
+      blobUrl: blob.url,
     };
     await setDoc(COLLECTION, id, proof);
     return `${PROOF_URL_PREFIX}${id}`;
@@ -82,6 +107,10 @@ export async function deleteDonationProof(url?: string | null): Promise<void> {
   if (url.startsWith(PROOF_URL_PREFIX)) {
     const id = url.slice(PROOF_URL_PREFIX.length);
     try {
+      const proof = await getDoc<StoredProof>(COLLECTION, id);
+      if (proof?.blobUrl) {
+        await del(proof.blobUrl);
+      }
       await deleteDoc(COLLECTION, id);
     } catch {
       // ignore

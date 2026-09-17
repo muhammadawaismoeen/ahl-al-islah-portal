@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { isAuthenticated } from "@/app/admin/actions";
-import { getStoredProof } from "@/lib/donation-upload";
+import { getProofBytes } from "@/lib/donation-upload";
 
 /**
  * Serves donation proof-of-transfer files. Unlike session posters, these can
@@ -21,16 +21,15 @@ export async function GET(
     return NextResponse.json({ error: "Invalid proof id." }, { status: 400 });
   }
 
-  const proof = await getStoredProof(id);
+  const proof = await getProofBytes(id);
   if (!proof) {
     return NextResponse.json({ error: "Proof not found." }, { status: 404 });
   }
 
-  const bytes = Buffer.from(proof.data, "base64");
-  return new NextResponse(bytes, {
+  return new NextResponse(new Uint8Array(proof.bytes), {
     headers: {
       "Content-Type": proof.contentType,
-      "Content-Length": String(bytes.length),
+      "Content-Length": String(proof.bytes.length),
       "Cache-Control": "private, no-store",
     },
   });

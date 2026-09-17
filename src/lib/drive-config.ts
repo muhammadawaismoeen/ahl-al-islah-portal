@@ -6,10 +6,12 @@
 
 export const DRIVE_CURRENCY = "Rs.";
 
-/** Same Upstash REST ceiling as poster-upload.ts — base64 inflates ~33%,
- *  so 600 KB of raw file is the safe cap for a single stored proof. Lives
- *  here (not donation-upload.ts) so client components can import it
- *  without pulling server-only `fs`/Redis code into the browser bundle. */
+/** Sane upper bound for a single proof-of-transfer upload (bank receipts are
+ *  small scans/photos, not the constraint here — this just caps abuse). Bytes
+ *  go to Vercel Blob, not inline into a Redis document, so there's no REST
+ *  payload-size ceiling to size this against. Lives here (not
+ *  donation-upload.ts) so client components can import it without pulling
+ *  server-only `fs`/Redis code into the browser bundle. */
 export const MAX_PROOF_BYTES = 600 * 1024;
 
 export const BANK_TRANSFER_DETAILS = {
