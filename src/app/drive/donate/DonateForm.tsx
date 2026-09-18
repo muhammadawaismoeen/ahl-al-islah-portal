@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import type { Ambassador, Drive, PaymentMethod } from "@/lib/drive-types";
 import { DRIVE_CURRENCY, MAX_PROOF_BYTES } from "@/lib/drive-config";
 import { submitDonationAction } from "./actions";
+import { ZakatDisclaimerDialog } from "./ZakatDisclaimerDialog";
 
 export function DonateForm({
   drives,
@@ -22,6 +23,7 @@ export function DonateForm({
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [refCode, setRefCode] = useState<string | null>(null);
+  const [confirmData, setConfirmData] = useState<FormData | null>(null);
   // `drives` is sorted newest-first, so the latest drive is pre-selected
   // instead of forcing donors to pick it out of the dropdown themselves.
   const [driveId, setDriveId] = useState(drives[0]?.id ?? "general");
@@ -42,12 +44,19 @@ export function DonateForm({
       );
       return;
     }
+    setConfirmData(formData);
+  }
+
+  function handleConfirmedSubmit() {
+    if (!confirmData) return;
     startTransition(async () => {
-      const res = await submitDonationAction(formData);
+      const res = await submitDonationAction(confirmData);
       if (res.ok && res.refCode) {
+        setConfirmData(null);
         setRefCode(res.refCode);
         toast.success("Donation submitted for review.");
       } else {
+        setConfirmData(null);
         setError(res.error ?? "Couldn't submit your donation.");
         toast.error(res.error ?? "Couldn't submit your donation.");
       }
@@ -271,6 +280,13 @@ export function DonateForm({
         )}
         {donateCtaLabel}
       </button>
+
+      <ZakatDisclaimerDialog
+        open={confirmData !== null}
+        pending={pending}
+        onConfirm={handleConfirmedSubmit}
+        onCancel={() => setConfirmData(null)}
+      />
     </form>
   );
 }
