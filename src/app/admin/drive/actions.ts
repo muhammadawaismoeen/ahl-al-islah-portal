@@ -15,6 +15,8 @@ import {
   getDriveItem,
   reviewAmbassador,
   deleteAmbassador,
+  updateAmbassadorName,
+  recordManualDonation,
 } from "@/lib/drive-store";
 import {
   setIhsanPercentage,
@@ -239,6 +241,40 @@ export async function deleteAmbassadorAction(
 
   const ok = await deleteAmbassador(id);
   if (!ok) return { ok: false, error: "Registration not found." };
+  refresh();
+  return { ok: true };
+}
+
+export async function updateAmbassadorNameAction(
+  id: string,
+  name: string
+): Promise<{ ok: boolean; error?: string }> {
+  const authed = await isAuthenticated();
+  if (!authed) return { ok: false, error: "Not authenticated." };
+
+  const result = await updateAmbassadorName(id, name);
+  if (!result.ok) return { ok: false, error: result.error };
+  refresh();
+  return { ok: true };
+}
+
+export async function recordManualDonationAction(
+  ambassadorId: string,
+  amount: number,
+  donorName?: string,
+  note?: string
+): Promise<{ ok: boolean; error?: string }> {
+  const authed = await isAuthenticated();
+  if (!authed) return { ok: false, error: "Not authenticated." };
+
+  const result = await recordManualDonation({
+    ambassadorId,
+    amount,
+    donorName: donorName?.trim() || null,
+    note: note?.trim() || null,
+    reviewedBy: "Admin",
+  });
+  if (!result.ok) return { ok: false, error: result.error };
   refresh();
   return { ok: true };
 }

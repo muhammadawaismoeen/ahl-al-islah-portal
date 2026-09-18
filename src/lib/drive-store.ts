@@ -37,7 +37,7 @@ import type {
   Ambassador,
 } from "./drive-types";
 import { getDriveSettings, computeSuggestedTarget } from "./drive-settings";
-import { isAmbassadorEmail } from "./drive-config";
+import { isCollegeEmail } from "./drive-config";
 
 const DATA_ROOT = path.join(process.cwd(), "data", "drive");
 const DIR = {
@@ -431,6 +431,14 @@ export async function reserveBook(input: {
   | { ok: true; application: DriveApplication }
   | { ok: false; error: string }
 > {
+  if (!isCollegeEmail(input.applicantEmail)) {
+    return {
+      ok: false,
+      error:
+        "Book applications are only open to Akhtar Saeed Medical and Dental College student accounts.",
+    };
+  }
+
   const drive = await getDrive(input.driveId);
   if (!drive || !drive.applicationsOpen) {
     return { ok: false, error: "Applications aren't open for this drive right now." };
@@ -716,7 +724,7 @@ export async function registerAmbassador(input: {
    *  rejected server-side rather than trusted from the client. */
   chosenTarget: number;
 }): Promise<{ ok: true; ambassador: Ambassador } | { ok: false; error: string }> {
-  if (!isAmbassadorEmail(input.email)) {
+  if (!isCollegeEmail(input.email)) {
     return {
       ok: false,
       error:
@@ -783,8 +791,69 @@ export async function reviewAmbassador(
   return { ok: true, ambassador: updated };
 }
 
+export async function updateAmbassadorName(
+  id: string,
+  name: string
+): Promise<{ ok: true; ambassador: Ambassador } | { ok: false; error: string }> {
+  const trimmed = name.trim();
+  if (trimmed.length < 2) return { ok: false, error: "Please enter a valid name." };
+
+  const ambassador = await getAmbassador(id);
+  if (!ambassador) return { ok: false, error: "Ambassador registration not found." };
+
+  const updated: Ambassador = {
+    ...ambassador,
+    name: trimmed,
+    updatedAt: new Date().toISOString(),
+  };
+  await writeRecord(COLLECTION.ambassadors, DIR.ambassadors, updated);
+  return { ok: true, ambassador: updated };
+}
+
 export async function deleteAmbassador(id: string): Promise<boolean> {
   return deleteRecord(COLLECTION.ambassadors, DIR.ambassadors, id);
+}
+
+/**
+ * Records a donation the admin collected outside the public proof-upload
+ * flow (cash-in-hand, bank transfer confirmed by phone, etc.) as already
+ * verified, crediting an Ambassador's leaderboard total immediately.
+ */
+export async function recordManualDonation(input: {
+  ambassadorId: string;
+  amount: number;
+  donorName?: string | null;
+  note?: string | null;
+  reviewedBy: string;
+}): Promise<{ ok: true; donation: Donation } | { ok: false; error: string }> {
+  if (!Number.isFinite(input.amount) || input.amount <= 0) {
+    return { ok: false, error: "Please enter a valid amount." };
+  }
+  const ambassador = await getAmbassador(input.ambassadorId);
+  if (!ambassador) return { ok: false, error: "Ambassador registration not found." };
+
+  const now = new Date().toISOString();
+  const donation: Donation = {
+    id: genId("dnt"),
+    driveId: ambassador.driveId,
+    donorName: input.donorName ?? null,
+    donorContact: input.note ?? null,
+    amount: input.amount,
+    proofUrl: "manual-entry",
+    status: "verified",
+    reviewedBy: input.reviewedBy,
+    reviewedAt: now,
+    refCode: genCode("DN"),
+    ambassadorId: ambassador.id,
+    createdAt: now,
+  };
+  await writeRecord(COLLECTION.donations, DIR.donations, donation);
+  await Promise.all([
+    recomputeDriveRaised(ambassador.driveId),
+    recomputeAmbassadorRaised(ambassador.id),
+  ]);
+  revalidateTag(STATS_TAG);
+  return { ok: true, donation };
 }
 
 async function recomputeAmbassadorRaised(ambassadorId: string): Promise<void> {

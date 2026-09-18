@@ -2,7 +2,7 @@
 
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Check, X, Plus, Award, Landmark, Wallet } from "lucide-react";
+import { Loader2, Check, X, Plus, Award, Landmark, Wallet, Pencil, HandCoins } from "lucide-react";
 import { toast } from "sonner";
 import { formatDate } from "@/lib/utils";
 import { DRIVE_CURRENCY } from "@/lib/drive-config";
@@ -12,6 +12,8 @@ import { DeleteButton } from "@/components/admin/DeleteButton";
 import {
   reviewAmbassadorAction,
   deleteAmbassadorAction,
+  updateAmbassadorNameAction,
+  recordManualDonationAction,
   setIhsanPercentageAction,
   addPaymentMethodAction,
   deletePaymentMethodAction,
@@ -92,47 +94,188 @@ export function AmbassadorsPanel({
     <div className="ornate-card p-2">
       <ul className="divide-y divide-border">
         {ambassadors.map((a) => (
-          <li key={a.id} className="p-4 flex flex-wrap items-center justify-between gap-3">
-            <div className="min-w-0">
-              <p className="font-medium text-sm text-ink flex items-center gap-1.5">
-                <Award className="h-3.5 w-3.5 text-emerald-deep shrink-0" />
-                {a.name}
-                {a.isIhsanLevel && (
-                  <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-amber/15 text-amber">
-                    Ihsan-level
-                  </span>
-                )}
-              </p>
-              <p className="text-xs text-ink/50 mt-0.5">
-                {a.email} · {driveNameById[a.driveId] ?? "Drive"}
-              </p>
-              <p className="text-[11px] text-ink/40 mt-0.5">
-                Target {DRIVE_CURRENCY} {a.chosenTarget.toLocaleString()} · Raised{" "}
-                {DRIVE_CURRENCY} {a.raisedAmount.toLocaleString()} · Registered {formatDate(a.createdAt)}
-                {a.certificateIssuedAt && " · Certificate issued"}
-              </p>
-            </div>
-            <div className="flex items-center gap-2 shrink-0">
-              <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${AMB_STATUS_STYLE[a.status]}`}>
-                {a.status}
-              </span>
-              {a.status === "pending" && <AmbassadorReviewButtons ambassadorId={a.id} />}
-              {a.status !== "pending" && (
-                <DeleteButton
-                  title={`Delete ${a.name}'s registration?`}
-                  description="This removes the Ambassador registration record. This cannot be undone."
-                  successMessage="Registration deleted."
-                  action={() => deleteAmbassadorAction(a.id)}
-                  iconOnly
-                  ariaLabel={`Delete ${a.name}'s registration`}
-                  className="btn-ghost !py-1.5 !px-2.5 text-xs text-danger hover:text-danger-700"
-                />
-              )}
-            </div>
-          </li>
+          <AmbassadorRow key={a.id} ambassador={a} driveName={driveNameById[a.driveId] ?? "Drive"} />
         ))}
       </ul>
     </div>
+  );
+}
+
+function AmbassadorRow({ ambassador: a, driveName }: { ambassador: Ambassador; driveName: string }) {
+  const router = useRouter();
+  const [editingName, setEditingName] = useState(false);
+  const [nameValue, setNameValue] = useState(a.name);
+  const [savingName, setSavingName] = useState(false);
+
+  const [addingDonation, setAddingDonation] = useState(false);
+  const [donationAmount, setDonationAmount] = useState("");
+  const [donationNote, setDonationNote] = useState("");
+  const [savingDonation, setSavingDonation] = useState(false);
+
+  async function saveName() {
+    if (nameValue.trim() === a.name) {
+      setEditingName(false);
+      return;
+    }
+    setSavingName(true);
+    const res = await updateAmbassadorNameAction(a.id, nameValue);
+    setSavingName(false);
+    if (res.ok) {
+      toast.success("Name updated.");
+      setEditingName(false);
+      router.refresh();
+    } else {
+      toast.error(res.error ?? "Failed to update name.");
+    }
+  }
+
+  async function saveDonation() {
+    const amount = Number(donationAmount);
+    if (!Number.isFinite(amount) || amount <= 0) {
+      toast.error("Enter a valid amount.");
+      return;
+    }
+    setSavingDonation(true);
+    const res = await recordManualDonationAction(a.id, amount, undefined, donationNote || undefined);
+    setSavingDonation(false);
+    if (res.ok) {
+      toast.success(`${DRIVE_CURRENCY} ${amount.toLocaleString()} donation recorded.`);
+      setAddingDonation(false);
+      setDonationAmount("");
+      setDonationNote("");
+      router.refresh();
+    } else {
+      toast.error(res.error ?? "Failed to record donation.");
+    }
+  }
+
+  return (
+    <li className="p-4 flex flex-wrap items-center justify-between gap-3">
+      <div className="min-w-0 flex-1">
+        {editingName ? (
+          <div className="flex items-center gap-2 mb-1">
+            <input
+              value={nameValue}
+              onChange={(e) => setNameValue(e.target.value)}
+              className="input-field !py-1 text-sm max-w-xs"
+              autoFocus
+            />
+            <button
+              type="button"
+              onClick={saveName}
+              disabled={savingName}
+              className="btn-ghost !py-1 !px-2.5 text-xs text-emerald-deep"
+            >
+              {savingName ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setNameValue(a.name);
+                setEditingName(false);
+              }}
+              disabled={savingName}
+              className="btn-ghost !py-1 !px-2.5 text-xs text-danger"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        ) : (
+          <p className="font-medium text-sm text-ink flex items-center gap-1.5">
+            <Award className="h-3.5 w-3.5 text-emerald-deep shrink-0" />
+            {a.name}
+            {a.isIhsanLevel && (
+              <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-amber/15 text-amber">
+                Ihsan-level
+              </span>
+            )}
+            <button
+              type="button"
+              onClick={() => setEditingName(true)}
+              className="text-ink/30 hover:text-emerald-deep transition"
+              aria-label={`Edit ${a.name}'s name`}
+            >
+              <Pencil className="h-3 w-3" />
+            </button>
+          </p>
+        )}
+        <p className="text-xs text-ink/50 mt-0.5">
+          {a.email} · {driveName}
+        </p>
+        <p className="text-[11px] text-ink/40 mt-0.5">
+          Target {DRIVE_CURRENCY} {a.chosenTarget.toLocaleString()} · Raised{" "}
+          {DRIVE_CURRENCY} {a.raisedAmount.toLocaleString()} · Registered {formatDate(a.createdAt)}
+          {a.certificateIssuedAt && " · Certificate issued"}
+        </p>
+        {addingDonation && (
+          <div className="flex flex-wrap items-center gap-2 mt-2">
+            <input
+              type="number"
+              min={1}
+              placeholder="Amount"
+              value={donationAmount}
+              onChange={(e) => setDonationAmount(e.target.value)}
+              className="input-field !py-1 text-sm w-28"
+              autoFocus
+            />
+            <input
+              placeholder="Note (optional)"
+              value={donationNote}
+              onChange={(e) => setDonationNote(e.target.value)}
+              className="input-field !py-1 text-sm w-40"
+            />
+            <button
+              type="button"
+              onClick={saveDonation}
+              disabled={savingDonation}
+              className="btn-ghost !py-1 !px-2.5 text-xs text-emerald-deep"
+            >
+              {savingDonation ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
+              Save
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setAddingDonation(false);
+                setDonationAmount("");
+                setDonationNote("");
+              }}
+              disabled={savingDonation}
+              className="btn-ghost !py-1 !px-2.5 text-xs text-danger"
+            >
+              Cancel
+            </button>
+          </div>
+        )}
+      </div>
+      <div className="flex items-center gap-2 shrink-0">
+        <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${AMB_STATUS_STYLE[a.status]}`}>
+          {a.status}
+        </span>
+        {a.status === "approved" && !addingDonation && (
+          <button
+            type="button"
+            onClick={() => setAddingDonation(true)}
+            className="btn-ghost !py-1.5 !px-2.5 text-xs text-emerald-deep"
+          >
+            <HandCoins className="h-3.5 w-3.5" />
+            Add donation
+          </button>
+        )}
+        {a.status === "pending" && <AmbassadorReviewButtons ambassadorId={a.id} />}
+        {a.status !== "pending" && (
+          <DeleteButton
+            title={`Delete ${a.name}'s registration?`}
+            description="This removes the Ambassador registration record. This cannot be undone."
+            successMessage="Registration deleted."
+            action={() => deleteAmbassadorAction(a.id)}
+            iconOnly
+            ariaLabel={`Delete ${a.name}'s registration`}
+            className="btn-ghost !py-1.5 !px-2.5 text-xs text-danger hover:text-danger-700"
+          />
+        )}
+      </div>
+    </li>
   );
 }
 

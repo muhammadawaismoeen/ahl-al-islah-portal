@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { registerAmbassador } from "@/lib/drive-store";
-import { isAmbassadorEmail, AMBASSADOR_EMAIL_DOMAIN } from "@/lib/drive-config";
+import { isCollegeEmail, COLLEGE_EMAIL_DOMAIN } from "@/lib/drive-config";
 
 export async function registerAmbassadorAction(
   formData: FormData
@@ -13,10 +13,10 @@ export async function registerAmbassadorAction(
   if (!email) {
     return { ok: false, error: "Please sign in with Google to continue." };
   }
-  if (!isAmbassadorEmail(email)) {
+  if (!isCollegeEmail(email)) {
     return {
       ok: false,
-      error: `Ambassador registration is only open to ${AMBASSADOR_EMAIL_DOMAIN} student accounts.`,
+      error: `Ambassador registration is only open to ${COLLEGE_EMAIL_DOMAIN} student accounts.`,
     };
   }
 

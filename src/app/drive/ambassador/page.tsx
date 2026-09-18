@@ -7,7 +7,7 @@ import { getContent } from "@/lib/content-store";
 import { auth } from "@/lib/auth";
 import { getActiveDrive, listAmbassadorsByEmail } from "@/lib/drive-store";
 import { getDriveSettings } from "@/lib/drive-settings";
-import { isAmbassadorEmail, AMBASSADOR_EMAIL_DOMAIN, DRIVE_CURRENCY } from "@/lib/drive-config";
+import { isCollegeEmail, COLLEGE_EMAIL_DOMAIN, DRIVE_CURRENCY } from "@/lib/drive-config";
 import type { Ambassador } from "@/lib/drive-types";
 import { RegisterForm } from "./RegisterForm";
 
@@ -27,7 +27,7 @@ export default async function AmbassadorPage() {
     getDriveSettings(),
   ]);
   const email = session?.user?.email ?? null;
-  const eligible = email ? isAmbassadorEmail(email) : false;
+  const eligible = email ? isCollegeEmail(email) : false;
   const registrations = email ? await listAmbassadorsByEmail(email) : [];
   const existing = registrations.find((a) => a.status !== "rejected") ?? registrations[0] ?? null;
 
@@ -59,7 +59,7 @@ export default async function AmbassadorPage() {
           {!email ? (
             <div className="ornate-card p-8 text-center">
               <p className="text-sm text-ink/60 mb-4">
-                Sign in with your official {AMBASSADOR_EMAIL_DOMAIN} email to
+                Sign in with your official {COLLEGE_EMAIL_DOMAIN} email to
                 register as an Ambassador.
               </p>
               <Link
@@ -77,7 +77,7 @@ export default async function AmbassadorPage() {
               </p>
               <p className="text-sm text-ink/60 mb-4">
                 Ambassador registration is only open to Akhtar Saeed Medical
-                and Dental College student accounts ({AMBASSADOR_EMAIL_DOMAIN}
+                and Dental College student accounts ({COLLEGE_EMAIL_DOMAIN}
                 ). You&apos;re signed in as <strong>{email}</strong>.
               </p>
               <Link

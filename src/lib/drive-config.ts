@@ -14,13 +14,14 @@ export const DRIVE_CURRENCY = "Rs.";
  *  server-only `fs`/Redis code into the browser bundle. */
 export const MAX_PROOF_BYTES = 600 * 1024;
 
-/** Ambassador registration is restricted to Akhtar Saeed Medical and Dental
- *  College's official student email domain — an explicit, non-negotiable
- *  gate requested alongside admin-approval for the program. */
-export const AMBASSADOR_EMAIL_DOMAIN = "@amdc.edu.pk";
+/** Ambassador registration and book applications are restricted to Akhtar
+ *  Saeed Medical and Dental College's official student email domain — an
+ *  explicit, non-negotiable gate requested alongside admin-approval for the
+ *  program. */
+export const COLLEGE_EMAIL_DOMAIN = "@amdc.edu.pk";
 
-export function isAmbassadorEmail(email: string): boolean {
-  return email.trim().toLowerCase().endsWith(AMBASSADOR_EMAIL_DOMAIN);
+export function isCollegeEmail(email: string): boolean {
+  return email.trim().toLowerCase().endsWith(COLLEGE_EMAIL_DOMAIN);
 }
 
 export const DEFAULT_IHSAN_PERCENTAGE = 20;

@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth";
 import { reserveBook } from "@/lib/drive-store";
 import { addDriveDeviceId } from "@/lib/drive-session";
 import { notifyNewBookApplication } from "@/lib/notify";
+import { isCollegeEmail, COLLEGE_EMAIL_DOMAIN } from "@/lib/drive-config";
 
 export async function reserveBookAction(input: {
   driveId: string;
@@ -16,6 +17,12 @@ export async function reserveBookAction(input: {
   const applicantEmail = session?.user?.email;
   if (!applicantEmail) {
     return { ok: false, error: "Please sign in with Google to continue." };
+  }
+  if (!isCollegeEmail(applicantEmail)) {
+    return {
+      ok: false,
+      error: `Book applications are only open to ${COLLEGE_EMAIL_DOMAIN} student accounts.`,
+    };
   }
 
   const name = input.applicantName.trim();
