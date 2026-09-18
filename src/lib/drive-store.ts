@@ -670,6 +670,23 @@ export async function reviewDonation(
   return { ok: true, donation: updated };
 }
 
+export async function deleteDonation(id: string): Promise<{ ok: true } | { ok: false; error: string }> {
+  const donation = await getDonation(id);
+  if (!donation) return { ok: false, error: "Donation not found." };
+
+  await deleteRecord(COLLECTION.donations, DIR.donations, id);
+
+  if (donation.status === "verified") {
+    await Promise.all([
+      donation.driveId ? recomputeDriveRaised(donation.driveId) : Promise.resolve(),
+      donation.ambassadorId ? recomputeAmbassadorRaised(donation.ambassadorId) : Promise.resolve(),
+    ]);
+    revalidateTag(STATS_TAG);
+  }
+
+  return { ok: true };
+}
+
 async function recomputeDriveRaised(driveId: string): Promise<void> {
   const [drive, donations] = await Promise.all([
     getDrive(driveId),

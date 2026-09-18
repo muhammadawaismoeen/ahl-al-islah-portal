@@ -33,6 +33,7 @@ import {
   checkInByCodeAction,
   confirmApplicationAction,
   reviewDonationAction,
+  deleteDonationAction,
 } from "./actions";
 
 export function CreateDriveForm() {
@@ -811,6 +812,21 @@ export function DonationsPanel({
                       {d.status}
                     </span>
                     {d.status === "pending" && <DonationReviewButtons donationId={d.id} />}
+                    <DeleteButton
+                      title="Delete this donation?"
+                      description={
+                        d.status === "verified"
+                          ? `This will permanently remove the record of ${DRIVE_CURRENCY} ${d.amount.toLocaleString()} from ${
+                              d.donorName ?? "this donor"
+                            } and reduce the raised total it counted toward. This cannot be undone.`
+                          : "This permanently removes the donation record. This cannot be undone."
+                      }
+                      successMessage="Donation deleted."
+                      action={() => deleteDonationAction(d.id)}
+                      iconOnly
+                      ariaLabel={`Delete donation of ${DRIVE_CURRENCY} ${d.amount.toLocaleString()} from ${d.donorName ?? "donor"}`}
+                      className="btn-ghost !py-1.5 !px-2.5 text-xs text-danger hover:text-danger-700"
+                    />
                   </div>
                 </div>
                 {expanded && history.length > 0 && (

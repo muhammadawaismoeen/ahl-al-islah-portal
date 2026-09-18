@@ -12,6 +12,7 @@ import {
   checkInApplication,
   confirmApplication,
   reviewDonation,
+  deleteDonation,
   getDriveItem,
   reviewAmbassador,
   deleteAmbassador,
@@ -215,6 +216,18 @@ export async function reviewDonationAction(
   if (!authed) return { ok: false, error: "Not authenticated." };
 
   const result = await reviewDonation(id, decision, "Admin");
+  if (!result.ok) return { ok: false, error: result.error };
+  refresh();
+  return { ok: true };
+}
+
+export async function deleteDonationAction(
+  id: string
+): Promise<{ ok: boolean; error?: string }> {
+  const authed = await isAuthenticated();
+  if (!authed) return { ok: false, error: "Not authenticated." };
+
+  const result = await deleteDonation(id);
   if (!result.ok) return { ok: false, error: result.error };
   refresh();
   return { ok: true };
