@@ -783,6 +783,10 @@ export async function reviewAmbassador(
   return { ok: true, ambassador: updated };
 }
 
+export async function deleteAmbassador(id: string): Promise<boolean> {
+  return deleteRecord(COLLECTION.ambassadors, DIR.ambassadors, id);
+}
+
 async function recomputeAmbassadorRaised(ambassadorId: string): Promise<void> {
   const ambassador = await getAmbassador(ambassadorId);
   if (!ambassador) return;

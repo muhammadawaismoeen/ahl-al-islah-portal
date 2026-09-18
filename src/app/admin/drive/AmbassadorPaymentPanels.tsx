@@ -11,6 +11,7 @@ import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 import { DeleteButton } from "@/components/admin/DeleteButton";
 import {
   reviewAmbassadorAction,
+  deleteAmbassadorAction,
   setIhsanPercentageAction,
   addPaymentMethodAction,
   deletePaymentMethodAction,
@@ -116,6 +117,17 @@ export function AmbassadorsPanel({
                 {a.status}
               </span>
               {a.status === "pending" && <AmbassadorReviewButtons ambassadorId={a.id} />}
+              {a.status !== "pending" && (
+                <DeleteButton
+                  title={`Delete ${a.name}'s registration?`}
+                  description="This removes the Ambassador registration record. This cannot be undone."
+                  successMessage="Registration deleted."
+                  action={() => deleteAmbassadorAction(a.id)}
+                  iconOnly
+                  ariaLabel={`Delete ${a.name}'s registration`}
+                  className="btn-ghost !py-1.5 !px-2.5 text-xs text-danger hover:text-danger-700"
+                />
+              )}
             </div>
           </li>
         ))}

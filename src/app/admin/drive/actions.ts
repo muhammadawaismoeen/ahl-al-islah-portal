@@ -14,6 +14,7 @@ import {
   reviewDonation,
   getDriveItem,
   reviewAmbassador,
+  deleteAmbassador,
 } from "@/lib/drive-store";
 import {
   setIhsanPercentage,
@@ -226,6 +227,18 @@ export async function reviewAmbassadorAction(
 
   const result = await reviewAmbassador(id, decision, "Admin");
   if (!result.ok) return { ok: false, error: result.error };
+  refresh();
+  return { ok: true };
+}
+
+export async function deleteAmbassadorAction(
+  id: string
+): Promise<{ ok: boolean; error?: string }> {
+  const authed = await isAuthenticated();
+  if (!authed) return { ok: false, error: "Not authenticated." };
+
+  const ok = await deleteAmbassador(id);
+  if (!ok) return { ok: false, error: "Registration not found." };
   refresh();
   return { ok: true };
 }
