@@ -18,13 +18,19 @@ export async function submitDonationAction(
 
   const driveIdRaw = ((formData.get("driveId") as string) ?? "").trim();
   const driveId = driveIdRaw === "" || driveIdRaw === "general" ? null : driveIdRaw;
-  const donorName = ((formData.get("donorName") as string) ?? "").trim() || null;
-  const donorContact = ((formData.get("donorContact") as string) ?? "").trim() || null;
+  const donorName = ((formData.get("donorName") as string) ?? "").trim();
+  const donorContact = ((formData.get("donorContact") as string) ?? "").trim();
   const amountRaw = (formData.get("amount") as string) ?? "";
   const amount = Number(amountRaw);
   const proofFile = formData.get("proof") as File | null;
   const ambassadorIdRaw = ((formData.get("ambassadorId") as string) ?? "").trim();
 
+  if (!donorName) {
+    return { ok: false, error: "Please enter your full name." };
+  }
+  if (!donorContact) {
+    return { ok: false, error: "Please enter your contact number." };
+  }
   if (!Number.isFinite(amount) || amount <= 0) {
     return { ok: false, error: "Please enter a valid donation amount." };
   }

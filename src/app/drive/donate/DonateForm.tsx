@@ -70,6 +70,32 @@ export function DonateForm({
         <code className="inline-block mt-1 font-mono text-lg text-emerald-deep tracking-wide">
           {refCode}
         </code>
+
+        <div className="mt-8 rounded-2xl border border-gold/30 bg-gradient-to-b from-gold/[0.07] to-transparent p-6 sm:p-8 text-center">
+          <p className="text-[11px] font-medium uppercase tracking-widest text-amber">
+            A du&apos;a for you
+          </p>
+          <p className="arabic-text mt-4 text-2xl sm:text-3xl leading-loose text-emerald-deep">
+            اللَّهُمَّ أَعْطِ مُنْفِقًا خَلَفًا، وَأَعْطِ مُمْسِكًا تَلَفًا
+          </p>
+          <p className="mt-4 text-sm text-ink/70 italic max-w-md mx-auto leading-relaxed">
+            &ldquo;O Allah, grant whoever spends [in Your cause] a substitute in
+            return, and grant whoever withholds [from giving] loss.&rdquo;
+          </p>
+          <p className="mt-3 text-xs text-ink/45 uppercase tracking-wide">
+            Ṣaḥīḥ al-Bukhārī 1442 · Ṣaḥīḥ Muslim 1010
+          </p>
+          <div className="gold-divider" />
+          <p className="text-sm text-ink/65 max-w-md mx-auto leading-relaxed">
+            &ldquo;The example of those who spend their wealth in the way of
+            Allah is like a seed which grows seven spikes; in each spike is a
+            hundred grains. And Allah multiplies [the reward] for whom He
+            wills.&rdquo;
+          </p>
+          <p className="mt-2 text-xs text-ink/45 uppercase tracking-wide">
+            Qur&apos;an 2:261
+          </p>
+        </div>
       </div>
     );
   }
@@ -121,20 +147,28 @@ export function DonateForm({
       <div className="grid sm:grid-cols-2 gap-4">
         <div>
           <label htmlFor="donorName" className="label-field">
-            Full name (optional)
+            Full name
           </label>
           <input
             id="donorName"
             name="donorName"
+            required
             className="input-field"
-            placeholder="Leave blank to donate anonymously"
+            placeholder="Your full name"
           />
         </div>
         <div>
           <label htmlFor="donorContact" className="label-field">
-            Email or phone (optional)
+            Contact number
           </label>
-          <input id="donorContact" name="donorContact" className="input-field" />
+          <input
+            id="donorContact"
+            name="donorContact"
+            type="tel"
+            required
+            className="input-field"
+            placeholder="03XX-XXXXXXX"
+          />
         </div>
       </div>
 
