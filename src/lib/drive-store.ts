@@ -726,9 +726,7 @@ export async function listAmbassadorsByEmail(email: string): Promise<Ambassador[
 
 /**
  * Register a student as an Ambassador for a drive. Admin-approval is
- * required before the registration goes live (status starts "pending"),
- * and registration is gated to the college's official student email domain
- * — both non-negotiable per the program's design.
+ * required before the registration goes live (status starts "pending").
  */
 export async function registerAmbassador(input: {
   driveId: string;
@@ -741,13 +739,6 @@ export async function registerAmbassador(input: {
    *  rejected server-side rather than trusted from the client. */
   chosenTarget: number;
 }): Promise<{ ok: true; ambassador: Ambassador } | { ok: false; error: string }> {
-  if (!isCollegeEmail(input.email)) {
-    return {
-      ok: false,
-      error:
-        "Ambassador registration is only open to Akhtar Saeed Medical and Dental College student accounts.",
-    };
-  }
   if (!Number.isFinite(input.ownTarget) || input.ownTarget <= 0) {
     return { ok: false, error: "Please enter a valid target amount." };
   }

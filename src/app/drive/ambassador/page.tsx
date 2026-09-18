@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowLeft, Award, Clock3, CheckCircle2, XCircle, GraduationCap, FileText, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Award, Clock3, CheckCircle2, XCircle, FileText } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { getContent } from "@/lib/content-store";
 import { auth } from "@/lib/auth";
 import { getActiveDrive, listAmbassadorsByEmail } from "@/lib/drive-store";
 import { getDriveSettings } from "@/lib/drive-settings";
-import { isCollegeEmail, COLLEGE_EMAIL_DOMAIN, DRIVE_CURRENCY } from "@/lib/drive-config";
+import { DRIVE_CURRENCY } from "@/lib/drive-config";
 import type { Ambassador } from "@/lib/drive-types";
 import { RegisterForm } from "./RegisterForm";
 
@@ -27,7 +27,6 @@ export default async function AmbassadorPage() {
     getDriveSettings(),
   ]);
   const email = session?.user?.email ?? null;
-  const eligible = email ? isCollegeEmail(email) : false;
   const registrations = email ? await listAmbassadorsByEmail(email) : [];
   const existing = registrations.find((a) => a.status !== "rejected") ?? registrations[0] ?? null;
 
@@ -56,46 +55,16 @@ export default async function AmbassadorPage() {
             </p>
           </div>
 
-          <div className="mb-8 flex items-start gap-3 rounded-2xl border border-amber/30 bg-amber/[0.08] p-4">
-            <AlertTriangle className="h-5 w-5 text-amber shrink-0 mt-0.5" />
-            <p className="text-sm text-ink/75 leading-relaxed">
-              <strong className="text-ink">
-                You must sign in with your official {COLLEGE_EMAIL_DOMAIN}
-              </strong>{" "}
-              student email to register as an Ambassador — registration is
-              restricted to Akhtar Saeed Medical and Dental College accounts.
-            </p>
-          </div>
-
           {!email ? (
             <div className="ornate-card p-8 text-center">
               <p className="text-sm text-ink/60 mb-4">
-                Sign in with your official {COLLEGE_EMAIL_DOMAIN} email to
-                register as an Ambassador.
+                Sign in with Google to register as an Ambassador.
               </p>
               <Link
                 href={`/drive/signin?callbackUrl=${encodeURIComponent("/drive/ambassador")}`}
                 className="btn-primary inline-flex"
               >
                 Sign in with Google
-              </Link>
-            </div>
-          ) : !eligible ? (
-            <div className="ornate-card p-8 text-center">
-              <GraduationCap className="h-8 w-8 text-ink/25 mx-auto mb-3" />
-              <p className="text-sm text-ink/70 font-medium mb-1">
-                Use your official college email
-              </p>
-              <p className="text-sm text-ink/60 mb-4">
-                Ambassador registration is only open to Akhtar Saeed Medical
-                and Dental College student accounts ({COLLEGE_EMAIL_DOMAIN}
-                ). You&apos;re signed in as <strong>{email}</strong>.
-              </p>
-              <Link
-                href={`/drive/signin?switch=1&callbackUrl=${encodeURIComponent("/drive/ambassador")}`}
-                className="btn-secondary inline-flex"
-              >
-                Switch Google account
               </Link>
             </div>
           ) : existing ? (

@@ -103,8 +103,7 @@ export interface Ambassador {
   id: string;
   driveId: string;
   name: string;
-  /** Must end with the college domain gate — see COLLEGE_EMAIL_DOMAIN in
-   *  drive-config.ts. Google account email of the signed-in student. */
+  /** Google account email of the signed-in student. */
   email: string;
   contact?: string;
   /** The target the ambassador typed in themselves. */
