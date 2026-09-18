@@ -53,6 +53,7 @@ const config: Config = {
         serif: ["var(--font-fraunces)", "Georgia", "serif"],
         sans: ["var(--font-inter)", "system-ui", "sans-serif"],
         arabic: ["var(--font-amiri)", "'Traditional Arabic'", "serif"],
+        signature: ["var(--font-signature)", "cursive"],
       },
       animation: {
         "fade-in": "fadeIn 0.6s ease-out",

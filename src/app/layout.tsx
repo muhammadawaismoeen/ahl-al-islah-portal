@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Fraunces, Amiri } from "next/font/google";
+import { Inter, Fraunces, Amiri, Dancing_Script } from "next/font/google";
 import { Toaster } from "sonner";
 import "./globals.css";
 
@@ -20,6 +20,13 @@ const amiri = Amiri({
   subsets: ["arabic"],
   weight: ["400", "700"],
   variable: "--font-amiri",
+  display: "swap",
+});
+
+const dancingScript = Dancing_Script({
+  subsets: ["latin"],
+  weight: ["700"],
+  variable: "--font-signature",
   display: "swap",
 });
 
@@ -57,7 +64,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth">
       <body
-        className={`${inter.variable} ${fraunces.variable} ${amiri.variable} font-sans`}
+        className={`${inter.variable} ${fraunces.variable} ${amiri.variable} ${dancingScript.variable} font-sans`}
       >
         {children}
         <Toaster

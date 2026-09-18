@@ -54,7 +54,9 @@ export default async function AmbassadorCertificatePage() {
 
   return (
     <>
-      <Navbar content={content.nav} customLogo={content.customLogo} />
+      <div className="print:hidden">
+        <Navbar content={content.nav} customLogo={content.customLogo} />
+      </div>
       <main className="pt-32 pb-20 print:pt-0">
         <div className="container-prose max-w-2xl mx-auto">
           <Link
@@ -65,9 +67,6 @@ export default async function AmbassadorCertificatePage() {
           </Link>
 
           <div className="ornate-card p-10 sm:p-14 text-center border-double border-4 border-emerald-deep/30 print:border-emerald-deep/60">
-            <span className="arabic-text block text-emerald-deep text-xl mb-2">
-              شهادة تقدير
-            </span>
             <p className="text-xs uppercase tracking-[0.2em] text-ink/50 mb-6">
               Certificate of Achievement
             </p>
@@ -105,7 +104,20 @@ export default async function AmbassadorCertificatePage() {
               </div>
             </div>
 
-            <p className="mt-8 text-xs text-ink/40">Ahl Al-Islah — Rijal Al-Huda</p>
+            <div className="mt-10 flex justify-center">
+              <div className="text-center">
+                <p className="font-signature text-3xl text-emerald-deep leading-none">
+                  Muhammad Awais Moeen
+                </p>
+                <div className="w-44 mx-auto border-t border-ink/20 mt-2 pt-1.5">
+                  <p className="text-[11px] uppercase tracking-[0.15em] text-ink/50">
+                    Advisor
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <p className="mt-8 text-xs text-ink/40">Ahl Al-Islah</p>
           </div>
 
           <div className="mt-8 flex justify-center print:hidden">
@@ -113,7 +125,9 @@ export default async function AmbassadorCertificatePage() {
           </div>
         </div>
       </main>
-      <Footer content={content.footer} navContent={content.nav} customLogo={content.customLogo} />
+      <div className="print:hidden">
+        <Footer content={content.footer} navContent={content.nav} customLogo={content.customLogo} />
+      </div>
     </>
   );
 }
