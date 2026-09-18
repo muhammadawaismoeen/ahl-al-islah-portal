@@ -2,11 +2,13 @@
 
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Check, X, Plus, Trash2, Award, Landmark, Wallet } from "lucide-react";
+import { Loader2, Check, X, Plus, Award, Landmark, Wallet } from "lucide-react";
 import { toast } from "sonner";
 import { formatDate } from "@/lib/utils";
 import { DRIVE_CURRENCY } from "@/lib/drive-config";
 import type { Ambassador, PaymentMethod } from "@/lib/drive-types";
+import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
+import { DeleteButton } from "@/components/admin/DeleteButton";
 import {
   reviewAmbassadorAction,
   setIhsanPercentageAction,
@@ -23,12 +25,13 @@ const AMB_STATUS_STYLE: Record<Ambassador["status"], string> = {
 export function AmbassadorReviewButtons({ ambassadorId }: { ambassadorId: string }) {
   const router = useRouter();
   const [pending, setPending] = useState<"approved" | "rejected" | null>(null);
+  const [confirmingReject, setConfirmingReject] = useState(false);
 
   async function handle(decision: "approved" | "rejected") {
-    if (decision === "rejected" && !confirm("Reject this Ambassador registration?")) return;
     setPending(decision);
     const res = await reviewAmbassadorAction(ambassadorId, decision);
     setPending(null);
+    setConfirmingReject(false);
     if (res.ok) {
       toast.success(decision === "approved" ? "Ambassador approved." : "Registration rejected.");
       router.refresh();
@@ -50,13 +53,21 @@ export function AmbassadorReviewButtons({ ambassadorId }: { ambassadorId: string
       </button>
       <button
         type="button"
-        onClick={() => handle("rejected")}
+        onClick={() => setConfirmingReject(true)}
         disabled={pending !== null}
         className="btn-ghost !py-1.5 !px-3 text-xs text-danger hover:text-danger-700"
       >
         {pending === "rejected" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <X className="h-3.5 w-3.5" />}
         Reject
       </button>
+      <ConfirmDialog
+        open={confirmingReject}
+        title="Reject this Ambassador registration?"
+        confirmLabel="Reject"
+        pending={pending === "rejected"}
+        onConfirm={() => handle("rejected")}
+        onCancel={() => setConfirmingReject(false)}
+      />
     </div>
   );
 }
@@ -227,22 +238,6 @@ export function AddPaymentMethodForm() {
 }
 
 export function PaymentMethodsList({ methods }: { methods: PaymentMethod[] }) {
-  const router = useRouter();
-  const [pendingId, setPendingId] = useState<string | null>(null);
-
-  async function handleDelete(id: string) {
-    if (!confirm("Remove this payment method?")) return;
-    setPendingId(id);
-    const res = await deletePaymentMethodAction(id);
-    setPendingId(null);
-    if (res.ok) {
-      toast.success("Payment method removed.");
-      router.refresh();
-    } else {
-      toast.error(res.error ?? "Failed to remove.");
-    }
-  }
-
   if (methods.length === 0) {
     return (
       <div className="ornate-card p-10 text-center">
@@ -271,14 +266,15 @@ export function PaymentMethodsList({ methods }: { methods: PaymentMethod[] }) {
               {m.branch && <p className="text-[11px] text-ink/40 mt-0.5">{m.branch}</p>}
               {m.instructions && <p className="text-[11px] text-ink/50 mt-1">{m.instructions}</p>}
             </div>
-            <button
-              type="button"
-              onClick={() => handleDelete(m.id)}
-              disabled={pendingId === m.id}
+            <DeleteButton
+              title="Remove this payment method?"
+              description={`"${m.label}" will no longer be shown to donors.`}
+              confirmLabel="Remove"
+              successMessage="Payment method removed."
+              action={() => deletePaymentMethodAction(m.id)}
+              iconOnly
               className="btn-ghost !py-1.5 !px-2.5 text-xs text-danger hover:text-danger-700 shrink-0"
-            >
-              {pendingId === m.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
-            </button>
+            />
           </div>
         </div>
       ))}

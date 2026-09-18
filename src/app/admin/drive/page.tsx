@@ -28,8 +28,10 @@ import {
   DriveStatusToggle,
   ApplicationsToggle,
   DriveGoalForm,
+  DeleteDriveButton,
   CreateItemForm,
   ItemStockForm,
+  DeleteDriveItemButton,
   ApplicantsPanel,
   CheckInForm,
   DonationsPanel,
@@ -152,12 +154,15 @@ export default async function AdminDrivePage({
                 ) : (
                   drives.map((d) => (
                     <div key={d.id} className="ornate-card p-5">
-                      <div className="mb-3">
-                        <p className="font-medium text-ink">{d.name}</p>
-                        <p className="text-xs text-ink/50 mt-0.5">
-                          {formatDate(d.startDate)} – {formatDate(d.endDate)} ·{" "}
-                          {d.pickupLocation}
-                        </p>
+                      <div className="flex items-start justify-between gap-3 mb-3">
+                        <div>
+                          <p className="font-medium text-ink">{d.name}</p>
+                          <p className="text-xs text-ink/50 mt-0.5">
+                            {formatDate(d.startDate)} – {formatDate(d.endDate)} ·{" "}
+                            {d.pickupLocation}
+                          </p>
+                        </div>
+                        <DeleteDriveButton driveId={d.id} driveName={d.name} />
                       </div>
                       <p className="text-sm text-ink/70 mb-3">
                         {DRIVE_CURRENCY} {d.raisedAmount.toLocaleString()} raised of{" "}
@@ -193,6 +198,7 @@ export default async function AdminDrivePage({
                             {driveById.get(i.driveId)?.name ?? "Unknown drive"}
                           </p>
                         </div>
+                        <DeleteDriveItemButton itemId={i.id} itemName={i.name} />
                       </div>
                       <ItemStockForm
                         itemId={i.id}

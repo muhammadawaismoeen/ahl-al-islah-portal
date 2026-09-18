@@ -5,8 +5,10 @@ import { isAuthenticated } from "@/app/admin/actions";
 import {
   createDrive,
   updateDrive,
+  deleteDrive,
   createDriveItem,
   updateDriveItemStock,
+  deleteDriveItem,
   checkInApplication,
   confirmApplication,
   reviewDonation,
@@ -96,6 +98,18 @@ export async function updateDriveGoalAction(
   return { ok: true };
 }
 
+export async function deleteDriveAction(
+  id: string
+): Promise<{ ok: boolean; error?: string }> {
+  const authed = await isAuthenticated();
+  if (!authed) return { ok: false, error: "Not authenticated." };
+
+  const ok = await deleteDrive(id);
+  if (!ok) return { ok: false, error: "Drive not found." };
+  refresh();
+  return { ok: true };
+}
+
 export async function createDriveItemAction(
   formData: FormData
 ): Promise<{ ok: boolean; error?: string }> {
@@ -141,6 +155,18 @@ export async function updateDriveItemAction(
 
   const updated = await updateDriveItemStock(id, patch);
   if (!updated) return { ok: false, error: "Item not found." };
+  refresh();
+  return { ok: true };
+}
+
+export async function deleteDriveItemAction(
+  id: string
+): Promise<{ ok: boolean; error?: string }> {
+  const authed = await isAuthenticated();
+  if (!authed) return { ok: false, error: "Not authenticated." };
+
+  const ok = await deleteDriveItem(id);
+  if (!ok) return { ok: false, error: "Item not found." };
   refresh();
   return { ok: true };
 }

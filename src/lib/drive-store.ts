@@ -7,6 +7,7 @@ import {
   setDoc,
   getDoc,
   listDocs,
+  deleteDoc,
   ensureCounter,
   setCounter,
   decrCounter,
@@ -145,6 +146,24 @@ async function getRecordRaw<T>(
   }
 }
 
+async function deleteRecord(collection: string, dir: string, id: string): Promise<boolean> {
+  if (isRedisStore()) {
+    try {
+      return await deleteDoc(collection, id);
+    } catch (err) {
+      console.error(`[drive-store] deleteRecord(${collection}) failed:`, err);
+      return false;
+    }
+  }
+
+  try {
+    await fs.unlink(path.join(dir, `${id}.json`));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 /** For collections that stay uncached (applications/donations/ambassadors) —
  *  always read fresh, same as before. */
 async function listRecords<T>(collection: string, dir: string): Promise<T[]> {
@@ -274,6 +293,19 @@ export async function updateDrive(
   return updated;
 }
 
+/** Deletes the drive and its catalog items (its applications/donations/
+ *  ambassadors are left in place as historical records — every read of
+ *  those already tolerates a missing drive, e.g. driveNameById fallbacks). */
+export async function deleteDrive(id: string): Promise<boolean> {
+  const items = await listDriveItems(id);
+  await Promise.all(items.map((item) => deleteRecord(COLLECTION.items, DIR.items, item.id)));
+  const ok = await deleteRecord(COLLECTION.drives, DIR.drives, id);
+  revalidateTag(DRIVES_TAG);
+  revalidateTag(ITEMS_TAG);
+  revalidateTag(STATS_TAG);
+  return ok;
+}
+
 /* ------------------------------------------------------------------ */
 /*  Drive catalog items                                                */
 /* ------------------------------------------------------------------ */
@@ -327,6 +359,12 @@ export async function updateDriveItemStock(
   }
   revalidateTag(ITEMS_TAG);
   return updated;
+}
+
+export async function deleteDriveItem(id: string): Promise<boolean> {
+  const ok = await deleteRecord(COLLECTION.items, DIR.items, id);
+  revalidateTag(ITEMS_TAG);
+  return ok;
 }
 
 /* ------------------------------------------------------------------ */

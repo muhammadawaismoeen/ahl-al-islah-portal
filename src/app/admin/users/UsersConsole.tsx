@@ -2,10 +2,11 @@
 
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Plus, Trash2, ShieldCheck } from "lucide-react";
+import { Loader2, Plus, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { ADMIN_ROLES, ADMIN_ROLE_LABEL, ADMIN_ROLE_DESCRIPTION } from "@/lib/admin-permissions";
 import type { AdminRole, AdminUser } from "@/lib/admin-types";
+import { DeleteButton } from "@/components/admin/DeleteButton";
 import {
   addAdminUserAction,
   updateAdminUserRoleAction,
@@ -101,32 +102,17 @@ function RoleSelect({ user }: { user: AdminUser }) {
 }
 
 function RemoveButton({ user }: { user: AdminUser }) {
-  const router = useRouter();
-  const [pending, setPending] = useState(false);
-
-  async function handle() {
-    if (!window.confirm(`Remove ${user.email} from admin access?`)) return;
-    setPending(true);
-    const res = await removeAdminUserAction(user.id);
-    setPending(false);
-    if (res.ok) {
-      toast.success("Admin user removed.");
-      router.refresh();
-    } else {
-      toast.error(res.error);
-    }
-  }
-
   return (
-    <button
-      type="button"
-      onClick={handle}
-      disabled={pending}
+    <DeleteButton
+      title={`Remove ${user.email} from admin access?`}
+      description="They'll immediately lose access to the admin dashboard."
+      confirmLabel="Remove"
+      successMessage="Admin user removed."
+      action={() => removeAdminUserAction(user.id)}
+      iconOnly
+      ariaLabel={`Remove ${user.email}`}
       className="inline-flex items-center justify-center h-8 w-8 rounded-lg text-ink/40 hover:bg-danger/10 hover:text-danger transition disabled:opacity-60"
-      aria-label={`Remove ${user.email}`}
-    >
-      {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-    </button>
+    />
   );
 }
 

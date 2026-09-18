@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Trash2, Loader2, Sparkles } from "lucide-react";
+import { Loader2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
+import { DeleteButton } from "@/components/admin/DeleteButton";
 import {
   deleteSessionAction,
   removeActivityAction,
@@ -17,42 +18,16 @@ export function DeleteSessionButton({
   sessionId: string;
   redirectTo?: string;
 }) {
-  const router = useRouter();
-  const [pending, setPending] = useState(false);
-
-  async function handle() {
-    if (
-      !confirm(
-        "Delete this session and all its activities? This cannot be undone."
-      )
-    )
-      return;
-    setPending(true);
-    const res = await deleteSessionAction(sessionId);
-    setPending(false);
-    if (!res.ok) {
-      toast.error("Failed to delete.");
-      return;
-    }
-    toast.success("Session deleted.");
-    if (redirectTo) router.push(redirectTo);
-    else router.refresh();
-  }
-
   return (
-    <button
-      type="button"
-      onClick={handle}
-      disabled={pending}
+    <DeleteButton
+      title="Delete this session?"
+      description="All its activities are deleted along with it. This cannot be undone."
+      successMessage="Session deleted."
+      action={() => deleteSessionAction(sessionId)}
+      redirectTo={redirectTo}
+      label="Delete session"
       className="btn-ghost !py-1.5 !px-3 text-xs text-danger hover:text-danger-700"
-    >
-      {pending ? (
-        <Loader2 className="h-3.5 w-3.5 animate-spin" />
-      ) : (
-        <Trash2 className="h-3.5 w-3.5" />
-      )}
-      Delete session
-    </button>
+    />
   );
 }
 
@@ -63,36 +38,15 @@ export function DeleteActivityButton({
   sessionId: string;
   activityId: string;
 }) {
-  const router = useRouter();
-  const [pending, setPending] = useState(false);
-
-  async function handle() {
-    if (!confirm("Remove this activity?")) return;
-    setPending(true);
-    const res = await removeActivityAction(sessionId, activityId);
-    setPending(false);
-    if (!res.ok) {
-      toast.error("Failed to remove.");
-      return;
-    }
-    toast.success("Activity removed.");
-    router.refresh();
-  }
-
   return (
-    <button
-      type="button"
-      onClick={handle}
-      disabled={pending}
+    <DeleteButton
+      title="Remove this activity?"
+      successMessage="Activity removed."
+      action={() => removeActivityAction(sessionId, activityId)}
+      iconOnly
+      ariaLabel="Remove activity"
       className="btn-ghost !py-1 !px-2 text-[11px] text-danger hover:text-danger-700"
-      title="Remove activity"
-    >
-      {pending ? (
-        <Loader2 className="h-3 w-3 animate-spin" />
-      ) : (
-        <Trash2 className="h-3 w-3" />
-      )}
-    </button>
+    />
   );
 }
 

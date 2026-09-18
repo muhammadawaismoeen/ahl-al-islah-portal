@@ -19,13 +19,17 @@ import { toast } from "sonner";
 import { formatDate } from "@/lib/utils";
 import { DRIVE_CURRENCY } from "@/lib/drive-config";
 import type { Drive, DriveApplication, Donation } from "@/lib/drive-types";
+import { DeleteButton } from "@/components/admin/DeleteButton";
+import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 import {
   createDriveAction,
   setDriveStatusAction,
   setApplicationsOpenAction,
   updateDriveGoalAction,
+  deleteDriveAction,
   createDriveItemAction,
   updateDriveItemAction,
+  deleteDriveItemAction,
   checkInByCodeAction,
   confirmApplicationAction,
   reviewDonationAction,
@@ -222,6 +226,18 @@ export function DriveGoalForm({ drive }: { drive: Drive }) {
   );
 }
 
+export function DeleteDriveButton({ driveId, driveName }: { driveId: string; driveName: string }) {
+  return (
+    <DeleteButton
+      title={`Delete "${driveName}"?`}
+      description="This permanently removes the drive and its catalog items. Applications and donations already tied to it are kept as historical records. This cannot be undone."
+      successMessage="Drive deleted."
+      action={() => deleteDriveAction(driveId)}
+      iconOnly
+    />
+  );
+}
+
 export function CreateItemForm({ drives }: { drives: Drive[] }) {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
@@ -331,6 +347,18 @@ export function ItemStockForm({
         Save
       </button>
     </div>
+  );
+}
+
+export function DeleteDriveItemButton({ itemId, itemName }: { itemId: string; itemName: string }) {
+  return (
+    <DeleteButton
+      title={`Delete "${itemName}"?`}
+      description="This permanently removes the catalog item. Applications already made for it are kept as historical records. This cannot be undone."
+      successMessage="Item deleted."
+      action={() => deleteDriveItemAction(itemId)}
+      iconOnly
+    />
   );
 }
 
@@ -634,12 +662,13 @@ export const DONATION_STATUS_STYLE: Record<Donation["status"], string> = {
 export function DonationReviewButtons({ donationId }: { donationId: string }) {
   const router = useRouter();
   const [pending, setPending] = useState<"verified" | "rejected" | null>(null);
+  const [confirmingReject, setConfirmingReject] = useState(false);
 
   async function handle(decision: "verified" | "rejected") {
-    if (decision === "rejected" && !confirm("Reject this donation proof?")) return;
     setPending(decision);
     const res = await reviewDonationAction(donationId, decision);
     setPending(null);
+    setConfirmingReject(false);
     if (res.ok) {
       toast.success(decision === "verified" ? "Donation verified." : "Donation rejected.");
       router.refresh();
@@ -661,13 +690,21 @@ export function DonationReviewButtons({ donationId }: { donationId: string }) {
       </button>
       <button
         type="button"
-        onClick={() => handle("rejected")}
+        onClick={() => setConfirmingReject(true)}
         disabled={pending !== null}
         className="btn-ghost !py-1.5 !px-3 text-xs text-danger hover:text-danger-700"
       >
         {pending === "rejected" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <X className="h-3.5 w-3.5" />}
         Reject
       </button>
+      <ConfirmDialog
+        open={confirmingReject}
+        title="Reject this donation proof?"
+        confirmLabel="Reject"
+        pending={pending === "rejected"}
+        onConfirm={() => handle("rejected")}
+        onCancel={() => setConfirmingReject(false)}
+      />
     </div>
   );
 }
