@@ -79,6 +79,11 @@ export function ZakatDisclaimerDialog({
           Zakat-eligible channel instead — go back and check before sending.
         </p>
 
+        <p className="mt-3 text-xs text-ink/50 leading-relaxed">
+          Any amount left over once the Drive concludes will be carried
+          forward into other Ahl Al-Islah good works, not held or returned.
+        </p>
+
         <div className="mt-6 flex items-center justify-end gap-2">
           <button
             type="button"
