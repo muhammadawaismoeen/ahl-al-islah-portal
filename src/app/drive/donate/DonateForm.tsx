@@ -22,7 +22,9 @@ export function DonateForm({
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [refCode, setRefCode] = useState<string | null>(null);
-  const [driveId, setDriveId] = useState("general");
+  // `drives` is sorted newest-first, so the latest drive is pre-selected
+  // instead of forcing donors to pick it out of the dropdown themselves.
+  const [driveId, setDriveId] = useState(drives[0]?.id ?? "general");
 
   const ambassadorsForDrive = useMemo(
     () => ambassadors.filter((a) => a.driveId === driveId),
