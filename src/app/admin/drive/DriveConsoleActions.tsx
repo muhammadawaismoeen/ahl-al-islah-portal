@@ -5,8 +5,6 @@ import { useRouter } from "next/navigation";
 import {
   Loader2,
   Plus,
-  Lock,
-  Unlock,
   ScanLine,
   Check,
   X,
@@ -90,6 +88,41 @@ export function CreateDriveForm() {
   );
 }
 
+function SwitchControl({
+  checked,
+  pending,
+  onClick,
+  srLabel,
+}: {
+  checked: boolean;
+  pending: boolean;
+  onClick: () => void;
+  srLabel: string;
+}) {
+  return (
+    <span className="inline-flex items-center gap-2">
+      {pending && <Loader2 className="h-3.5 w-3.5 animate-spin text-ink/40" />}
+      <button
+        type="button"
+        role="switch"
+        aria-checked={checked}
+        aria-label={srLabel}
+        onClick={onClick}
+        disabled={pending}
+        className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-deep/50 disabled:opacity-60 ${
+          checked ? "bg-emerald-deep" : "bg-ink/20"
+        }`}
+      >
+        <span
+          className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+            checked ? "translate-x-6" : "translate-x-1"
+          }`}
+        />
+      </button>
+    </span>
+  );
+}
+
 export function DriveStatusToggle({ drive }: { drive: Drive }) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
@@ -108,16 +141,15 @@ export function DriveStatusToggle({ drive }: { drive: Drive }) {
   }
 
   return (
-    <button type="button" onClick={handle} disabled={pending} className="btn-ghost !py-1.5 !px-3 text-xs">
-      {pending ? (
-        <Loader2 className="h-3.5 w-3.5 animate-spin" />
-      ) : isOpen ? (
-        <Lock className="h-3.5 w-3.5" />
-      ) : (
-        <Unlock className="h-3.5 w-3.5" />
-      )}
-      {isOpen ? "Close" : "Reopen"}
-    </button>
+    <div className="flex items-center justify-between gap-3 rounded-xl border border-border bg-surface-2/60 px-3 py-2.5">
+      <div>
+        <p className="text-sm font-medium text-ink">Accepting donations</p>
+        <p className="text-xs text-ink/50">
+          {isOpen ? "This drive is open and visible for giving." : "Paused — donations are closed."}
+        </p>
+      </div>
+      <SwitchControl checked={isOpen} pending={pending} onClick={handle} srLabel="Toggle donations open for this drive" />
+    </div>
   );
 }
 
@@ -139,16 +171,15 @@ export function ApplicationsToggle({ drive }: { drive: Drive }) {
   }
 
   return (
-    <button type="button" onClick={handle} disabled={pending} className="btn-ghost !py-1.5 !px-3 text-xs">
-      {pending ? (
-        <Loader2 className="h-3.5 w-3.5 animate-spin" />
-      ) : isOpen ? (
-        <Lock className="h-3.5 w-3.5" />
-      ) : (
-        <Unlock className="h-3.5 w-3.5" />
-      )}
-      {isOpen ? "Close applications" : "Open applications"}
-    </button>
+    <div className="flex items-center justify-between gap-3 rounded-xl border border-border bg-surface-2/60 px-3 py-2.5">
+      <div>
+        <p className="text-sm font-medium text-ink">Accepting new applications</p>
+        <p className="text-xs text-ink/50">
+          {isOpen ? "Applicants can apply for this drive." : "Paused — the application form is closed."}
+        </p>
+      </div>
+      <SwitchControl checked={isOpen} pending={pending} onClick={handle} srLabel="Toggle applications open for this drive" />
+    </div>
   );
 }
 

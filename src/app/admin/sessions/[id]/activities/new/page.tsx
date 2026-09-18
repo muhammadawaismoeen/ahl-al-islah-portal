@@ -33,7 +33,7 @@ export default async function NewActivityPage({ params }: Props) {
   const boundAction = addActivityAction.bind(null, session.id);
 
   return (
-    <AdminShell>
+    <AdminShell section="programming">
       <div className="max-w-3xl mx-auto">
           <Link
             href={`/admin/sessions/${session.id}`}

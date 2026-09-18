@@ -101,7 +101,7 @@ export default async function AdminPage({
       : "hover:bg-sapphire/10 hover:text-sapphire";
 
   return (
-    <AdminShell>
+    <AdminShell section="people">
       <div>
           <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
             <div>

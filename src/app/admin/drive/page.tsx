@@ -100,7 +100,7 @@ export default async function AdminDrivePage({
   const pendingAmbassadors = ambassadors.filter((a) => a.status === "pending").length;
 
   return (
-    <AdminShell>
+    <AdminShell section="drive">
       <div>
           <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
             <div>
@@ -152,41 +152,19 @@ export default async function AdminDrivePage({
                 ) : (
                   drives.map((d) => (
                     <div key={d.id} className="ornate-card p-5">
-                      <div className="flex flex-wrap items-start justify-between gap-3 mb-2">
-                        <div>
-                          <p className="font-medium text-ink">{d.name}</p>
-                          <p className="text-xs text-ink/50 mt-0.5">
-                            {formatDate(d.startDate)} – {formatDate(d.endDate)} ·{" "}
-                            {d.pickupLocation}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span
-                            className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${
-                              d.status === "open"
-                                ? "bg-emerald-deep/15 text-emerald-deep"
-                                : "bg-ink/15 text-ink/60"
-                            }`}
-                          >
-                            {d.status === "open" ? "Open" : "Closed"}
-                          </span>
-                          <DriveStatusToggle drive={d} />
-                        </div>
+                      <div className="mb-3">
+                        <p className="font-medium text-ink">{d.name}</p>
+                        <p className="text-xs text-ink/50 mt-0.5">
+                          {formatDate(d.startDate)} – {formatDate(d.endDate)} ·{" "}
+                          {d.pickupLocation}
+                        </p>
                       </div>
-                      <p className="text-sm text-ink/70 mb-2">
+                      <p className="text-sm text-ink/70 mb-3">
                         {DRIVE_CURRENCY} {d.raisedAmount.toLocaleString()} raised of{" "}
                         {DRIVE_CURRENCY} {d.goalAmount.toLocaleString()} goal
                       </p>
-                      <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-                        <span
-                          className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${
-                            d.applicationsOpen
-                              ? "bg-emerald-deep/15 text-emerald-deep"
-                              : "bg-ink/15 text-ink/60"
-                          }`}
-                        >
-                          Applications {d.applicationsOpen ? "open" : "closed"}
-                        </span>
+                      <div className="space-y-2 mb-3">
+                        <DriveStatusToggle drive={d} />
                         <ApplicationsToggle drive={d} />
                       </div>
                       <DriveGoalForm drive={d} />

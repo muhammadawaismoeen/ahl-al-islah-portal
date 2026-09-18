@@ -41,7 +41,7 @@ export default async function EditSessionPage({ params }: Props) {
   const updateBound = updateSessionAction.bind(null, session.id);
 
   return (
-    <AdminShell>
+    <AdminShell section="programming">
       <div className="max-w-3xl mx-auto">
           <div className="flex items-center justify-between mb-4">
             <Link

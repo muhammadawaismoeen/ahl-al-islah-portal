@@ -39,7 +39,7 @@ export default async function MessagesPage({
   const unreadCount = messages.filter((m) => m.status === "unread").length;
 
   return (
-    <AdminShell>
+    <AdminShell section="community">
       <div>
 
           {/* Header */}

@@ -56,7 +56,7 @@ export default async function AdminCounselPage({
   const unreadCount = threads.filter((t) => t.advisorHasUnread).length;
 
   return (
-    <AdminShell>
+    <AdminShell section="community">
       <div>
           {/* Header */}
           <div className="flex flex-wrap items-end justify-between gap-4 mb-8">

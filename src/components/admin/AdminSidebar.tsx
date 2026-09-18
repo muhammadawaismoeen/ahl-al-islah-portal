@@ -11,11 +11,14 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
 } from "lucide-react";
-import { ADMIN_NAV_ITEMS, type AdminBadgeKey } from "./admin-nav-items";
+import { ADMIN_NAV_GROUPS, type AdminBadgeKey, type AdminNavGroup } from "./admin-nav-items";
+import { roleHasSection } from "@/lib/admin-permissions";
+import type { AdminRole } from "@/lib/admin-types";
 
 interface Props {
   badges: Record<AdminBadgeKey, number>;
   adminEmail?: string | null;
+  role: AdminRole | null;
   logoutAction: () => Promise<void>;
 }
 
@@ -28,62 +31,80 @@ function isActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-function NavList({
+function visibleGroups(role: AdminRole | null): AdminNavGroup[] {
+  if (!role) return [];
+  return ADMIN_NAV_GROUPS.filter((g) => roleHasSection(role, g.key));
+}
+
+function NavGroups({
   pathname,
   badges,
+  groups,
   collapsed,
   onNavigate,
 }: {
   pathname: string;
   badges: Record<AdminBadgeKey, number>;
+  groups: AdminNavGroup[];
   collapsed?: boolean;
   onNavigate?: () => void;
 }) {
   return (
-    <ul className="space-y-1">
-      {ADMIN_NAV_ITEMS.map((item) => {
-        const active = isActive(pathname, item.href);
-        const count = item.badgeKey ? badges[item.badgeKey] : 0;
-        const Icon = item.icon;
-        return (
-          <li key={item.key}>
-            <Link
-              href={item.href}
-              onClick={onNavigate}
-              aria-current={active ? "page" : undefined}
-              title={collapsed ? item.label : undefined}
-              className={`relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-deep/50 ${
-                collapsed ? "justify-center px-0" : ""
-              } ${
-                active
-                  ? "bg-emerald-deep text-white shadow-[0_6px_18px_-8px_rgba(5,122,85,0.55)]"
-                  : "text-ink/65 hover:bg-emerald/8 hover:text-emerald-deep"
-              }`}
-            >
-              <Icon className="h-4 w-4 shrink-0" />
-              {!collapsed && <span className="flex-1 truncate">{item.label}</span>}
-              {count > 0 &&
-                (collapsed ? (
-                  <span
-                    className={`absolute top-1 right-1 h-2 w-2 rounded-full ${
-                      active ? "bg-white" : "bg-amber"
-                    }`}
-                    aria-hidden
-                  />
-                ) : (
-                  <span
-                    className={`inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1 rounded-full text-[10px] font-bold ${
-                      active ? "bg-white/25 text-white" : "bg-amber text-white"
+    <div className="space-y-5">
+      {groups.map((group) => (
+        <div key={group.key}>
+          {!collapsed && (
+            <p className="px-3 mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-ink/35">
+              {group.label}
+            </p>
+          )}
+          <ul className="space-y-1">
+            {group.items.map((item) => {
+              const active = isActive(pathname, item.href);
+              const count = item.badgeKey ? badges[item.badgeKey] : 0;
+              const Icon = item.icon;
+              return (
+                <li key={item.key}>
+                  <Link
+                    href={item.href}
+                    onClick={onNavigate}
+                    aria-current={active ? "page" : undefined}
+                    title={collapsed ? item.label : undefined}
+                    className={`relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-deep/50 ${
+                      collapsed ? "justify-center px-0" : ""
+                    } ${
+                      active
+                        ? "bg-emerald-deep text-white shadow-[0_6px_18px_-8px_rgba(5,122,85,0.55)]"
+                        : "text-ink/65 hover:bg-emerald/8 hover:text-emerald-deep"
                     }`}
                   >
-                    {count > 99 ? "99+" : count}
-                  </span>
-                ))}
-            </Link>
-          </li>
-        );
-      })}
-    </ul>
+                    <Icon className="h-4 w-4 shrink-0" />
+                    {!collapsed && <span className="flex-1 truncate">{item.label}</span>}
+                    {count > 0 &&
+                      (collapsed ? (
+                        <span
+                          className={`absolute top-1 right-1 h-2 w-2 rounded-full ${
+                            active ? "bg-white" : "bg-amber"
+                          }`}
+                          aria-hidden
+                        />
+                      ) : (
+                        <span
+                          className={`inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1 rounded-full text-[10px] font-bold ${
+                            active ? "bg-white/25 text-white" : "bg-amber text-white"
+                          }`}
+                        >
+                          {count > 99 ? "99+" : count}
+                        </span>
+                      ))}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      ))}
+    </div>
   );
 }
 
@@ -152,15 +173,17 @@ function SidebarFooter({
   );
 }
 
-export function AdminSidebar({ badges, adminEmail, logoutAction }: Props) {
+export function AdminSidebar({ badges, adminEmail, role, logoutAction }: Props) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [hydrated, setHydrated] = useState(false);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
 
+  const groups = visibleGroups(role);
   const currentLabel =
-    ADMIN_NAV_ITEMS.find((item) => isActive(pathname, item.href))?.label ?? "Admin";
+    groups.flatMap((g) => g.items).find((item) => isActive(pathname, item.href))?.label ??
+    "Admin";
 
   useEffect(() => {
     setHydrated(true);
@@ -242,7 +265,7 @@ export function AdminSidebar({ badges, adminEmail, logoutAction }: Props) {
             </button>
           </div>
           <nav className="flex-1 overflow-y-auto">
-            <NavList pathname={pathname} badges={badges} onNavigate={() => setOpen(false)} />
+            <NavGroups pathname={pathname} badges={badges} groups={groups} onNavigate={() => setOpen(false)} />
           </nav>
           <SidebarFooter adminEmail={adminEmail} logoutAction={logoutAction} />
         </div>
@@ -279,7 +302,7 @@ export function AdminSidebar({ badges, adminEmail, logoutAction }: Props) {
           </button>
         )}
         <nav className="flex-1 overflow-y-auto overflow-x-hidden">
-          <NavList pathname={pathname} badges={badges} collapsed={collapsed} />
+          <NavGroups pathname={pathname} badges={badges} groups={groups} collapsed={collapsed} />
         </nav>
         <SidebarFooter adminEmail={adminEmail} logoutAction={logoutAction} collapsed={collapsed} />
       </aside>

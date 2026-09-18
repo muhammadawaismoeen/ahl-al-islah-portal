@@ -24,7 +24,7 @@ export default async function AdminSessionsPage() {
   const sessions = await listSessions();
 
   return (
-    <AdminShell>
+    <AdminShell section="programming">
       <div>
           <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
             <div>

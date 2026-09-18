@@ -21,7 +21,7 @@ export default async function NewSessionPage() {
   }
 
   return (
-    <AdminShell>
+    <AdminShell section="programming">
       <div className="max-w-2xl mx-auto">
           <Link
             href="/admin/sessions"

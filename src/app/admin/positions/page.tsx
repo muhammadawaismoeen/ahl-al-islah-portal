@@ -22,7 +22,7 @@ export default async function AdminPositionsPage() {
   const content = await getContent();
 
   return (
-    <AdminShell>
+    <AdminShell section="programming">
       <div>
         <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
           <div>

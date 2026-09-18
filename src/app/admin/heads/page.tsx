@@ -63,7 +63,7 @@ export default async function AdminHeadsPage({
   }
 
   return (
-    <AdminShell>
+    <AdminShell section="people">
       <div>
           <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
             <div>

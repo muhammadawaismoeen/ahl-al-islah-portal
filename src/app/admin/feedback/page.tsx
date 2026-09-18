@@ -77,7 +77,7 @@ export default async function FeedbackAdminPage({
   }
 
   return (
-    <AdminShell>
+    <AdminShell section="community">
       <div>
 
           {/* Header */}

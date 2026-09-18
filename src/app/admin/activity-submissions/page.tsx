@@ -52,7 +52,7 @@ export default async function ActivitySubmissionsPage({
   const unreadCount = entries.filter((e) => e.status === "unread").length;
 
   return (
-    <AdminShell>
+    <AdminShell section="community">
       <div>
           {/* Header */}
           <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
