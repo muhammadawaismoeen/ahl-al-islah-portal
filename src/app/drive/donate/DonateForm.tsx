@@ -37,11 +37,11 @@ export function DonateForm({
     setError(null);
     const file = fileRef.current?.files?.[0];
     if (file && file.size > MAX_PROOF_BYTES) {
-      setError(
-        `File is ${Math.round(file.size / 1024)} KB — the maximum is ${Math.round(
-          MAX_PROOF_BYTES / 1024
-        )} KB.`
-      );
+      const message = `File is ${Math.round(file.size / 1024)} KB — the maximum is ${Math.round(
+        MAX_PROOF_BYTES / 1024
+      )} KB.`;
+      setError(message);
+      toast.error(message);
       return;
     }
     setConfirmData(formData);
