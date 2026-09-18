@@ -105,8 +105,9 @@ export default async function DriveApplicationPage({
                 {application.pickupCode}
               </p>
               <p className="text-sm text-ink/60 max-w-xs">
-                Show this code — or let the pickup table scan the QR — to
-                collect your copy.
+                Download this QR code and make sure to bring it with you —
+                printed or on your phone — on the Drive Day. The pickup table
+                will scan it to hand over your copy.
               </p>
             </div>
           </div>

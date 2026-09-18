@@ -1,11 +1,14 @@
 "use client";
 
-import { useMemo, useRef, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import jsQR from "jsqr";
 import {
   Loader2,
   Plus,
   ScanLine,
+  Camera,
+  CameraOff,
   Check,
   X,
   Search,
@@ -441,19 +444,109 @@ export function ApplicantsPanel({
   );
 }
 
+function QrCameraScanner({
+  onDetect,
+  paused,
+}: {
+  onDetect: (value: string) => void;
+  paused: boolean;
+}) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const frameRef = useRef<number>(0);
+  const lastValueRef = useRef<string | null>(null);
+  const [cameraError, setCameraError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let stream: MediaStream | null = null;
+    let cancelled = false;
+
+    async function start() {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: "environment" },
+        });
+        if (cancelled || !videoRef.current) return;
+        videoRef.current.srcObject = stream;
+        await videoRef.current.play();
+        tick();
+      } catch {
+        setCameraError(
+          "Couldn't access the camera — check browser permissions and try again."
+        );
+      }
+    }
+
+    function tick() {
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      if (!video || !canvas) return;
+      if (video.readyState === video.HAVE_ENOUGH_DATA) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          const frame = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const code = jsQR(frame.data, frame.width, frame.height);
+          if (code?.data && code.data !== lastValueRef.current) {
+            lastValueRef.current = code.data;
+            onDetect(code.data);
+          }
+        }
+      }
+      frameRef.current = requestAnimationFrame(tick);
+    }
+
+    start();
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(frameRef.current);
+      stream?.getTracks().forEach((t) => t.stop());
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (!paused) lastValueRef.current = null;
+  }, [paused]);
+
+  return (
+    <div className="relative overflow-hidden rounded-xl bg-black">
+      <video
+        ref={videoRef}
+        muted
+        playsInline
+        className="w-full aspect-square object-cover"
+      />
+      <canvas ref={canvasRef} className="hidden" />
+      <div className="pointer-events-none absolute inset-8 rounded-xl border-2 border-white/70" />
+      {cameraError && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/80 p-4">
+          <p className="text-xs text-white text-center">{cameraError}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function CheckInForm() {
   const router = useRouter();
   const [code, setCode] = useState("");
   const [pending, setPending] = useState(false);
+  const pendingRef = useRef(false);
   const [result, setResult] = useState<{ name: string; item: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [scanning, setScanning] = useState(false);
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
+  async function submitCode(raw: string) {
+    if (pendingRef.current) return;
+    pendingRef.current = true;
     setPending(true);
     setError(null);
     setResult(null);
-    const res = await checkInByCodeAction(code);
+    const res = await checkInByCodeAction(raw);
+    pendingRef.current = false;
     setPending(false);
     if (res.ok) {
       setResult({ name: res.applicantName ?? "", item: res.itemName ?? "" });
@@ -466,12 +559,47 @@ export function CheckInForm() {
     }
   }
 
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!code.trim()) return;
+    submitCode(code);
+  }
+
   return (
     <div className="ornate-card p-5 sm:p-6">
-      <p className="flex items-center gap-2 text-sm font-medium text-ink/75 mb-4">
-        <ScanLine className="h-4 w-4 text-emerald-deep" />
-        Check in a pickup code
-      </p>
+      <div className="flex items-center justify-between mb-4">
+        <p className="flex items-center gap-2 text-sm font-medium text-ink/75">
+          <ScanLine className="h-4 w-4 text-emerald-deep" />
+          Check in a pickup code
+        </p>
+        <button
+          type="button"
+          onClick={() => setScanning((s) => !s)}
+          className="btn-ghost !py-1 !px-2.5 text-xs text-emerald-deep"
+        >
+          {scanning ? (
+            <>
+              <CameraOff className="h-3.5 w-3.5" />
+              Stop scanning
+            </>
+          ) : (
+            <>
+              <Camera className="h-3.5 w-3.5" />
+              Scan QR
+            </>
+          )}
+        </button>
+      </div>
+
+      {scanning && (
+        <div className="mb-4 max-w-xs mx-auto">
+          <QrCameraScanner onDetect={submitCode} paused={pending} />
+          <p className="text-[11px] text-ink/45 text-center mt-2">
+            Point the camera at the applicant&apos;s ticket QR code.
+          </p>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className="flex gap-2">
         <input
           type="text"
