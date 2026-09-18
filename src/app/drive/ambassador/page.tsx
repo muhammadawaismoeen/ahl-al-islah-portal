@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowLeft, Award, Clock3, CheckCircle2, XCircle, GraduationCap, FileText } from "lucide-react";
+import { ArrowLeft, Award, Clock3, CheckCircle2, XCircle, GraduationCap, FileText, AlertTriangle } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { getContent } from "@/lib/content-store";
@@ -53,6 +53,17 @@ export default async function AmbassadorPage() {
             <p className="mt-3 text-ink/65 leading-relaxed max-w-lg mx-auto">
               Set a donation target, rally your community, and earn a
               certificate once you reach it.
+            </p>
+          </div>
+
+          <div className="mb-8 flex items-start gap-3 rounded-2xl border border-amber/30 bg-amber/[0.08] p-4">
+            <AlertTriangle className="h-5 w-5 text-amber shrink-0 mt-0.5" />
+            <p className="text-sm text-ink/75 leading-relaxed">
+              <strong className="text-ink">
+                You must sign in with your official {COLLEGE_EMAIL_DOMAIN}
+              </strong>{" "}
+              student email to register as an Ambassador — registration is
+              restricted to Akhtar Saeed Medical and Dental College accounts.
             </p>
           </div>
 
