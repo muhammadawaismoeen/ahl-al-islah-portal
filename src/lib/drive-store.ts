@@ -732,13 +732,16 @@ export async function registerAmbassador(input: {
   driveId: string;
   name: string;
   email: string;
-  contact?: string;
+  contact: string;
   ownTarget: number;
   /** Which figure the ambassador picked as their real target — must equal
    *  either ownTarget or the computed suggestedTarget; anything else is
    *  rejected server-side rather than trusted from the client. */
   chosenTarget: number;
 }): Promise<{ ok: true; ambassador: Ambassador } | { ok: false; error: string }> {
+  if (input.contact.trim().length < 7) {
+    return { ok: false, error: "Please enter a valid phone number." };
+  }
   if (!Number.isFinite(input.ownTarget) || input.ownTarget <= 0) {
     return { ok: false, error: "Please enter a valid target amount." };
   }

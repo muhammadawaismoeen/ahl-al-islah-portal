@@ -61,8 +61,8 @@ export function RegisterForm({
         />
       </div>
       <div>
-        <label htmlFor="contact" className="label-field">Phone (optional)</label>
-        <input id="contact" name="contact" className="input-field" />
+        <label htmlFor="contact" className="label-field">Phone number</label>
+        <input id="contact" name="contact" required className="input-field" />
       </div>
       <div>
         <label htmlFor="ownTarget" className="label-field">

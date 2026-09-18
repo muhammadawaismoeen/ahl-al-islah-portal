@@ -58,7 +58,9 @@ export default async function AmbassadorPage() {
           {!email ? (
             <div className="ornate-card p-8 text-center">
               <p className="text-sm text-ink/60 mb-4">
-                Sign in with Google to register as an Ambassador.
+                Sign in with Google to register as an Ambassador — you&apos;ll
+                use the same account to come back and check your dashboard
+                anytime.
               </p>
               <Link
                 href={`/drive/signin?callbackUrl=${encodeURIComponent("/drive/ambassador")}`}

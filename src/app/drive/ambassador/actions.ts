@@ -15,12 +15,15 @@ export async function registerAmbassadorAction(
 
   const driveId = ((formData.get("driveId") as string) ?? "").trim();
   const name = ((formData.get("name") as string) ?? "").trim();
-  const contact = ((formData.get("contact") as string) ?? "").trim() || undefined;
+  const contact = ((formData.get("contact") as string) ?? "").trim();
   const ownTarget = Number(formData.get("ownTarget"));
   const chosenTarget = Number(formData.get("chosenTarget"));
 
   if (!driveId) return { ok: false, error: "Please choose a drive." };
   if (name.length < 2) return { ok: false, error: "Please enter your full name." };
+  if (contact.length < 7) {
+    return { ok: false, error: "Please enter a valid phone number." };
+  }
   if (!Number.isFinite(ownTarget) || ownTarget <= 0) {
     return { ok: false, error: "Please enter a valid target amount." };
   }
