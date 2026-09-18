@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { AlertCircle, Loader2, X } from "lucide-react";
 
@@ -16,6 +16,14 @@ export function ZakatDisclaimerDialog({
   onCancel: () => void;
 }) {
   const confirmRef = useRef<HTMLButtonElement>(null);
+  // `document` exists on both the server-render pass (never) and the client's
+  // very first hydration pass (always) — checking `typeof document` alone
+  // isn't enough when `open` can already be true on first paint (e.g. a
+  // page-load gate), since the client's first pass would then portal content
+  // the server never rendered. Deferring to a post-mount state ensures the
+  // client's first pass matches the server's null before rendering the portal.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     if (!open) return;
@@ -27,7 +35,7 @@ export function ZakatDisclaimerDialog({
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [open, onCancel]);
 
-  if (!open || typeof document === "undefined") return null;
+  if (!open || !mounted) return null;
 
   return createPortal(
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">

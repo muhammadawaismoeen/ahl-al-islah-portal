@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Loader2, HandCoins, CheckCircle2, Upload, Landmark, Wallet, Award } from "lucide-react";
 import { toast } from "sonner";
 import type { Ambassador, Drive, PaymentMethod } from "@/lib/drive-types";
@@ -19,11 +20,15 @@ export function DonateForm({
   paymentMethods: PaymentMethod[];
   donateCtaLabel: string;
 }) {
+  const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [refCode, setRefCode] = useState<string | null>(null);
-  const [confirmData, setConfirmData] = useState<FormData | null>(null);
+  // Shown immediately on arrival — before the donor sees or touches the form
+  // — rather than at final submit, so it can't get skipped behind a required
+  // field (e.g. the proof upload) that hasn't been filled in yet.
+  const [ackZakat, setAckZakat] = useState(false);
   // `drives` is sorted newest-first, so the latest drive is pre-selected
   // instead of forcing donors to pick it out of the dropdown themselves.
   const [driveId, setDriveId] = useState(drives[0]?.id ?? "general");
@@ -44,19 +49,12 @@ export function DonateForm({
       toast.error(message);
       return;
     }
-    setConfirmData(formData);
-  }
-
-  function handleConfirmedSubmit() {
-    if (!confirmData) return;
     startTransition(async () => {
-      const res = await submitDonationAction(confirmData);
+      const res = await submitDonationAction(formData);
       if (res.ok && res.refCode) {
-        setConfirmData(null);
         setRefCode(res.refCode);
         toast.success("Donation submitted for review.");
       } else {
-        setConfirmData(null);
         setError(res.error ?? "Couldn't submit your donation.");
         toast.error(res.error ?? "Couldn't submit your donation.");
       }
@@ -112,7 +110,14 @@ export function DonateForm({
   }
 
   return (
-    <form action={handleSubmit} encType="multipart/form-data" className="space-y-6">
+    <>
+      <ZakatDisclaimerDialog
+        open={!ackZakat}
+        pending={false}
+        onConfirm={() => setAckZakat(true)}
+        onCancel={() => router.push("/drive")}
+      />
+      <form action={handleSubmit} encType="multipart/form-data" className="space-y-6">
       <div>
         <label htmlFor="driveId" className="label-field">
           Category
@@ -280,13 +285,7 @@ export function DonateForm({
         )}
         {donateCtaLabel}
       </button>
-
-      <ZakatDisclaimerDialog
-        open={confirmData !== null}
-        pending={pending}
-        onConfirm={handleConfirmedSubmit}
-        onCancel={() => setConfirmData(null)}
-      />
-    </form>
+      </form>
+    </>
   );
 }
