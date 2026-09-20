@@ -197,12 +197,13 @@ export async function checkInByCodeAction(
 }
 
 export async function confirmApplicationAction(
-  id: string
+  id: string,
+  itemId?: string
 ): Promise<{ ok: boolean; error?: string }> {
   const authed = await isAuthenticated();
   if (!authed) return { ok: false, error: "Not authenticated." };
 
-  const result = await confirmApplication(id);
+  const result = await confirmApplication(id, itemId);
   if (!result.ok) return { ok: false, error: result.error };
   refresh();
   return { ok: true };
@@ -210,12 +211,13 @@ export async function confirmApplicationAction(
 
 export async function reviewDonationAction(
   id: string,
-  decision: "verified" | "rejected"
+  decision: "verified" | "rejected",
+  correctedAmount?: number
 ): Promise<{ ok: boolean; error?: string }> {
   const authed = await isAuthenticated();
   if (!authed) return { ok: false, error: "Not authenticated." };
 
-  const result = await reviewDonation(id, decision, "Admin");
+  const result = await reviewDonation(id, decision, "Admin", correctedAmount);
   if (!result.ok) return { ok: false, error: result.error };
   refresh();
   return { ok: true };

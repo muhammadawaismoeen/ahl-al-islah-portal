@@ -371,6 +371,13 @@ export async function deleteDriveItem(id: string): Promise<boolean> {
 /*  Applications                                                        */
 /* ------------------------------------------------------------------ */
 
+/** Records written before `requestedItemId` existed default it to the
+ *  current itemId, so they read as "not changed since request" rather than
+ *  crashing on a missing field. */
+function withApplicationDefaults(app: DriveApplication): DriveApplication {
+  return { ...app, requestedItemId: app.requestedItemId ?? app.itemId };
+}
+
 export async function listApplications(
   driveId?: string
 ): Promise<DriveApplication[]> {
@@ -379,7 +386,9 @@ export async function listApplications(
     DIR.applications
   );
   const scoped = driveId ? apps.filter((a) => a.driveId === driveId) : apps;
-  return scoped.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  return scoped
+    .map(withApplicationDefaults)
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
 
 export async function listApplicationsByEmail(
@@ -393,11 +402,12 @@ export async function listApplicationsByEmail(
 export async function getApplication(
   id: string
 ): Promise<DriveApplication | null> {
-  return getRecord<DriveApplication>(
+  const app = await getRecord<DriveApplication>(
     COLLECTION.applications,
     DIR.applications,
     id
   );
+  return app ? withApplicationDefaults(app) : null;
 }
 
 export async function findApplicationByPickupCode(
@@ -499,6 +509,7 @@ export async function reserveBook(input: {
     id: genId("dap"),
     driveId: input.driveId,
     itemId: input.itemId,
+    requestedItemId: input.itemId,
     applicantName: input.applicantName,
     applicantContact: input.applicantContact,
     applicantEmail: input.applicantEmail,
@@ -556,11 +567,23 @@ export async function checkInApplication(
   return { ok: true, application: updated };
 }
 
-/** Advisor manually confirms a pending-review applicant. Waitlisted
- *  applications aren't confirmable here — they only clear once stock frees
- *  up and a fresh request finds it available (see reserveBook). */
+/**
+ * Advisor manually confirms a pending-review applicant. Waitlisted
+ * applications aren't confirmable here — they only clear once stock frees
+ * up and a fresh request finds it available (see reserveBook).
+ *
+ * `itemId`, if given and different from the applicant's current item, lets
+ * the Advisor swap in a different catalog item at confirm time (students
+ * sometimes pick the wrong item, or it needs to change for logistics
+ * reasons). The original request (requestedItemId) is left untouched for
+ * the audit trail. Swapping releases the stock unit reserved for the
+ * original item and attempts to reserve one on the new item — if the new
+ * item is out of stock, the applicant is waitlisted on it instead, same as
+ * the original request-time flow.
+ */
 export async function confirmApplication(
-  id: string
+  id: string,
+  itemId?: string
 ): Promise<
   | { ok: true; application: DriveApplication }
   | { ok: false; error: string }
@@ -571,10 +594,69 @@ export async function confirmApplication(
     return { ok: false, error: "Only pending-review applications can be confirmed." };
   }
 
+  const targetItemId = itemId ?? application.itemId;
+  const now = new Date().toISOString();
+
+  if (targetItemId === application.itemId) {
+    const updated: DriveApplication = {
+      ...application,
+      status: "confirmed",
+      updatedAt: now,
+    };
+    await writeRecord(COLLECTION.applications, DIR.applications, updated);
+    return { ok: true, application: updated };
+  }
+
+  const targetItem = await getDriveItem(targetItemId);
+  if (!targetItem || targetItem.driveId !== application.driveId) {
+    return { ok: false, error: "That catalog item no longer exists." };
+  }
+
+  // The original item's stock was decremented when this application was
+  // created as pending-review — release it back since a different item is
+  // being confirmed instead.
+  const originalItem = await getDriveItem(application.itemId);
+  if (originalItem) {
+    if (isRedisStore()) {
+      await incrCounter(COLLECTION.items, originalItem.id);
+    }
+    await writeRecord(COLLECTION.items, DIR.items, {
+      ...originalItem,
+      remainingStock: originalItem.remainingStock + 1,
+    });
+  }
+
+  // Same atomic-decrement pattern as reserveBook — attempt to reserve a
+  // unit of the new item.
+  let hasStock: boolean;
+  let remainingAfter = targetItem.remainingStock;
+  if (isRedisStore()) {
+    await ensureCounter(COLLECTION.items, targetItem.id, targetItem.remainingStock);
+    const decremented = await decrCounter(COLLECTION.items, targetItem.id);
+    hasStock = decremented >= 0;
+    if (hasStock) {
+      remainingAfter = decremented;
+    } else {
+      await incrCounter(COLLECTION.items, targetItem.id);
+    }
+  } else {
+    hasStock = targetItem.remainingStock > 0;
+    if (hasStock) remainingAfter = targetItem.remainingStock - 1;
+  }
+
+  if (hasStock) {
+    await writeRecord(COLLECTION.items, DIR.items, {
+      ...targetItem,
+      remainingStock: remainingAfter,
+    });
+  }
+  revalidateTag(ITEMS_TAG);
+
   const updated: DriveApplication = {
     ...application,
-    status: "confirmed",
-    updatedAt: new Date().toISOString(),
+    itemId: targetItemId,
+    status: hasStock ? "confirmed" : "waitlisted",
+    updatedAt: now,
   };
   await writeRecord(COLLECTION.applications, DIR.applications, updated);
   return { ok: true, application: updated };
@@ -583,6 +665,16 @@ export async function confirmApplication(
 /* ------------------------------------------------------------------ */
 /*  Donations                                                           */
 /* ------------------------------------------------------------------ */
+
+/** Records written before `donorSubmittedAmount` existed default it to the
+ *  current amount, so they read as "not corrected since submission" rather
+ *  than crashing on a missing field. */
+function withDonationDefaults(donation: Donation): Donation {
+  return {
+    ...donation,
+    donorSubmittedAmount: donation.donorSubmittedAmount ?? donation.amount,
+  };
+}
 
 export async function listDonations(driveId?: string): Promise<Donation[]> {
   const donations = await listRecords<Donation>(
@@ -593,11 +685,18 @@ export async function listDonations(driveId?: string): Promise<Donation[]> {
     driveId === undefined
       ? donations
       : donations.filter((d) => d.driveId === driveId);
-  return scoped.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  return scoped
+    .map(withDonationDefaults)
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
 
 export async function getDonation(id: string): Promise<Donation | null> {
-  return getRecord<Donation>(COLLECTION.donations, DIR.donations, id);
+  const donation = await getRecord<Donation>(
+    COLLECTION.donations,
+    DIR.donations,
+    id
+  );
+  return donation ? withDonationDefaults(donation) : null;
 }
 
 export async function listDonationsByEmail(email: string): Promise<Donation[]> {
@@ -630,6 +729,7 @@ export async function createDonation(input: {
     donorContact: input.donorContact,
     donorEmail: input.donorEmail,
     amount: input.amount,
+    donorSubmittedAmount: input.amount,
     proofUrl: input.proofUrl,
     status: "pending",
     refCode: genCode("DN"),
@@ -640,19 +740,37 @@ export async function createDonation(input: {
   return donation;
 }
 
+/**
+ * Advisor reviews a pending donation. `correctedAmount`, if given and
+ * different from what the donor submitted, lets the Advisor record the
+ * verified figure they actually confirmed against the payment proof —
+ * donorSubmittedAmount is left untouched for the audit trail, and only the
+ * (possibly corrected) `amount` rolls up into raised totals.
+ */
 export async function reviewDonation(
   id: string,
   decision: "verified" | "rejected",
-  reviewedBy: string
+  reviewedBy: string,
+  correctedAmount?: number
 ): Promise<{ ok: true; donation: Donation } | { ok: false; error: string }> {
   const donation = await getDonation(id);
   if (!donation) return { ok: false, error: "Donation not found." };
   if (donation.status !== "pending") {
     return { ok: false, error: "This donation has already been reviewed." };
   }
+  if (
+    correctedAmount !== undefined &&
+    (!Number.isFinite(correctedAmount) || correctedAmount <= 0)
+  ) {
+    return { ok: false, error: "Please enter a valid amount." };
+  }
 
   const updated: Donation = {
     ...donation,
+    amount:
+      decision === "verified" && correctedAmount !== undefined
+        ? correctedAmount
+        : donation.amount,
     status: decision,
     reviewedBy,
     reviewedAt: new Date().toISOString(),
@@ -850,6 +968,7 @@ export async function recordManualDonation(input: {
     donorName: input.donorName ?? null,
     donorContact: input.note ?? null,
     amount: input.amount,
+    donorSubmittedAmount: input.amount,
     proofUrl: "manual-entry",
     status: "verified",
     reviewedBy: input.reviewedBy,

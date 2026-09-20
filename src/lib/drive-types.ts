@@ -47,7 +47,15 @@ export type ApplicationStatus =
 export interface DriveApplication {
   id: string;
   driveId: string;
+  /** The catalog item that counts toward stock/applied totals — the
+   *  Advisor-confirmed item when different from what was requested,
+   *  otherwise the same as requestedItemId. */
   itemId: string;
+  /** The catalog item the student originally selected at request time. Set
+   *  once at creation and never changed, even if the Advisor confirms a
+   *  different item — kept for an audit trail. Records written before this
+   *  field existed are treated as equal to itemId (see withApplicationDefaults). */
+  requestedItemId: string;
   applicantName: string;
   applicantContact: string;
   /** Google account email of the signed-in applicant. Absent on records
@@ -73,7 +81,16 @@ export interface Donation {
   /** Google account email of the signed-in donor. Absent on records
    *  created before Google sign-in became mandatory. */
   donorEmail?: string;
+  /** The amount that counts toward the drive/ambassador's raised total — the
+   *  Advisor-corrected figure when different from what the donor submitted,
+   *  otherwise the same as donorSubmittedAmount. */
   amount: number;
+  /** What the donor typed into the donation form at submission time. Set
+   *  once at creation and never changed, even if the Advisor corrects the
+   *  amount during review — kept for an audit trail. Records written before
+   *  this field existed are treated as equal to amount (see
+   *  withDonationDefaults). */
+  donorSubmittedAmount: number;
   proofUrl: string;
   status: DonationStatus;
   reviewedBy?: string;

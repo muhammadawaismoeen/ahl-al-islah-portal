@@ -97,7 +97,6 @@ export default async function AdminDrivePage({
     ]);
   const driveById = new Map(drives.map((d) => [d.id, d]));
   const driveNameById = Object.fromEntries(drives.map((d) => [d.id, d.name]));
-  const itemNameById = Object.fromEntries(items.map((i) => [i.id, i.name]));
   const pendingDonations = donations.filter((d) => d.status === "pending").length;
   const pendingAmbassadors = ambassadors.filter((a) => a.status === "pending").length;
 
@@ -217,7 +216,7 @@ export default async function AdminDrivePage({
           {tab === "applicants" && (
             <ApplicantsPanel
               applications={applications}
-              itemNameById={itemNameById}
+              items={items}
               driveNameById={driveNameById}
             />
           )}

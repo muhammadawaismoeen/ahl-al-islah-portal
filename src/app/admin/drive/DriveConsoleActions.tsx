@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import jsQR from "jsqr";
 import {
@@ -14,11 +15,12 @@ import {
   Search,
   ChevronDown,
   ChevronUp,
+  AlertTriangle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { formatDate } from "@/lib/utils";
 import { DRIVE_CURRENCY } from "@/lib/drive-config";
-import type { Drive, DriveApplication, Donation } from "@/lib/drive-types";
+import type { Drive, DriveApplication, DriveItem, Donation } from "@/lib/drive-types";
 import { DeleteButton } from "@/components/admin/DeleteButton";
 import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 import {
@@ -377,40 +379,180 @@ const APP_STATUS_LABEL: Record<DriveApplication["status"], string> = {
   "picked-up": "Picked up",
 };
 
-export function ConfirmApplicationButton({ applicationId }: { applicationId: string }) {
+function ConfirmApplicationDialog({
+  open,
+  application,
+  items,
+  onClose,
+}: {
+  open: boolean;
+  application: DriveApplication;
+  items: DriveItem[];
+  onClose: () => void;
+}) {
   const router = useRouter();
+  const [itemId, setItemId] = useState(application.itemId);
   const [pending, setPending] = useState(false);
+  const confirmRef = useRef<HTMLButtonElement>(null);
 
-  async function handle() {
+  useEffect(() => {
+    if (!open) return;
+    setItemId(application.itemId);
+  }, [open, application.itemId]);
+
+  useEffect(() => {
+    if (!open) return;
+    confirmRef.current?.focus();
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape" && !pending) onClose();
+    }
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [open, pending, onClose]);
+
+  if (!open || typeof document === "undefined") return null;
+
+  const requestedItem = items.find((i) => i.id === application.requestedItemId);
+  const selectedItem = items.find((i) => i.id === itemId);
+  const changed = itemId !== application.requestedItemId;
+
+  async function handleConfirm() {
     setPending(true);
-    const res = await confirmApplicationAction(applicationId);
+    const res = await confirmApplicationAction(
+      application.id,
+      itemId !== application.itemId ? itemId : undefined
+    );
     setPending(false);
     if (res.ok) {
       toast.success("Applicant confirmed.");
+      onClose();
       router.refresh();
     } else {
       toast.error(res.error ?? "Failed to confirm applicant.");
     }
   }
 
+  return createPortal(
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <div
+        className="absolute inset-0 bg-ink/40 backdrop-blur-sm"
+        onClick={() => !pending && onClose()}
+      />
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="confirm-application-title"
+        className="ornate-card relative w-full max-w-md p-6 animate-in"
+      >
+        <button
+          type="button"
+          onClick={() => !pending && onClose()}
+          className="absolute top-4 right-4 text-ink/40 hover:text-ink/70 transition"
+          aria-label="Close"
+        >
+          <X className="h-4 w-4" />
+        </button>
+
+        <h2 id="confirm-application-title" className="heading-serif text-lg font-semibold text-ink">
+          Confirm {application.applicantName}
+        </h2>
+        <p className="mt-1 text-sm text-ink/60">
+          Requested <strong>{requestedItem?.name ?? "an item"}</strong>. Change the item below if
+          the Advisor is confirming something different.
+        </p>
+
+        <label className="block mt-4 text-xs font-medium text-ink/60 mb-1">Confirmed item</label>
+        <select
+          value={itemId}
+          onChange={(e) => setItemId(e.target.value)}
+          disabled={pending}
+          className="input-field text-sm"
+        >
+          {items.map((i) => (
+            <option key={i.id} value={i.id}>
+              {i.name}
+            </option>
+          ))}
+        </select>
+
+        {changed && (
+          <div className="mt-4 flex gap-2.5 rounded-xl bg-amber/10 border border-amber/25 p-3">
+            <AlertTriangle className="h-4 w-4 text-amber shrink-0 mt-0.5" />
+            <p className="text-xs text-amber leading-relaxed">
+              {application.applicantName} requested{" "}
+              <strong>{requestedItem?.name ?? "a different item"}</strong> — you&apos;re confirming{" "}
+              <strong>{selectedItem?.name ?? "this item"}</strong> instead. Both will be kept on
+              record.
+            </p>
+          </div>
+        )}
+
+        <div className="mt-6 flex items-center justify-end gap-2">
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={pending}
+            className="btn-ghost !py-2 !px-4 text-sm"
+          >
+            Cancel
+          </button>
+          <button
+            ref={confirmRef}
+            type="button"
+            onClick={handleConfirm}
+            disabled={pending}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-emerald-deep text-white font-medium text-sm tracking-wide transition-all duration-200 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {pending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+            Confirm
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
+}
+
+export function ConfirmApplicationButton({
+  application,
+  items,
+}: {
+  application: DriveApplication;
+  items: DriveItem[];
+}) {
+  const [open, setOpen] = useState(false);
+
   return (
-    <button type="button" onClick={handle} disabled={pending} className="btn-ghost !py-1 !px-2.5 text-xs text-emerald-deep">
-      {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
-      Confirm
-    </button>
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="btn-ghost !py-1 !px-2.5 text-xs text-emerald-deep"
+      >
+        <Check className="h-3.5 w-3.5" />
+        Confirm
+      </button>
+      <ConfirmApplicationDialog
+        open={open}
+        application={application}
+        items={items}
+        onClose={() => setOpen(false)}
+      />
+    </>
   );
 }
 
 export function ApplicantsPanel({
   applications,
-  itemNameById,
+  items,
   driveNameById,
 }: {
   applications: DriveApplication[];
-  itemNameById: Record<string, string>;
+  items: DriveItem[];
   driveNameById: Record<string, string>;
 }) {
   const [query, setQuery] = useState("");
+  const itemById = useMemo(() => new Map(items.map((i) => [i.id, i])), [items]);
   const q = query.trim().toLowerCase();
   const filtered = q
     ? applications.filter(
@@ -442,31 +584,40 @@ export function ApplicantsPanel({
         </p>
       ) : (
         <ul className="divide-y divide-border">
-          {filtered.map((a) => (
-            <li key={a.id} className="p-4 flex flex-wrap items-center justify-between gap-3">
-              <div className="min-w-0">
-                <p className="font-medium text-sm text-ink">{a.applicantName}</p>
-                <p className="text-xs text-ink/50 mt-0.5">
-                  {itemNameById[a.itemId] ?? "Item"} · {driveNameById[a.driveId] ?? "Drive"} ·{" "}
-                  {a.applicantContact}
-                </p>
-                <p className="text-[11px] text-ink/40 mt-0.5">
-                  Code <code className="font-mono">{a.pickupCode}</code> · Applied{" "}
-                  {formatDate(a.createdAt)}
-                </p>
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <span
-                  className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${APP_STATUS_STYLE[a.status]}`}
-                >
-                  {APP_STATUS_LABEL[a.status]}
-                </span>
-                {a.status === "pending-review" && (
-                  <ConfirmApplicationButton applicationId={a.id} />
-                )}
-              </div>
-            </li>
-          ))}
+          {filtered.map((a) => {
+            const itemsForDrive = items.filter((i) => i.driveId === a.driveId);
+            const wasSwapped = a.requestedItemId !== a.itemId;
+            return (
+              <li key={a.id} className="p-4 flex flex-wrap items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="font-medium text-sm text-ink">{a.applicantName}</p>
+                  <p className="text-xs text-ink/50 mt-0.5">
+                    {itemById.get(a.itemId)?.name ?? "Item"} · {driveNameById[a.driveId] ?? "Drive"} ·{" "}
+                    {a.applicantContact}
+                  </p>
+                  {wasSwapped && (
+                    <p className="text-[11px] text-amber mt-0.5">
+                      Originally requested {itemById.get(a.requestedItemId)?.name ?? "a different item"}
+                    </p>
+                  )}
+                  <p className="text-[11px] text-ink/40 mt-0.5">
+                    Code <code className="font-mono">{a.pickupCode}</code> · Applied{" "}
+                    {formatDate(a.createdAt)}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span
+                    className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${APP_STATUS_STYLE[a.status]}`}
+                  >
+                    {APP_STATUS_LABEL[a.status]}
+                  </span>
+                  {a.status === "pending-review" && (
+                    <ConfirmApplicationButton application={a} items={itemsForDrive} />
+                  )}
+                </div>
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>
@@ -660,18 +811,157 @@ export const DONATION_STATUS_STYLE: Record<Donation["status"], string> = {
   rejected: "bg-danger-100 text-danger-700",
 };
 
-export function DonationReviewButtons({ donationId }: { donationId: string }) {
+function VerifyDonationDialog({
+  open,
+  donation,
+  onClose,
+}: {
+  open: boolean;
+  donation: Donation;
+  onClose: () => void;
+}) {
   const router = useRouter();
-  const [pending, setPending] = useState<"verified" | "rejected" | null>(null);
+  const [amount, setAmount] = useState(String(donation.amount));
+  const [pending, setPending] = useState(false);
+  const confirmRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    setAmount(String(donation.amount));
+  }, [open, donation.amount]);
+
+  useEffect(() => {
+    if (!open) return;
+    confirmRef.current?.focus();
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape" && !pending) onClose();
+    }
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [open, pending, onClose]);
+
+  if (!open || typeof document === "undefined") return null;
+
+  const parsedAmount = Number(amount);
+  const validAmount = Number.isFinite(parsedAmount) && parsedAmount > 0;
+  const changed = validAmount && parsedAmount !== donation.donorSubmittedAmount;
+
+  async function handleConfirm() {
+    if (!validAmount) return;
+    setPending(true);
+    const res = await reviewDonationAction(
+      donation.id,
+      "verified",
+      parsedAmount !== donation.donorSubmittedAmount ? parsedAmount : undefined
+    );
+    setPending(false);
+    if (res.ok) {
+      toast.success("Donation verified.");
+      onClose();
+      router.refresh();
+    } else {
+      toast.error(res.error ?? "Failed to review donation.");
+    }
+  }
+
+  return createPortal(
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <div
+        className="absolute inset-0 bg-ink/40 backdrop-blur-sm"
+        onClick={() => !pending && onClose()}
+      />
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="verify-donation-title"
+        className="ornate-card relative w-full max-w-md p-6 animate-in"
+      >
+        <button
+          type="button"
+          onClick={() => !pending && onClose()}
+          className="absolute top-4 right-4 text-ink/40 hover:text-ink/70 transition"
+          aria-label="Close"
+        >
+          <X className="h-4 w-4" />
+        </button>
+
+        <h2 id="verify-donation-title" className="heading-serif text-lg font-semibold text-ink">
+          Verify donation from {donation.donorName ?? "this donor"}
+        </h2>
+
+        <a
+          href={donation.proofUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block mt-4 rounded-xl overflow-hidden border border-border"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={donation.proofUrl} alt="Payment proof" className="w-full max-h-64 object-contain bg-surface-2" />
+        </a>
+        <p className="mt-1 text-[11px] text-ink/40">Click the image to open it full size.</p>
+
+        <label className="block mt-4 text-xs font-medium text-ink/60 mb-1">
+          Amount ({DRIVE_CURRENCY})
+        </label>
+        <input
+          type="number"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          disabled={pending}
+          min={1}
+          className="input-field text-sm"
+        />
+
+        {changed && (
+          <div className="mt-4 flex gap-2.5 rounded-xl bg-amber/10 border border-amber/25 p-3">
+            <AlertTriangle className="h-4 w-4 text-amber shrink-0 mt-0.5" />
+            <p className="text-xs text-amber leading-relaxed">
+              Donor entered {DRIVE_CURRENCY} {donation.donorSubmittedAmount.toLocaleString()} —
+              you&apos;re recording {DRIVE_CURRENCY} {parsedAmount.toLocaleString()} instead. Both
+              will be kept on record.
+            </p>
+          </div>
+        )}
+
+        <div className="mt-6 flex items-center justify-end gap-2">
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={pending}
+            className="btn-ghost !py-2 !px-4 text-sm"
+          >
+            Cancel
+          </button>
+          <button
+            ref={confirmRef}
+            type="button"
+            onClick={handleConfirm}
+            disabled={pending || !validAmount}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-emerald-deep text-white font-medium text-sm tracking-wide transition-all duration-200 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {pending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+            Verify
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
+}
+
+export function DonationReviewButtons({ donation }: { donation: Donation }) {
+  const router = useRouter();
+  const [pending, setPending] = useState(false);
+  const [verifying, setVerifying] = useState(false);
   const [confirmingReject, setConfirmingReject] = useState(false);
 
-  async function handle(decision: "verified" | "rejected") {
-    setPending(decision);
-    const res = await reviewDonationAction(donationId, decision);
-    setPending(null);
+  async function handleReject() {
+    setPending(true);
+    const res = await reviewDonationAction(donation.id, "rejected");
+    setPending(false);
     setConfirmingReject(false);
     if (res.ok) {
-      toast.success(decision === "verified" ? "Donation verified." : "Donation rejected.");
+      toast.success("Donation rejected.");
       router.refresh();
     } else {
       toast.error(res.error ?? "Failed to review donation.");
@@ -682,28 +972,33 @@ export function DonationReviewButtons({ donationId }: { donationId: string }) {
     <div className="flex items-center gap-2">
       <button
         type="button"
-        onClick={() => handle("verified")}
-        disabled={pending !== null}
+        onClick={() => setVerifying(true)}
+        disabled={pending}
         className="btn-ghost !py-1.5 !px-3 text-xs text-emerald-deep"
       >
-        {pending === "verified" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
+        <Check className="h-3.5 w-3.5" />
         Verify
       </button>
       <button
         type="button"
         onClick={() => setConfirmingReject(true)}
-        disabled={pending !== null}
+        disabled={pending}
         className="btn-ghost !py-1.5 !px-3 text-xs text-danger hover:text-danger-700"
       >
-        {pending === "rejected" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <X className="h-3.5 w-3.5" />}
+        {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <X className="h-3.5 w-3.5" />}
         Reject
       </button>
+      <VerifyDonationDialog
+        open={verifying}
+        donation={donation}
+        onClose={() => setVerifying(false)}
+      />
       <ConfirmDialog
         open={confirmingReject}
         title="Reject this donation proof?"
         confirmLabel="Reject"
-        pending={pending === "rejected"}
-        onConfirm={() => handle("rejected")}
+        pending={pending}
+        onConfirm={handleReject}
         onCancel={() => setConfirmingReject(false)}
       />
     </div>
@@ -780,6 +1075,11 @@ export function DonationsPanel({
                       {d.donorEmail ?? "no email on file"} · {d.donorContact ?? "no contact"} · Ref{" "}
                       <code className="font-mono">{d.refCode}</code>
                     </p>
+                    {d.amount !== d.donorSubmittedAmount && (
+                      <p className="text-[11px] text-amber mt-0.5">
+                        Corrected from {DRIVE_CURRENCY} {d.donorSubmittedAmount.toLocaleString()}
+                      </p>
+                    )}
                     <div className="flex items-center gap-3 mt-1">
                       <a
                         href={d.proofUrl}
@@ -811,7 +1111,7 @@ export function DonationsPanel({
                     >
                       {d.status}
                     </span>
-                    {d.status === "pending" && <DonationReviewButtons donationId={d.id} />}
+                    {d.status === "pending" && <DonationReviewButtons donation={d} />}
                     <DeleteButton
                       title="Delete this donation?"
                       description={
