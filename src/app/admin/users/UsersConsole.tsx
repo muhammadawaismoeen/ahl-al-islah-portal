@@ -2,16 +2,34 @@
 
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Plus, ShieldCheck } from "lucide-react";
+import { Loader2, Plus, ShieldCheck, ChevronDown, ChevronUp, Lock } from "lucide-react";
 import { toast } from "sonner";
-import { ADMIN_ROLES, ADMIN_ROLE_LABEL, ADMIN_ROLE_DESCRIPTION } from "@/lib/admin-permissions";
-import type { AdminRole, AdminUser } from "@/lib/admin-types";
+import {
+  ADMIN_ROLES,
+  ADMIN_ROLE_LABEL,
+  ADMIN_ROLE_DESCRIPTION,
+  SECTION_FEATURES,
+  FEATURE_LABEL,
+  PERMISSION_TIERS,
+  PERMISSION_TIER_LABEL,
+  READ_ONLY_FEATURES,
+  sectionsForRole,
+} from "@/lib/admin-permissions";
+import type { AdminRole, AdminUser, AdminFeature, AdminSection, PermissionTier } from "@/lib/admin-types";
 import { DeleteButton } from "@/components/admin/DeleteButton";
 import {
   addAdminUserAction,
   updateAdminUserRoleAction,
+  updateAdminUserPermissionsAction,
   removeAdminUserAction,
 } from "./actions";
+
+const SECTION_LABEL: Record<Exclude<AdminSection, "users">, string> = {
+  people: "People",
+  community: "Community",
+  programming: "Programming",
+  drive: "Qur'an & Seerah Drive",
+};
 
 export function AddAdminUserForm() {
   const router = useRouter();
@@ -101,6 +119,92 @@ function RoleSelect({ user }: { user: AdminUser }) {
   );
 }
 
+function FeaturePermissionSelect({
+  user,
+  feature,
+  tier,
+}: {
+  user: AdminUser;
+  feature: AdminFeature;
+  tier: PermissionTier;
+}) {
+  const router = useRouter();
+  const [pending, setPending] = useState(false);
+  const readOnlyFeature = READ_ONLY_FEATURES.has(feature);
+  const options = readOnlyFeature
+    ? PERMISSION_TIERS.filter((t) => t === "none" || t === "read")
+    : PERMISSION_TIERS;
+
+  async function handleChange(next: PermissionTier) {
+    setPending(true);
+    const res = await updateAdminUserPermissionsAction(user.id, {
+      ...user.permissionOverrides,
+      [feature]: next,
+    });
+    setPending(false);
+    if (res.ok) {
+      toast.success(`${FEATURE_LABEL[feature]} updated.`);
+      router.refresh();
+    } else {
+      toast.error(res.error);
+    }
+  }
+
+  return (
+    <div className="flex items-center justify-between gap-3 py-1.5">
+      <span className="text-xs text-ink/70">{FEATURE_LABEL[feature]}</span>
+      <select
+        value={tier}
+        disabled={pending}
+        onChange={(e) => handleChange(e.target.value as PermissionTier)}
+        className="input-field !py-1 !text-xs w-auto"
+      >
+        {options.map((t) => (
+          <option key={t} value={t}>
+            {PERMISSION_TIER_LABEL[t]}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
+function PermissionsPanel({ user }: { user: AdminUser }) {
+  if (user.role === "owner") {
+    return (
+      <p className="text-xs text-ink/50 py-2">
+        Owners have full access to everything — per-feature limits don&apos;t apply.
+      </p>
+    );
+  }
+
+  const sections = sectionsForRole(user.role).filter(
+    (s): s is Exclude<AdminSection, "users"> => s !== "users"
+  );
+
+  return (
+    <div className="space-y-4 pt-1">
+      {sections.map((section) => (
+        <div key={section}>
+          <p className="text-[11px] uppercase tracking-wider text-ink/40 font-medium mb-1">
+            {SECTION_LABEL[section]}
+          </p>
+          <div className="divide-y divide-border/60">
+            {SECTION_FEATURES[section].map((feature) => (
+              <FeaturePermissionSelect
+                key={feature}
+                user={user}
+                feature={feature}
+                tier={user.permissionOverrides?.[feature] ?? "full"}
+              />
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function RemoveButton({ user }: { user: AdminUser }) {
   return (
     <DeleteButton
@@ -117,6 +221,8 @@ function RemoveButton({ user }: { user: AdminUser }) {
 }
 
 export function AdminUsersTable({ users }: { users: AdminUser[] }) {
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
   if (users.length === 0) {
     return (
       <div className="ornate-card p-10 text-center">
@@ -129,23 +235,43 @@ export function AdminUsersTable({ users }: { users: AdminUser[] }) {
 
   return (
     <div className="space-y-3">
-      {users.map((user) => (
-        <div
-          key={user.id}
-          className="ornate-card p-4 flex flex-wrap items-center justify-between gap-3"
-        >
-          <div>
-            <p className="text-sm font-medium text-ink">{user.email}</p>
-            <p className="text-xs text-ink/50 mt-0.5">
-              {ADMIN_ROLE_DESCRIPTION[user.role]}
-            </p>
+      {users.map((user) => {
+        const expanded = expandedId === user.id;
+        return (
+          <div key={user.id} className="ornate-card p-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="text-sm font-medium text-ink">{user.email}</p>
+                <p className="text-xs text-ink/50 mt-0.5">
+                  {ADMIN_ROLE_DESCRIPTION[user.role]}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setExpandedId(expanded ? null : user.id)}
+                  className="inline-flex items-center gap-1 text-[11px] text-sapphire hover:underline"
+                >
+                  <Lock className="h-3 w-3" />
+                  Permissions
+                  {expanded ? (
+                    <ChevronUp className="h-3 w-3" />
+                  ) : (
+                    <ChevronDown className="h-3 w-3" />
+                  )}
+                </button>
+                <RoleSelect user={user} />
+                <RemoveButton user={user} />
+              </div>
+            </div>
+            {expanded && (
+              <div className="mt-3 pt-3 border-t border-border">
+                <PermissionsPanel user={user} />
+              </div>
+            )}
           </div>
-          <div className="flex items-center gap-2">
-            <RoleSelect user={user} />
-            <RemoveButton user={user} />
-          </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

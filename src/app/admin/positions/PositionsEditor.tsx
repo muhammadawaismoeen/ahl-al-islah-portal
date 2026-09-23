@@ -374,8 +374,10 @@ function PositionCard({
 
 export function PositionsEditor({
   initialPositions,
+  canEdit = true,
 }: {
   initialPositions: Position[];
+  canEdit?: boolean;
 }) {
   const [positions, setPositions] = useState<Position[]>(initialPositions);
   const [saving, setSaving] = useState(false);
@@ -444,29 +446,33 @@ export function PositionsEditor({
           )}
         </div>
         <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={addPosition}
-            className="btn-ghost !py-2 !px-4 text-xs"
-          >
-            <Plus className="h-3.5 w-3.5" />
-            Add position
-          </button>
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={saving || !dirty}
-            className="btn-primary !py-2 !px-5 text-xs"
-          >
-            {saving ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            ) : dirty ? (
-              <Save className="h-3.5 w-3.5" />
-            ) : (
-              <Check className="h-3.5 w-3.5" />
-            )}
-            {saving ? "Saving..." : dirty ? "Save & Publish" : "Saved"}
-          </button>
+          {canEdit && (
+            <button
+              type="button"
+              onClick={addPosition}
+              className="btn-ghost !py-2 !px-4 text-xs"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              Add position
+            </button>
+          )}
+          {canEdit && (
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={saving || !dirty}
+              className="btn-primary !py-2 !px-5 text-xs"
+            >
+              {saving ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : dirty ? (
+                <Save className="h-3.5 w-3.5" />
+              ) : (
+                <Check className="h-3.5 w-3.5" />
+              )}
+              {saving ? "Saving..." : dirty ? "Save & Publish" : "Saved"}
+            </button>
+          )}
         </div>
       </div>
 

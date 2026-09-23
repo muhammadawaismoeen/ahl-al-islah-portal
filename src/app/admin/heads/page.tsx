@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Mail, Phone, Download, Crown } from "lucide-react";
-import { isAuthenticated } from "@/app/admin/actions";
+import { isAuthenticated, getFeaturePermission } from "@/app/admin/actions";
 import { listSubmissions } from "@/lib/storage";
 import { getAllPositions } from "@/lib/positions";
 import type { Position } from "@/lib/positions";
@@ -9,6 +9,7 @@ import { getQuestionSet } from "@/lib/questions";
 import { formatDate } from "@/lib/utils";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { AdminLoginScreen } from "@/components/admin/AdminLoginScreen";
+import { FeatureRestricted } from "@/components/admin/FeatureGate";
 
 export const metadata: Metadata = {
   title: "Admin · Heads",
@@ -28,6 +29,15 @@ export default async function AdminHeadsPage({
 
   if (!authed) {
     return <AdminLoginScreen subtitle="Review submitted applications. Advisor only." />;
+  }
+
+  const tier = await getFeaturePermission("people.heads");
+  if (tier === "none") {
+    return (
+      <AdminShell section="people">
+        <FeatureRestricted />
+      </AdminShell>
+    );
   }
 
   const [allSubmissions, positions] = await Promise.all([

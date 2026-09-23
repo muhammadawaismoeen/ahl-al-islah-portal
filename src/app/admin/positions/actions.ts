@@ -1,15 +1,16 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { isAuthenticated } from "@/app/admin/actions";
+import { getFeaturePermission } from "@/app/admin/actions";
+import { canEdit } from "@/lib/admin-permissions";
 import { getContent, saveContent } from "@/lib/content-store";
 import type { Position } from "@/lib/content-types";
 
 export async function updatePositions(
   jsonString: string
 ): Promise<{ ok: boolean; error?: string }> {
-  const authed = await isAuthenticated();
-  if (!authed) return { ok: false, error: "Not authenticated." };
+  const tier = await getFeaturePermission("programming.positions");
+  if (!canEdit(tier)) return { ok: false, error: "You don't have permission to edit positions." };
 
   let positions: Position[];
   try {

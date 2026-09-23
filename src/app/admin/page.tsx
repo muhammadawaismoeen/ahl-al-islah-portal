@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Mail, Phone, Download } from "lucide-react";
-import { isAuthenticated } from "./actions";
+import { isAuthenticated, getFeaturePermission } from "./actions";
 import { listSubmissions } from "@/lib/storage";
 import { getAllPositions } from "@/lib/positions";
 import type { Position } from "@/lib/positions";
@@ -9,6 +9,7 @@ import { getQuestionSet } from "@/lib/questions";
 import { formatDate } from "@/lib/utils";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { AdminLoginScreen } from "@/components/admin/AdminLoginScreen";
+import { FeatureRestricted } from "@/components/admin/FeatureGate";
 import { auth } from "@/lib/auth";
 
 export const metadata: Metadata = {
@@ -35,6 +36,15 @@ export default async function AdminPage({
 
   if (!authed) {
     return <AdminLoginScreen deniedEmail={session?.user?.email} />;
+  }
+
+  const tier = await getFeaturePermission("people.members");
+  if (tier === "none") {
+    return (
+      <AdminShell section="people">
+        <FeatureRestricted />
+      </AdminShell>
+    );
   }
 
   const [submissions, positions] = await Promise.all([

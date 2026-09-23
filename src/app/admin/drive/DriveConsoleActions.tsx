@@ -133,7 +133,7 @@ function SwitchControl({
   );
 }
 
-export function DriveStatusToggle({ drive }: { drive: Drive }) {
+export function DriveStatusToggle({ drive, canEdit }: { drive: Drive; canEdit: boolean }) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const isOpen = drive.status === "open";
@@ -158,12 +158,17 @@ export function DriveStatusToggle({ drive }: { drive: Drive }) {
           {isOpen ? "This drive is open and visible for giving." : "Paused — donations are closed."}
         </p>
       </div>
-      <SwitchControl checked={isOpen} pending={pending} onClick={handle} srLabel="Toggle donations open for this drive" />
+      <SwitchControl
+        checked={isOpen}
+        pending={pending || !canEdit}
+        onClick={handle}
+        srLabel="Toggle donations open for this drive"
+      />
     </div>
   );
 }
 
-export function ApplicationsToggle({ drive }: { drive: Drive }) {
+export function ApplicationsToggle({ drive, canEdit }: { drive: Drive; canEdit: boolean }) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const isOpen = drive.applicationsOpen;
@@ -188,12 +193,17 @@ export function ApplicationsToggle({ drive }: { drive: Drive }) {
           {isOpen ? "Applicants can apply for this drive." : "Paused — the application form is closed."}
         </p>
       </div>
-      <SwitchControl checked={isOpen} pending={pending} onClick={handle} srLabel="Toggle applications open for this drive" />
+      <SwitchControl
+        checked={isOpen}
+        pending={pending || !canEdit}
+        onClick={handle}
+        srLabel="Toggle applications open for this drive"
+      />
     </div>
   );
 }
 
-export function DriveGoalForm({ drive }: { drive: Drive }) {
+export function DriveGoalForm({ drive, canEdit }: { drive: Drive; canEdit: boolean }) {
   const router = useRouter();
   const [goal, setGoal] = useState(String(drive.goalAmount));
   const [pending, setPending] = useState(false);
@@ -210,6 +220,8 @@ export function DriveGoalForm({ drive }: { drive: Drive }) {
       toast.error(res.error ?? "Failed to update goal.");
     }
   }
+
+  if (!canEdit) return null;
 
   return (
     <div className="flex items-center gap-2">
@@ -303,11 +315,13 @@ export function ItemStockForm({
   totalStock,
   remainingStock,
   perStudentLimit,
+  canEdit,
 }: {
   itemId: string;
   totalStock: number;
   remainingStock: number;
   perStudentLimit: number;
+  canEdit: boolean;
 }) {
   const router = useRouter();
   const [total, setTotal] = useState(String(totalStock));
@@ -329,6 +343,14 @@ export function ItemStockForm({
     } else {
       toast.error(res.error ?? "Failed to update item.");
     }
+  }
+
+  if (!canEdit) {
+    return (
+      <p className="text-[11px] text-ink/50">
+        Total {totalStock} · Left {remainingStock} · Limit {perStudentLimit}
+      </p>
+    );
   }
 
   return (
@@ -546,10 +568,12 @@ export function ApplicantsPanel({
   applications,
   items,
   driveNameById,
+  canEdit,
 }: {
   applications: DriveApplication[];
   items: DriveItem[];
   driveNameById: Record<string, string>;
+  canEdit: boolean;
 }) {
   const [query, setQuery] = useState("");
   const itemById = useMemo(() => new Map(items.map((i) => [i.id, i])), [items]);
@@ -611,7 +635,7 @@ export function ApplicantsPanel({
                   >
                     {APP_STATUS_LABEL[a.status]}
                   </span>
-                  {a.status === "pending-review" && (
+                  {canEdit && a.status === "pending-review" && (
                     <ConfirmApplicationButton application={a} items={itemsForDrive} />
                   )}
                 </div>
@@ -710,7 +734,7 @@ function QrCameraScanner({
   );
 }
 
-export function CheckInForm() {
+export function CheckInForm({ canEdit }: { canEdit: boolean }) {
   const router = useRouter();
   const [code, setCode] = useState("");
   const [pending, setPending] = useState(false);
@@ -743,6 +767,16 @@ export function CheckInForm() {
     e.preventDefault();
     if (!code.trim()) return;
     submitCode(code);
+  }
+
+  if (!canEdit) {
+    return (
+      <div className="ornate-card p-5 sm:p-6">
+        <p className="text-sm text-ink/60">
+          You have read-only access to this screen — check-in is unavailable.
+        </p>
+      </div>
+    );
   }
 
   return (
@@ -1008,9 +1042,13 @@ export function DonationReviewButtons({ donation }: { donation: Donation }) {
 export function DonationsPanel({
   donations,
   driveNameById,
+  canEdit,
+  canDelete,
 }: {
   donations: Donation[];
   driveNameById: Record<string, string>;
+  canEdit: boolean;
+  canDelete: boolean;
 }) {
   const [query, setQuery] = useState("");
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -1111,22 +1149,24 @@ export function DonationsPanel({
                     >
                       {d.status}
                     </span>
-                    {d.status === "pending" && <DonationReviewButtons donation={d} />}
-                    <DeleteButton
-                      title="Delete this donation?"
-                      description={
-                        d.status === "verified"
-                          ? `This will permanently remove the record of ${DRIVE_CURRENCY} ${d.amount.toLocaleString()} from ${
-                              d.donorName ?? "this donor"
-                            } and reduce the raised total it counted toward. This cannot be undone.`
-                          : "This permanently removes the donation record. This cannot be undone."
-                      }
-                      successMessage="Donation deleted."
-                      action={() => deleteDonationAction(d.id)}
-                      iconOnly
-                      ariaLabel={`Delete donation of ${DRIVE_CURRENCY} ${d.amount.toLocaleString()} from ${d.donorName ?? "donor"}`}
-                      className="btn-ghost !py-1.5 !px-2.5 text-xs text-danger hover:text-danger-700"
-                    />
+                    {canEdit && d.status === "pending" && <DonationReviewButtons donation={d} />}
+                    {canDelete && (
+                      <DeleteButton
+                        title="Delete this donation?"
+                        description={
+                          d.status === "verified"
+                            ? `This will permanently remove the record of ${DRIVE_CURRENCY} ${d.amount.toLocaleString()} from ${
+                                d.donorName ?? "this donor"
+                              } and reduce the raised total it counted toward. This cannot be undone.`
+                            : "This permanently removes the donation record. This cannot be undone."
+                        }
+                        successMessage="Donation deleted."
+                        action={() => deleteDonationAction(d.id)}
+                        iconOnly
+                        ariaLabel={`Delete donation of ${DRIVE_CURRENCY} ${d.amount.toLocaleString()} from ${d.donorName ?? "donor"}`}
+                        className="btn-ghost !py-1.5 !px-2.5 text-xs text-danger hover:text-danger-700"
+                      />
+                    )}
                   </div>
                 </div>
                 {expanded && history.length > 0 && (

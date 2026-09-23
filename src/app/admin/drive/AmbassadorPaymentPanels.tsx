@@ -78,9 +78,13 @@ export function AmbassadorReviewButtons({ ambassadorId }: { ambassadorId: string
 export function AmbassadorsPanel({
   ambassadors,
   driveNameById,
+  canEdit,
+  canDelete,
 }: {
   ambassadors: Ambassador[];
   driveNameById: Record<string, string>;
+  canEdit: boolean;
+  canDelete: boolean;
 }) {
   if (ambassadors.length === 0) {
     return (
@@ -94,14 +98,30 @@ export function AmbassadorsPanel({
     <div className="ornate-card p-2">
       <ul className="divide-y divide-border">
         {ambassadors.map((a) => (
-          <AmbassadorRow key={a.id} ambassador={a} driveName={driveNameById[a.driveId] ?? "Drive"} />
+          <AmbassadorRow
+            key={a.id}
+            ambassador={a}
+            driveName={driveNameById[a.driveId] ?? "Drive"}
+            canEdit={canEdit}
+            canDelete={canDelete}
+          />
         ))}
       </ul>
     </div>
   );
 }
 
-function AmbassadorRow({ ambassador: a, driveName }: { ambassador: Ambassador; driveName: string }) {
+function AmbassadorRow({
+  ambassador: a,
+  driveName,
+  canEdit,
+  canDelete,
+}: {
+  ambassador: Ambassador;
+  driveName: string;
+  canEdit: boolean;
+  canDelete: boolean;
+}) {
   const router = useRouter();
   const [editingName, setEditingName] = useState(false);
   const [nameValue, setNameValue] = useState(a.name);
@@ -189,14 +209,16 @@ function AmbassadorRow({ ambassador: a, driveName }: { ambassador: Ambassador; d
                 Ihsan-level
               </span>
             )}
-            <button
-              type="button"
-              onClick={() => setEditingName(true)}
-              className="text-ink/30 hover:text-emerald-deep transition"
-              aria-label={`Edit ${a.name}'s name`}
-            >
-              <Pencil className="h-3 w-3" />
-            </button>
+            {canEdit && (
+              <button
+                type="button"
+                onClick={() => setEditingName(true)}
+                className="text-ink/30 hover:text-emerald-deep transition"
+                aria-label={`Edit ${a.name}'s name`}
+              >
+                <Pencil className="h-3 w-3" />
+              </button>
+            )}
           </p>
         )}
         <p className="text-xs text-ink/50 mt-0.5">
@@ -252,7 +274,7 @@ function AmbassadorRow({ ambassador: a, driveName }: { ambassador: Ambassador; d
         <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${AMB_STATUS_STYLE[a.status]}`}>
           {a.status}
         </span>
-        {a.status === "approved" && !addingDonation && (
+        {canEdit && a.status === "approved" && !addingDonation && (
           <button
             type="button"
             onClick={() => setAddingDonation(true)}
@@ -262,8 +284,8 @@ function AmbassadorRow({ ambassador: a, driveName }: { ambassador: Ambassador; d
             Add donation
           </button>
         )}
-        {a.status === "pending" && <AmbassadorReviewButtons ambassadorId={a.id} />}
-        {a.status !== "pending" && (
+        {canEdit && a.status === "pending" && <AmbassadorReviewButtons ambassadorId={a.id} />}
+        {canDelete && a.status !== "pending" && (
           <DeleteButton
             title={`Delete ${a.name}'s registration?`}
             description="This removes the Ambassador registration record. This cannot be undone."
@@ -279,7 +301,13 @@ function AmbassadorRow({ ambassador: a, driveName }: { ambassador: Ambassador; d
   );
 }
 
-export function IhsanPercentageForm({ ihsanPercentage }: { ihsanPercentage: number }) {
+export function IhsanPercentageForm({
+  ihsanPercentage,
+  canEdit,
+}: {
+  ihsanPercentage: number;
+  canEdit: boolean;
+}) {
   const router = useRouter();
   const [value, setValue] = useState(String(ihsanPercentage));
   const [pending, setPending] = useState(false);
@@ -306,21 +334,25 @@ export function IhsanPercentageForm({ ihsanPercentage }: { ihsanPercentage: numb
         When an Ambassador types their own target, the portal suggests a
         higher &quot;Ihsan-level&quot; target this percentage above it.
       </p>
-      <div className="flex items-center gap-2">
-        <input
-          type="number"
-          min={0}
-          step="1"
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          className="input-field !py-1.5 text-sm w-24"
-        />
-        <span className="text-sm text-ink/60">%</span>
-        <button type="button" onClick={handle} disabled={pending} className="btn-ghost !py-1.5 !px-3 text-xs ml-2">
-          {pending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-          Save
-        </button>
-      </div>
+      {canEdit ? (
+        <div className="flex items-center gap-2">
+          <input
+            type="number"
+            min={0}
+            step="1"
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            className="input-field !py-1.5 text-sm w-24"
+          />
+          <span className="text-sm text-ink/60">%</span>
+          <button type="button" onClick={handle} disabled={pending} className="btn-ghost !py-1.5 !px-3 text-xs ml-2">
+            {pending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+            Save
+          </button>
+        </div>
+      ) : (
+        <p className="text-sm text-ink font-medium">{ihsanPercentage}%</p>
+      )}
     </div>
   );
 }
@@ -392,7 +424,13 @@ export function AddPaymentMethodForm() {
   );
 }
 
-export function PaymentMethodsList({ methods }: { methods: PaymentMethod[] }) {
+export function PaymentMethodsList({
+  methods,
+  canDelete,
+}: {
+  methods: PaymentMethod[];
+  canDelete: boolean;
+}) {
   if (methods.length === 0) {
     return (
       <div className="ornate-card p-10 text-center">
@@ -421,15 +459,17 @@ export function PaymentMethodsList({ methods }: { methods: PaymentMethod[] }) {
               {m.branch && <p className="text-[11px] text-ink/40 mt-0.5">{m.branch}</p>}
               {m.instructions && <p className="text-[11px] text-ink/50 mt-1">{m.instructions}</p>}
             </div>
-            <DeleteButton
-              title="Remove this payment method?"
-              description={`"${m.label}" will no longer be shown to donors.`}
-              confirmLabel="Remove"
-              successMessage="Payment method removed."
-              action={() => deletePaymentMethodAction(m.id)}
-              iconOnly
-              className="btn-ghost !py-1.5 !px-2.5 text-xs text-danger hover:text-danger-700 shrink-0"
-            />
+            {canDelete && (
+              <DeleteButton
+                title="Remove this payment method?"
+                description={`"${m.label}" will no longer be shown to donors.`}
+                confirmLabel="Remove"
+                successMessage="Payment method removed."
+                action={() => deletePaymentMethodAction(m.id)}
+                iconOnly
+                className="btn-ghost !py-1.5 !px-2.5 text-xs text-danger hover:text-danger-700 shrink-0"
+              />
+            )}
           </div>
         </div>
       ))}

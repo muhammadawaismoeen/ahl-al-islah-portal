@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { isAuthenticated } from "@/app/admin/actions";
+import { isAuthenticated, getFeaturePermission } from "@/app/admin/actions";
+import { canEdit } from "@/lib/admin-permissions";
 import { createSessionAction } from "../actions";
 import { SessionForm } from "../SessionForm";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { AdminLoginScreen } from "@/components/admin/AdminLoginScreen";
+import { FeatureRestricted } from "@/components/admin/FeatureGate";
 
 export const metadata: Metadata = {
   title: "New Session — Admin",
@@ -18,6 +20,15 @@ export default async function NewSessionPage() {
   const authed = await isAuthenticated();
   if (!authed) {
     return <AdminLoginScreen />;
+  }
+
+  const tier = await getFeaturePermission("programming.sessions");
+  if (!canEdit(tier)) {
+    return (
+      <AdminShell section="programming">
+        <FeatureRestricted />
+      </AdminShell>
+    );
   }
 
   return (

@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Phone, Clock, MessageCircle, Reply } from "lucide-react";
-import { isAuthenticated } from "@/app/admin/actions";
+import { isAuthenticated, getFeaturePermission } from "@/app/admin/actions";
+import { canEdit, canDelete } from "@/lib/admin-permissions";
 import { listMessages, ROLE_LABELS } from "@/lib/message-store";
 import type { AdvisorMessage } from "@/lib/message-store";
 import { formatDate } from "@/lib/utils";
 import { ReplyBox, DeleteButton, MarkReadButton } from "./MessageActions";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { AdminLoginScreen } from "@/components/admin/AdminLoginScreen";
+import { FeatureRestricted, ReadOnlyBanner } from "@/components/admin/FeatureGate";
 
 export const metadata: Metadata = {
   title: "Advisor Inbox — Admin",
@@ -33,6 +35,15 @@ export default async function MessagesPage({
     return <AdminLoginScreen />;
   }
 
+  const tier = await getFeaturePermission("community.messages");
+  if (tier === "none") {
+    return (
+      <AdminShell section="community">
+        <FeatureRestricted />
+      </AdminShell>
+    );
+  }
+
   const messages = await listMessages();
   const { id: selectedId } = await searchParams;
   const selected = selectedId ? messages.find((m) => m.id === selectedId) : null;
@@ -41,6 +52,7 @@ export default async function MessagesPage({
   return (
     <AdminShell section="community">
       <div>
+          {tier === "read" && <ReadOnlyBanner />}
 
           {/* Header */}
           <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
@@ -108,7 +120,7 @@ export default async function MessagesPage({
             {/* Detail panel */}
             <div className="ornate-card p-6 sm:p-8">
               {selected ? (
-                <MessageDetail message={selected} />
+                <MessageDetail message={selected} canEdit={canEdit(tier)} canDelete={canDelete(tier)} />
               ) : (
                 <div className="h-full flex items-center justify-center py-20 text-center">
                   <div>
@@ -124,7 +136,15 @@ export default async function MessagesPage({
   );
 }
 
-function MessageDetail({ message }: { message: AdvisorMessage }) {
+function MessageDetail({
+  message,
+  canEdit,
+  canDelete,
+}: {
+  message: AdvisorMessage;
+  canEdit: boolean;
+  canDelete: boolean;
+}) {
   const status = STATUS_CONFIG[message.status];
 
   return (
@@ -144,8 +164,8 @@ function MessageDetail({ message }: { message: AdvisorMessage }) {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            {message.status === "unread" && <MarkReadButton messageId={message.id} />}
-            <DeleteButton messageId={message.id} />
+            {canEdit && message.status === "unread" && <MarkReadButton messageId={message.id} />}
+            {canDelete && <DeleteButton messageId={message.id} />}
           </div>
         </div>
 
@@ -213,9 +233,11 @@ function MessageDetail({ message }: { message: AdvisorMessage }) {
       )}
 
       {/* Reply box */}
-      <div className="pt-2 border-t border-border">
-        <ReplyBox messageId={message.id} hasReply={!!message.reply} />
-      </div>
+      {canEdit && (
+        <div className="pt-2 border-t border-border">
+          <ReplyBox messageId={message.id} hasReply={!!message.reply} />
+        </div>
+      )}
     </article>
   );
 }

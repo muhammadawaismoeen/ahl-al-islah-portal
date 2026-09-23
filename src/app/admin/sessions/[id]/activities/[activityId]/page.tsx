@@ -2,12 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import { isAuthenticated } from "@/app/admin/actions";
+import { isAuthenticated, getFeaturePermission } from "@/app/admin/actions";
+import { canEdit } from "@/lib/admin-permissions";
 import { getSession } from "@/lib/sessions-store";
 import { updateActivityAction } from "../../../actions";
 import { ActivityForm } from "../../../ActivityForm";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { AdminLoginScreen } from "@/components/admin/AdminLoginScreen";
+import { FeatureRestricted } from "@/components/admin/FeatureGate";
 
 export const metadata: Metadata = {
   title: "Edit Activity — Admin",
@@ -24,6 +26,15 @@ export default async function EditActivityPage({ params }: Props) {
   const authed = await isAuthenticated();
   if (!authed) {
     return <AdminLoginScreen />;
+  }
+
+  const tier = await getFeaturePermission("programming.sessions");
+  if (!canEdit(tier)) {
+    return (
+      <AdminShell section="programming">
+        <FeatureRestricted />
+      </AdminShell>
+    );
   }
 
   const { id, activityId } = await params;

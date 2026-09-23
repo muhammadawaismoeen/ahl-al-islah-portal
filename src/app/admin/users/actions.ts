@@ -5,10 +5,11 @@ import { getAdminRole, currentAdminEmail } from "@/app/admin/actions";
 import {
   addAdminUser,
   updateAdminUserRole,
+  updateAdminUserPermissions,
   removeAdminUser,
 } from "@/lib/admin-users-store";
-import { ADMIN_ROLES } from "@/lib/admin-permissions";
-import type { AdminRole } from "@/lib/admin-types";
+import { ADMIN_ROLES, isValidFeature, isValidPermissionTier } from "@/lib/admin-permissions";
+import type { AdminRole, AdminFeature, PermissionTier } from "@/lib/admin-types";
 
 type ActionResult = { ok: true } | { ok: false; error: string };
 
@@ -50,6 +51,26 @@ export async function updateAdminUserRoleAction(
   if (!isValidRole(role)) return { ok: false, error: "Choose a valid role." };
 
   const updated = await updateAdminUserRole(id, role);
+  if (!updated) return { ok: false, error: "That user no longer exists." };
+  revalidatePath("/admin/users");
+  return { ok: true };
+}
+
+export async function updateAdminUserPermissionsAction(
+  id: string,
+  overrides: Partial<Record<AdminFeature, PermissionTier>>
+): Promise<ActionResult> {
+  const ownerEmail = await requireOwner();
+  if (!ownerEmail) return { ok: false, error: "Only Owners can change permissions." };
+
+  for (const [feature, tier] of Object.entries(overrides)) {
+    if (!isValidFeature(feature)) return { ok: false, error: "Invalid feature." };
+    if (tier !== undefined && !isValidPermissionTier(tier)) {
+      return { ok: false, error: "Invalid permission tier." };
+    }
+  }
+
+  const updated = await updateAdminUserPermissions(id, overrides);
   if (!updated) return { ok: false, error: "That user no longer exists." };
   revalidatePath("/admin/users");
   return { ok: true };

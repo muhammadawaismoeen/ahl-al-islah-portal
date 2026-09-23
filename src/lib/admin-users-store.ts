@@ -3,7 +3,7 @@ import path from "path";
 import crypto from "crypto";
 import { unstable_cache, revalidateTag } from "next/cache";
 import { isRedisStore, setDoc, listDocs, deleteDoc } from "./redis";
-import type { AdminUser, AdminRole } from "./admin-types";
+import type { AdminUser, AdminRole, AdminFeature, PermissionTier } from "./admin-types";
 
 const DATA_DIR = path.join(process.cwd(), "data", "admin-users");
 const COLLECTION = "admin-users";
@@ -11,6 +11,10 @@ const ADMIN_USERS_TAG = "admin-users";
 
 function newId(): string {
   return `au-${Date.now().toString(36)}-${crypto.randomBytes(4).toString("hex")}`;
+}
+
+function withAdminUserDefaults(user: AdminUser): AdminUser {
+  return { ...user, permissionOverrides: user.permissionOverrides ?? {} };
 }
 
 async function ensureDir() {
@@ -52,7 +56,12 @@ async function readAllAdminUsers(): Promise<AdminUser[]> {
     .sort((a, b) => a.email.localeCompare(b.email));
 }
 
-const getCachedAdminUsers = unstable_cache(readAllAdminUsers, ["admin-users-list"], {
+async function readAllAdminUsersWithDefaults(): Promise<AdminUser[]> {
+  const records = await readAllAdminUsers();
+  return records.map(withAdminUserDefaults);
+}
+
+const getCachedAdminUsers = unstable_cache(readAllAdminUsersWithDefaults, ["admin-users-list"], {
   tags: [ADMIN_USERS_TAG],
   revalidate: false,
 });
@@ -97,6 +106,7 @@ export async function addAdminUser(input: {
     role: input.role,
     addedBy: input.addedBy,
     createdAt: new Date().toISOString(),
+    permissionOverrides: {},
   };
   await writeAdminUser(record);
   return record;
@@ -110,6 +120,18 @@ export async function updateAdminUserRole(
   const existing = all.find((u) => u.id === id);
   if (!existing) return null;
   const updated: AdminUser = { ...existing, role };
+  await writeAdminUser(updated);
+  return updated;
+}
+
+export async function updateAdminUserPermissions(
+  id: string,
+  overrides: Partial<Record<AdminFeature, PermissionTier>>
+): Promise<AdminUser | null> {
+  const all = await listAdminUsers();
+  const existing = all.find((u) => u.id === id);
+  if (!existing) return null;
+  const updated: AdminUser = { ...existing, permissionOverrides: overrides };
   await writeAdminUser(updated);
   return updated;
 }

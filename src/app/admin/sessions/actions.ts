@@ -2,7 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { isAuthenticated } from "@/app/admin/actions";
+import { getFeaturePermission } from "@/app/admin/actions";
+import { canEdit, canDelete } from "@/lib/admin-permissions";
 import {
   createSession,
   updateSession,
@@ -22,8 +23,8 @@ import {
 /* ------------------------------------------------------------------ */
 
 export async function createSessionAction(formData: FormData): Promise<void> {
-  const authed = await isAuthenticated();
-  if (!authed) redirect("/admin");
+  const tier = await getFeaturePermission("programming.sessions");
+  if (!canEdit(tier)) redirect("/admin");
 
   const title = String(formData.get("title") ?? "").trim();
   const arabicTitle = String(formData.get("arabicTitle") ?? "").trim();
@@ -58,8 +59,8 @@ export async function updateSessionAction(
   sessionId: string,
   formData: FormData
 ): Promise<void> {
-  const authed = await isAuthenticated();
-  if (!authed) redirect("/admin");
+  const tier = await getFeaturePermission("programming.sessions");
+  if (!canEdit(tier)) redirect("/admin");
 
   const title = String(formData.get("title") ?? "").trim();
   const arabicTitle = String(formData.get("arabicTitle") ?? "").trim();
@@ -108,8 +109,8 @@ export async function updateSessionAction(
 export async function deleteSessionAction(
   sessionId: string
 ): Promise<{ ok: boolean }> {
-  const authed = await isAuthenticated();
-  if (!authed) return { ok: false };
+  const tier = await getFeaturePermission("programming.sessions");
+  if (!canDelete(tier)) return { ok: false };
   const ok = await deleteSession(sessionId);
   if (ok) {
     revalidatePath("/admin/sessions");
@@ -126,8 +127,8 @@ export async function addActivityAction(
   sessionId: string,
   formData: FormData
 ): Promise<void> {
-  const authed = await isAuthenticated();
-  if (!authed) redirect("/admin");
+  const tier = await getFeaturePermission("programming.sessions");
+  if (!canEdit(tier)) redirect("/admin");
 
   const title = String(formData.get("title") ?? "").trim();
   const timeMarker = String(formData.get("timeMarker") ?? "").trim();
@@ -157,8 +158,8 @@ export async function updateActivityAction(
   activityId: string,
   formData: FormData
 ): Promise<void> {
-  const authed = await isAuthenticated();
-  if (!authed) redirect("/admin");
+  const tier = await getFeaturePermission("programming.sessions");
+  if (!canEdit(tier)) redirect("/admin");
 
   const title = String(formData.get("title") ?? "").trim();
   const timeMarker = String(formData.get("timeMarker") ?? "").trim();
@@ -188,8 +189,8 @@ export async function removeActivityAction(
   sessionId: string,
   activityId: string
 ): Promise<{ ok: boolean }> {
-  const authed = await isAuthenticated();
-  if (!authed) return { ok: false };
+  const tier = await getFeaturePermission("programming.sessions");
+  if (!canDelete(tier)) return { ok: false };
   const ok = await removeActivity(sessionId, activityId);
   if (ok) {
     revalidatePath(`/admin/sessions/${sessionId}`);
@@ -206,8 +207,8 @@ export async function seedIdentityPillarsActivity(): Promise<{
   ok: boolean;
   error?: string;
 }> {
-  const authed = await isAuthenticated();
-  if (!authed) return { ok: false, error: "Not authorised." };
+  const tier = await getFeaturePermission("programming.sessions");
+  if (!canEdit(tier)) return { ok: false, error: "Not authorised." };
 
   const session = await createSession({
     title: "Ibrahim عليه السلام: Khalilullah — The Man Who Founded It All",

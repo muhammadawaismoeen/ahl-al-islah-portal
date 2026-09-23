@@ -1,7 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { isAuthenticated } from "@/app/admin/actions";
+import { getFeaturePermission } from "@/app/admin/actions";
+import { canEdit, canDelete } from "@/lib/admin-permissions";
 import {
   createDrive,
   updateDrive,
@@ -36,8 +37,8 @@ function refresh() {
 export async function createDriveAction(
   formData: FormData
 ): Promise<{ ok: boolean; error?: string }> {
-  const authed = await isAuthenticated();
-  if (!authed) return { ok: false, error: "Not authenticated." };
+  const tier = await getFeaturePermission("drive.drives");
+  if (!canEdit(tier)) return { ok: false, error: "Not authorized." };
 
   const name = ((formData.get("name") as string) ?? "").trim();
   const startDate = (formData.get("startDate") as string) ?? "";
@@ -64,8 +65,8 @@ export async function setDriveStatusAction(
   id: string,
   status: DriveStatus
 ): Promise<{ ok: boolean; error?: string }> {
-  const authed = await isAuthenticated();
-  if (!authed) return { ok: false, error: "Not authenticated." };
+  const tier = await getFeaturePermission("drive.drives");
+  if (!canEdit(tier)) return { ok: false, error: "Not authorized." };
 
   const updated = await updateDrive(id, { status });
   if (!updated) return { ok: false, error: "Drive not found." };
@@ -77,8 +78,8 @@ export async function setApplicationsOpenAction(
   id: string,
   applicationsOpen: boolean
 ): Promise<{ ok: boolean; error?: string }> {
-  const authed = await isAuthenticated();
-  if (!authed) return { ok: false, error: "Not authenticated." };
+  const tier = await getFeaturePermission("drive.drives");
+  if (!canEdit(tier)) return { ok: false, error: "Not authorized." };
 
   const updated = await updateDrive(id, { applicationsOpen });
   if (!updated) return { ok: false, error: "Drive not found." };
@@ -90,8 +91,8 @@ export async function updateDriveGoalAction(
   id: string,
   goalAmount: number
 ): Promise<{ ok: boolean; error?: string }> {
-  const authed = await isAuthenticated();
-  if (!authed) return { ok: false, error: "Not authenticated." };
+  const tier = await getFeaturePermission("drive.drives");
+  if (!canEdit(tier)) return { ok: false, error: "Not authorized." };
   if (!Number.isFinite(goalAmount) || goalAmount < 0) {
     return { ok: false, error: "Please enter a valid goal amount." };
   }
@@ -105,8 +106,8 @@ export async function updateDriveGoalAction(
 export async function deleteDriveAction(
   id: string
 ): Promise<{ ok: boolean; error?: string }> {
-  const authed = await isAuthenticated();
-  if (!authed) return { ok: false, error: "Not authenticated." };
+  const tier = await getFeaturePermission("drive.drives");
+  if (!canDelete(tier)) return { ok: false, error: "Not authorized." };
 
   const ok = await deleteDrive(id);
   if (!ok) return { ok: false, error: "Drive not found." };
@@ -117,8 +118,8 @@ export async function deleteDriveAction(
 export async function createDriveItemAction(
   formData: FormData
 ): Promise<{ ok: boolean; error?: string }> {
-  const authed = await isAuthenticated();
-  if (!authed) return { ok: false, error: "Not authenticated." };
+  const tier = await getFeaturePermission("drive.catalog");
+  if (!canEdit(tier)) return { ok: false, error: "Not authorized." };
 
   const driveId = (formData.get("driveId") as string) ?? "";
   const name = ((formData.get("name") as string) ?? "").trim();
@@ -143,8 +144,8 @@ export async function updateDriveItemAction(
   id: string,
   patch: { totalStock: number; remainingStock: number; perStudentLimit: number }
 ): Promise<{ ok: boolean; error?: string }> {
-  const authed = await isAuthenticated();
-  if (!authed) return { ok: false, error: "Not authenticated." };
+  const tier = await getFeaturePermission("drive.catalog");
+  if (!canEdit(tier)) return { ok: false, error: "Not authorized." };
 
   if (
     !Number.isInteger(patch.totalStock) ||
@@ -166,8 +167,8 @@ export async function updateDriveItemAction(
 export async function deleteDriveItemAction(
   id: string
 ): Promise<{ ok: boolean; error?: string }> {
-  const authed = await isAuthenticated();
-  if (!authed) return { ok: false, error: "Not authenticated." };
+  const tier = await getFeaturePermission("drive.catalog");
+  if (!canDelete(tier)) return { ok: false, error: "Not authorized." };
 
   const ok = await deleteDriveItem(id);
   if (!ok) return { ok: false, error: "Item not found." };
@@ -178,8 +179,8 @@ export async function deleteDriveItemAction(
 export async function checkInByCodeAction(
   code: string
 ): Promise<{ ok: boolean; error?: string; applicantName?: string; itemName?: string }> {
-  const authed = await isAuthenticated();
-  if (!authed) return { ok: false, error: "Not authenticated." };
+  const tier = await getFeaturePermission("drive.checkin");
+  if (!canEdit(tier)) return { ok: false, error: "Not authorized." };
 
   const normalized = code.trim().toUpperCase();
   if (!normalized) return { ok: false, error: "Please enter a pickup code." };
@@ -200,8 +201,8 @@ export async function confirmApplicationAction(
   id: string,
   itemId?: string
 ): Promise<{ ok: boolean; error?: string }> {
-  const authed = await isAuthenticated();
-  if (!authed) return { ok: false, error: "Not authenticated." };
+  const tier = await getFeaturePermission("drive.applicants");
+  if (!canEdit(tier)) return { ok: false, error: "Not authorized." };
 
   const result = await confirmApplication(id, itemId);
   if (!result.ok) return { ok: false, error: result.error };
@@ -214,8 +215,8 @@ export async function reviewDonationAction(
   decision: "verified" | "rejected",
   correctedAmount?: number
 ): Promise<{ ok: boolean; error?: string }> {
-  const authed = await isAuthenticated();
-  if (!authed) return { ok: false, error: "Not authenticated." };
+  const tier = await getFeaturePermission("drive.donations");
+  if (!canEdit(tier)) return { ok: false, error: "Not authorized." };
 
   const result = await reviewDonation(id, decision, "Admin", correctedAmount);
   if (!result.ok) return { ok: false, error: result.error };
@@ -226,8 +227,8 @@ export async function reviewDonationAction(
 export async function deleteDonationAction(
   id: string
 ): Promise<{ ok: boolean; error?: string }> {
-  const authed = await isAuthenticated();
-  if (!authed) return { ok: false, error: "Not authenticated." };
+  const tier = await getFeaturePermission("drive.donations");
+  if (!canDelete(tier)) return { ok: false, error: "Not authorized." };
 
   const result = await deleteDonation(id);
   if (!result.ok) return { ok: false, error: result.error };
@@ -239,8 +240,8 @@ export async function reviewAmbassadorAction(
   id: string,
   decision: "approved" | "rejected"
 ): Promise<{ ok: boolean; error?: string }> {
-  const authed = await isAuthenticated();
-  if (!authed) return { ok: false, error: "Not authenticated." };
+  const tier = await getFeaturePermission("drive.ambassadors");
+  if (!canEdit(tier)) return { ok: false, error: "Not authorized." };
 
   const result = await reviewAmbassador(id, decision, "Admin");
   if (!result.ok) return { ok: false, error: result.error };
@@ -251,8 +252,8 @@ export async function reviewAmbassadorAction(
 export async function deleteAmbassadorAction(
   id: string
 ): Promise<{ ok: boolean; error?: string }> {
-  const authed = await isAuthenticated();
-  if (!authed) return { ok: false, error: "Not authenticated." };
+  const tier = await getFeaturePermission("drive.ambassadors");
+  if (!canDelete(tier)) return { ok: false, error: "Not authorized." };
 
   const ok = await deleteAmbassador(id);
   if (!ok) return { ok: false, error: "Registration not found." };
@@ -264,8 +265,8 @@ export async function updateAmbassadorNameAction(
   id: string,
   name: string
 ): Promise<{ ok: boolean; error?: string }> {
-  const authed = await isAuthenticated();
-  if (!authed) return { ok: false, error: "Not authenticated." };
+  const tier = await getFeaturePermission("drive.ambassadors");
+  if (!canEdit(tier)) return { ok: false, error: "Not authorized." };
 
   const result = await updateAmbassadorName(id, name);
   if (!result.ok) return { ok: false, error: result.error };
@@ -279,8 +280,8 @@ export async function recordManualDonationAction(
   donorName?: string,
   note?: string
 ): Promise<{ ok: boolean; error?: string }> {
-  const authed = await isAuthenticated();
-  if (!authed) return { ok: false, error: "Not authenticated." };
+  const tier = await getFeaturePermission("drive.ambassadors");
+  if (!canEdit(tier)) return { ok: false, error: "Not authorized." };
 
   const result = await recordManualDonation({
     ambassadorId,
@@ -297,8 +298,8 @@ export async function recordManualDonationAction(
 export async function setIhsanPercentageAction(
   value: number
 ): Promise<{ ok: boolean; error?: string }> {
-  const authed = await isAuthenticated();
-  if (!authed) return { ok: false, error: "Not authenticated." };
+  const tier = await getFeaturePermission("drive.payments");
+  if (!canEdit(tier)) return { ok: false, error: "Not authorized." };
   if (!Number.isFinite(value) || value < 0) {
     return { ok: false, error: "Please enter a valid percentage." };
   }
@@ -311,8 +312,8 @@ export async function setIhsanPercentageAction(
 export async function addPaymentMethodAction(
   formData: FormData
 ): Promise<{ ok: boolean; error?: string }> {
-  const authed = await isAuthenticated();
-  if (!authed) return { ok: false, error: "Not authenticated." };
+  const tier = await getFeaturePermission("drive.payments");
+  if (!canEdit(tier)) return { ok: false, error: "Not authorized." };
 
   const kind = ((formData.get("kind") as string) ?? "bank") as PaymentMethodKind;
   const label = ((formData.get("label") as string) ?? "").trim();
@@ -337,8 +338,8 @@ export async function addPaymentMethodAction(
 export async function deletePaymentMethodAction(
   id: string
 ): Promise<{ ok: boolean; error?: string }> {
-  const authed = await isAuthenticated();
-  if (!authed) return { ok: false, error: "Not authenticated." };
+  const tier = await getFeaturePermission("drive.payments");
+  if (!canDelete(tier)) return { ok: false, error: "Not authorized." };
 
   await deletePaymentMethod(id);
   refresh();

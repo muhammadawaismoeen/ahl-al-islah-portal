@@ -10,9 +10,11 @@ import {
   Award,
   Wallet,
 } from "lucide-react";
-import { isAuthenticated } from "@/app/admin/actions";
+import { isAuthenticated, getFeaturePermission } from "@/app/admin/actions";
+import { canEdit, canDelete } from "@/lib/admin-permissions";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { AdminLoginScreen } from "@/components/admin/AdminLoginScreen";
+import { FeatureRestricted, ReadOnlyBanner } from "@/components/admin/FeatureGate";
 import {
   listDrives,
   listDriveItems,
@@ -61,6 +63,17 @@ type Tab =
   | "payments"
   | "report";
 
+const TAB_FEATURE: Record<Tab, Parameters<typeof getFeaturePermission>[0]> = {
+  drives: "drive.drives",
+  catalog: "drive.catalog",
+  applicants: "drive.applicants",
+  checkin: "drive.checkin",
+  donations: "drive.donations",
+  ambassadors: "drive.ambassadors",
+  payments: "drive.payments",
+  report: "drive.report",
+};
+
 const TABS: { key: Tab; label: string; icon: typeof BookOpen }[] = [
   { key: "drives", label: "Drives", icon: BookOpen },
   { key: "catalog", label: "Catalog", icon: Library },
@@ -86,6 +99,17 @@ export default async function AdminDrivePage({
   const { tab: tabParam } = await searchParams;
   const tab: Tab = TABS.some((t) => t.key === tabParam) ? (tabParam as Tab) : "drives";
 
+  const tier = await getFeaturePermission(TAB_FEATURE[tab]);
+  if (tier === "none") {
+    return (
+      <AdminShell section="drive">
+        <FeatureRestricted />
+      </AdminShell>
+    );
+  }
+  const tabCanEdit = canEdit(tier);
+  const tabCanDelete = canDelete(tier);
+
   const [drives, items, applications, donations, ambassadors, driveSettings] =
     await Promise.all([
       listDrives(),
@@ -103,6 +127,8 @@ export default async function AdminDrivePage({
   return (
     <AdminShell section="drive">
       <div>
+          {tier === "read" && <ReadOnlyBanner />}
+
           <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
             <div>
               <span className="arabic-text block text-emerald-deep">القرآن والسيرة</span>
@@ -161,22 +187,22 @@ export default async function AdminDrivePage({
                             {d.pickupLocation}
                           </p>
                         </div>
-                        <DeleteDriveButton driveId={d.id} driveName={d.name} />
+                        {tabCanDelete && <DeleteDriveButton driveId={d.id} driveName={d.name} />}
                       </div>
                       <p className="text-sm text-ink/70 mb-3">
                         {DRIVE_CURRENCY} {d.raisedAmount.toLocaleString()} raised of{" "}
                         {DRIVE_CURRENCY} {d.goalAmount.toLocaleString()} goal
                       </p>
                       <div className="space-y-2 mb-3">
-                        <DriveStatusToggle drive={d} />
-                        <ApplicationsToggle drive={d} />
+                        <DriveStatusToggle drive={d} canEdit={tabCanEdit} />
+                        <ApplicationsToggle drive={d} canEdit={tabCanEdit} />
                       </div>
-                      <DriveGoalForm drive={d} />
+                      <DriveGoalForm drive={d} canEdit={tabCanEdit} />
                     </div>
                   ))
                 )}
               </div>
-              <CreateDriveForm />
+              {tabCanEdit && <CreateDriveForm />}
             </div>
           )}
 
@@ -197,19 +223,22 @@ export default async function AdminDrivePage({
                             {driveById.get(i.driveId)?.name ?? "Unknown drive"}
                           </p>
                         </div>
-                        <DeleteDriveItemButton itemId={i.id} itemName={i.name} />
+                        {tabCanDelete && (
+                          <DeleteDriveItemButton itemId={i.id} itemName={i.name} />
+                        )}
                       </div>
                       <ItemStockForm
                         itemId={i.id}
                         totalStock={i.totalStock}
                         remainingStock={i.remainingStock}
                         perStudentLimit={i.perStudentLimit}
+                        canEdit={tabCanEdit}
                       />
                     </div>
                   ))
                 )}
               </div>
-              <CreateItemForm drives={drives} />
+              {tabCanEdit && <CreateItemForm drives={drives} />}
             </div>
           )}
 
@@ -218,29 +247,43 @@ export default async function AdminDrivePage({
               applications={applications}
               items={items}
               driveNameById={driveNameById}
+              canEdit={tabCanEdit}
             />
           )}
 
           {tab === "checkin" && (
             <div className="max-w-lg">
-              <CheckInForm />
+              <CheckInForm canEdit={tabCanEdit} />
             </div>
           )}
 
           {tab === "donations" && (
-            <DonationsPanel donations={donations} driveNameById={driveNameById} />
+            <DonationsPanel
+              donations={donations}
+              driveNameById={driveNameById}
+              canEdit={tabCanEdit}
+              canDelete={tabCanDelete}
+            />
           )}
 
           {tab === "ambassadors" && (
-            <AmbassadorsPanel ambassadors={ambassadors} driveNameById={driveNameById} />
+            <AmbassadorsPanel
+              ambassadors={ambassadors}
+              driveNameById={driveNameById}
+              canEdit={tabCanEdit}
+              canDelete={tabCanDelete}
+            />
           )}
 
           {tab === "payments" && (
             <div className="grid lg:grid-cols-[1.4fr_1fr] gap-6">
-              <PaymentMethodsList methods={driveSettings.paymentMethods} />
+              <PaymentMethodsList methods={driveSettings.paymentMethods} canDelete={tabCanDelete} />
               <div className="space-y-6">
-                <AddPaymentMethodForm />
-                <IhsanPercentageForm ihsanPercentage={driveSettings.ihsanPercentage} />
+                {tabCanEdit && <AddPaymentMethodForm />}
+                <IhsanPercentageForm
+                  ihsanPercentage={driveSettings.ihsanPercentage}
+                  canEdit={tabCanEdit}
+                />
               </div>
             </div>
           )}

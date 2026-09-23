@@ -237,8 +237,12 @@ function Section({
 
 export function ContentEditor({
   initialContent,
+  canEdit = true,
+  canDelete = true,
 }: {
   initialContent: SiteContent;
+  canEdit?: boolean;
+  canDelete?: boolean;
 }) {
   const [content, setContent] = useState<SiteContent>(initialContent);
   const [saving, setSaving] = useState(false);
@@ -309,34 +313,38 @@ export function ContentEditor({
           )}
         </div>
         <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={handleReset}
-            disabled={resetting}
-            className="btn-ghost !py-2 !px-4 text-xs"
-          >
-            {resetting ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            ) : (
-              <RotateCcw className="h-3.5 w-3.5" />
-            )}
-            Reset to defaults
-          </button>
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={saving || !dirty}
-            className="btn-primary !py-2 !px-5 text-xs"
-          >
-            {saving ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            ) : dirty ? (
-              <Save className="h-3.5 w-3.5" />
-            ) : (
-              <Check className="h-3.5 w-3.5" />
-            )}
-            {saving ? "Saving..." : dirty ? "Save & Publish" : "Saved"}
-          </button>
+          {canDelete && (
+            <button
+              type="button"
+              onClick={handleReset}
+              disabled={resetting}
+              className="btn-ghost !py-2 !px-4 text-xs"
+            >
+              {resetting ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <RotateCcw className="h-3.5 w-3.5" />
+              )}
+              Reset to defaults
+            </button>
+          )}
+          {canEdit && (
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={saving || !dirty}
+              className="btn-primary !py-2 !px-5 text-xs"
+            >
+              {saving ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : dirty ? (
+                <Save className="h-3.5 w-3.5" />
+              ) : (
+                <Check className="h-3.5 w-3.5" />
+              )}
+              {saving ? "Saving..." : dirty ? "Save & Publish" : "Saved"}
+            </button>
+          )}
         </div>
       </div>
 

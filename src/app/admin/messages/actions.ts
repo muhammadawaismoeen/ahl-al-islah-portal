@@ -1,15 +1,16 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { isAuthenticated } from "@/app/admin/actions";
+import { getFeaturePermission } from "@/app/admin/actions";
+import { canEdit, canDelete } from "@/lib/admin-permissions";
 import { updateMessage, deleteMessage } from "@/lib/message-store";
 
 export async function replyToMessage(
   id: string,
   reply: string
 ): Promise<{ ok: boolean; error?: string }> {
-  const authed = await isAuthenticated();
-  if (!authed) return { ok: false, error: "Not authenticated." };
+  const tier = await getFeaturePermission("community.messages");
+  if (!canEdit(tier)) return { ok: false, error: "You don't have permission to reply." };
 
   const ok = await updateMessage(id, {
     status: "replied",
@@ -24,8 +25,8 @@ export async function replyToMessage(
 export async function markAsRead(
   id: string
 ): Promise<{ ok: boolean }> {
-  const authed = await isAuthenticated();
-  if (!authed) return { ok: false };
+  const tier = await getFeaturePermission("community.messages");
+  if (!canEdit(tier)) return { ok: false };
   const ok = await updateMessage(id, { status: "read" });
   if (ok) revalidatePath("/admin/messages");
   return { ok };
@@ -34,8 +35,8 @@ export async function markAsRead(
 export async function removeMessage(
   id: string
 ): Promise<{ ok: boolean }> {
-  const authed = await isAuthenticated();
-  if (!authed) return { ok: false };
+  const tier = await getFeaturePermission("community.messages");
+  if (!canDelete(tier)) return { ok: false };
   const ok = await deleteMessage(id);
   if (ok) revalidatePath("/admin/messages");
   return { ok };

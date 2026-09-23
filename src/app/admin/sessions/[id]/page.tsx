@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Plus, Clock, Timer, Edit3, Eye } from "lucide-react";
-import { isAuthenticated } from "@/app/admin/actions";
+import { isAuthenticated, getFeaturePermission } from "@/app/admin/actions";
+import { canEdit, canDelete } from "@/lib/admin-permissions";
 import {
   getSession,
   sortActivities,
@@ -15,6 +16,7 @@ import {
 } from "../SessionAdminButtons";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { AdminLoginScreen } from "@/components/admin/AdminLoginScreen";
+import { FeatureRestricted, ReadOnlyBanner } from "@/components/admin/FeatureGate";
 
 export const metadata: Metadata = {
   title: "Edit Session — Admin",
@@ -33,6 +35,17 @@ export default async function EditSessionPage({ params }: Props) {
     return <AdminLoginScreen />;
   }
 
+  const tier = await getFeaturePermission("programming.sessions");
+  if (tier === "none") {
+    return (
+      <AdminShell section="programming">
+        <FeatureRestricted />
+      </AdminShell>
+    );
+  }
+  const canEditSession = canEdit(tier);
+  const canDeleteSession = canDelete(tier);
+
   const { id } = await params;
   const session = await getSession(id);
   if (!session) notFound();
@@ -43,6 +56,8 @@ export default async function EditSessionPage({ params }: Props) {
   return (
     <AdminShell section="programming">
       <div className="max-w-3xl mx-auto">
+          {tier === "read" && <ReadOnlyBanner />}
+
           <div className="flex items-center justify-between mb-4">
             <Link
               href="/admin/sessions"
@@ -58,10 +73,12 @@ export default async function EditSessionPage({ params }: Props) {
                 <Eye className="h-3.5 w-3.5" />
                 View public page
               </Link>
-              <DeleteSessionButton
-                sessionId={session.id}
-                redirectTo="/admin/sessions"
-              />
+              {canDeleteSession && (
+                <DeleteSessionButton
+                  sessionId={session.id}
+                  redirectTo="/admin/sessions"
+                />
+              )}
             </div>
           </div>
 
@@ -76,22 +93,45 @@ export default async function EditSessionPage({ params }: Props) {
                 {session.slug}
               </code>
             </p>
-            <SessionForm
-              mode="edit"
-              action={updateBound}
-              defaults={{
-                title: session.title,
-                arabicTitle: session.arabicTitle ?? "",
-                date: session.date,
-                startTime: session.startTime ?? "",
-                endTime: session.endTime ?? "",
-                meetingLink: session.meetingLink ?? "",
-                description: session.description ?? "",
-              }}
-              currentPosterUrl={session.posterUrl}
-              cancelHref="/admin/sessions"
-              submitLabel="Save changes"
-            />
+            {canEditSession ? (
+              <SessionForm
+                mode="edit"
+                action={updateBound}
+                defaults={{
+                  title: session.title,
+                  arabicTitle: session.arabicTitle ?? "",
+                  date: session.date,
+                  startTime: session.startTime ?? "",
+                  endTime: session.endTime ?? "",
+                  meetingLink: session.meetingLink ?? "",
+                  description: session.description ?? "",
+                }}
+                currentPosterUrl={session.posterUrl}
+                cancelHref="/admin/sessions"
+                submitLabel="Save changes"
+              />
+            ) : (
+              <dl className="space-y-3 text-sm">
+                <div>
+                  <dt className="text-xs uppercase tracking-wider text-ink/40">Title</dt>
+                  <dd className="text-ink/85">{session.title}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs uppercase tracking-wider text-ink/40">Date</dt>
+                  <dd className="text-ink/85">{session.date}</dd>
+                </div>
+                {session.description && (
+                  <div>
+                    <dt className="text-xs uppercase tracking-wider text-ink/40">
+                      Description
+                    </dt>
+                    <dd className="text-ink/85 whitespace-pre-wrap">
+                      {session.description}
+                    </dd>
+                  </div>
+                )}
+              </dl>
+            )}
           </section>
 
           {/* Activities list */}
@@ -100,13 +140,15 @@ export default async function EditSessionPage({ params }: Props) {
               <h2 className="heading-serif text-xl font-semibold text-emerald-deep">
                 Activities ({session.activities.length})
               </h2>
-              <Link
-                href={`/admin/sessions/${session.id}/activities/new`}
-                className="btn-primary !py-2 !px-4 text-xs inline-flex"
-              >
-                <Plus className="h-3.5 w-3.5" />
-                Add Activity
-              </Link>
+              {canEditSession && (
+                <Link
+                  href={`/admin/sessions/${session.id}/activities/new`}
+                  className="btn-primary !py-2 !px-4 text-xs inline-flex"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  Add Activity
+                </Link>
+              )}
             </div>
 
             {activities.length === 0 ? (
@@ -146,17 +188,21 @@ export default async function EditSessionPage({ params }: Props) {
                       </p>
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
-                      <Link
-                        href={`/admin/sessions/${session.id}/activities/${a.id}`}
-                        className="btn-ghost !py-1 !px-2 text-[11px]"
-                        title="Edit activity"
-                      >
-                        <Edit3 className="h-3 w-3" />
-                      </Link>
-                      <DeleteActivityButton
-                        sessionId={session.id}
-                        activityId={a.id}
-                      />
+                      {canEditSession && (
+                        <Link
+                          href={`/admin/sessions/${session.id}/activities/${a.id}`}
+                          className="btn-ghost !py-1 !px-2 text-[11px]"
+                          title="Edit activity"
+                        >
+                          <Edit3 className="h-3 w-3" />
+                        </Link>
+                      )}
+                      {canDeleteSession && (
+                        <DeleteActivityButton
+                          sessionId={session.id}
+                          activityId={a.id}
+                        />
+                      )}
                     </div>
                   </li>
                 ))}

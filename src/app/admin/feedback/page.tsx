@@ -12,7 +12,8 @@ import {
   Target,
   AlertTriangle,
 } from "lucide-react";
-import { isAuthenticated } from "@/app/admin/actions";
+import { isAuthenticated, getFeaturePermission } from "@/app/admin/actions";
+import { canEdit, canDelete } from "@/lib/admin-permissions";
 import {
   listFeedback,
   RESPONSE_CHANNEL_LABELS,
@@ -25,6 +26,7 @@ import { DeleteFeedbackButton, MarkFeedbackReadButton } from "./FeedbackActions"
 import { SessionFilter } from "./SessionFilter";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { AdminLoginScreen } from "@/components/admin/AdminLoginScreen";
+import { FeatureRestricted, ReadOnlyBanner } from "@/components/admin/FeatureGate";
 
 export const metadata: Metadata = {
   title: "Feedback Inbox — Admin",
@@ -47,6 +49,15 @@ export default async function FeedbackAdminPage({
 
   if (!authed) {
     return <AdminLoginScreen />;
+  }
+
+  const tier = await getFeaturePermission("community.feedback");
+  if (tier === "none") {
+    return (
+      <AdminShell section="community">
+        <FeatureRestricted />
+      </AdminShell>
+    );
   }
 
   const [allEntries, sessions] = await Promise.all([
@@ -79,6 +90,7 @@ export default async function FeedbackAdminPage({
   return (
     <AdminShell section="community">
       <div>
+          {tier === "read" && <ReadOnlyBanner />}
 
           {/* Header */}
           <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
@@ -206,7 +218,11 @@ export default async function FeedbackAdminPage({
             {/* Detail */}
             <div className="ornate-card p-6 sm:p-8">
               {selected ? (
-                <FeedbackDetail entry={selected} />
+                <FeedbackDetail
+                  entry={selected}
+                  canEdit={canEdit(tier)}
+                  canDelete={canDelete(tier)}
+                />
               ) : (
                 <div className="h-full flex items-center justify-center py-20 text-center">
                   <div>
@@ -224,7 +240,15 @@ export default async function FeedbackAdminPage({
   );
 }
 
-function FeedbackDetail({ entry }: { entry: FeedbackEntry }) {
+function FeedbackDetail({
+  entry,
+  canEdit,
+  canDelete,
+}: {
+  entry: FeedbackEntry;
+  canEdit: boolean;
+  canDelete: boolean;
+}) {
   const status = STATUS_CONFIG[entry.status];
   const isAnonymous = !entry.name?.trim();
   const displayName = entry.name?.trim() || "Anonymous respondent";
@@ -251,8 +275,10 @@ function FeedbackDetail({ entry }: { entry: FeedbackEntry }) {
             )}
           </div>
           <div className="flex items-center gap-2">
-            {entry.status === "unread" && <MarkFeedbackReadButton feedbackId={entry.id} />}
-            <DeleteFeedbackButton feedbackId={entry.id} />
+            {canEdit && entry.status === "unread" && (
+              <MarkFeedbackReadButton feedbackId={entry.id} />
+            )}
+            {canDelete && <DeleteFeedbackButton feedbackId={entry.id} />}
           </div>
         </div>
 

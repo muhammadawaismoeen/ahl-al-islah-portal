@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
-import { isAuthenticated } from "@/app/admin/actions";
+import { isAuthenticated, getFeaturePermission } from "@/app/admin/actions";
+import { canEdit } from "@/lib/admin-permissions";
 import { getContent } from "@/lib/content-store";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { AdminLoginScreen } from "@/components/admin/AdminLoginScreen";
+import { FeatureRestricted, ReadOnlyBanner } from "@/components/admin/FeatureGate";
 import { PositionsEditor } from "./PositionsEditor";
 
 export const metadata: Metadata = {
@@ -19,11 +21,22 @@ export default async function AdminPositionsPage() {
     return <AdminLoginScreen subtitle="Positions editor. Advisor only." />;
   }
 
+  const tier = await getFeaturePermission("programming.positions");
+  if (tier === "none") {
+    return (
+      <AdminShell section="programming">
+        <FeatureRestricted />
+      </AdminShell>
+    );
+  }
+
   const content = await getContent();
 
   return (
     <AdminShell section="programming">
       <div>
+        {tier === "read" && <ReadOnlyBanner />}
+
         <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
           <div>
             <span className="arabic-text text-emerald-deep">المناصب</span>
@@ -37,7 +50,10 @@ export default async function AdminPositionsPage() {
           </div>
         </div>
 
-        <PositionsEditor initialPositions={content.positions} />
+        <PositionsEditor
+          initialPositions={content.positions}
+          canEdit={canEdit(tier)}
+        />
       </div>
     </AdminShell>
   );

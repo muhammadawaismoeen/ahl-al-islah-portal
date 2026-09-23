@@ -6,9 +6,11 @@ import {
   CalendarDays,
   Clock,
 } from "lucide-react";
-import { isAuthenticated } from "@/app/admin/actions";
+import { isAuthenticated, getFeaturePermission } from "@/app/admin/actions";
+import { canEdit, canDelete } from "@/lib/admin-permissions";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { AdminLoginScreen } from "@/components/admin/AdminLoginScreen";
+import { FeatureRestricted, ReadOnlyBanner } from "@/components/admin/FeatureGate";
 import {
   listSubmissions,
   PILLAR_TYPE_LABELS,
@@ -46,6 +48,15 @@ export default async function ActivitySubmissionsPage({
     return <AdminLoginScreen />;
   }
 
+  const tier = await getFeaturePermission("community.activity-audits");
+  if (tier === "none") {
+    return (
+      <AdminShell section="community">
+        <FeatureRestricted />
+      </AdminShell>
+    );
+  }
+
   const entries = await listSubmissions();
   const { id: selectedId } = await searchParams;
   const selected = selectedId ? entries.find((e) => e.id === selectedId) : null;
@@ -54,6 +65,8 @@ export default async function ActivitySubmissionsPage({
   return (
     <AdminShell section="community">
       <div>
+          {tier === "read" && <ReadOnlyBanner />}
+
           {/* Header */}
           <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
             <div>
@@ -150,7 +163,11 @@ export default async function ActivitySubmissionsPage({
             {/* Detail */}
             <div className="ornate-card p-6 sm:p-8">
               {selected ? (
-                <SubmissionDetail entry={selected} />
+                <SubmissionDetail
+                  entry={selected}
+                  canEdit={canEdit(tier)}
+                  canDelete={canDelete(tier)}
+                />
               ) : (
                 <div className="h-full flex items-center justify-center py-20 text-center">
                   <div>
@@ -168,7 +185,15 @@ export default async function ActivitySubmissionsPage({
   );
 }
 
-function SubmissionDetail({ entry }: { entry: IdentityPillarsSubmission }) {
+function SubmissionDetail({
+  entry,
+  canEdit,
+  canDelete,
+}: {
+  entry: IdentityPillarsSubmission;
+  canEdit: boolean;
+  canDelete: boolean;
+}) {
   const status = STATUS_CONFIG[entry.status];
   const isAnonymous = !entry.name?.trim();
   const displayName = entry.name?.trim() || "Anonymous respondent";
@@ -204,10 +229,10 @@ function SubmissionDetail({ entry }: { entry: IdentityPillarsSubmission }) {
             )}
           </div>
           <div className="flex items-center gap-2">
-            {entry.status === "unread" && (
+            {canEdit && entry.status === "unread" && (
               <MarkSubmissionReadButton submissionId={entry.id} />
             )}
-            <DeleteSubmissionButton submissionId={entry.id} />
+            {canDelete && <DeleteSubmissionButton submissionId={entry.id} />}
           </div>
         </div>
 

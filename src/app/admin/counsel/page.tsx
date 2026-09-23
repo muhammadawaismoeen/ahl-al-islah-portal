@@ -6,9 +6,11 @@ import {
   UserRound,
   Sparkles,
 } from "lucide-react";
-import { isAuthenticated } from "@/app/admin/actions";
+import { isAuthenticated, getFeaturePermission } from "@/app/admin/actions";
+import { canEdit, canDelete } from "@/lib/admin-permissions";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { AdminLoginScreen } from "@/components/admin/AdminLoginScreen";
+import { FeatureRestricted, ReadOnlyBanner } from "@/components/admin/FeatureGate";
 import { listThreads, COHORT_LABELS } from "@/lib/counsel-store";
 import type { CounselThread, CounselMessage } from "@/lib/counsel-types";
 import { formatDate } from "@/lib/utils";
@@ -50,6 +52,15 @@ export default async function AdminCounselPage({
     return <AdminLoginScreen />;
   }
 
+  const tier = await getFeaturePermission("community.counsel");
+  if (tier === "none") {
+    return (
+      <AdminShell section="community">
+        <FeatureRestricted />
+      </AdminShell>
+    );
+  }
+
   const threads = await listThreads();
   const { id: selectedId } = await searchParams;
   const selected = selectedId ? threads.find((t) => t.id === selectedId) : null;
@@ -58,6 +69,8 @@ export default async function AdminCounselPage({
   return (
     <AdminShell section="community">
       <div>
+          {tier === "read" && <ReadOnlyBanner />}
+
           {/* Header */}
           <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
             <div>
@@ -154,7 +167,11 @@ export default async function AdminCounselPage({
             {/* Detail */}
             <div className="ornate-card p-6 sm:p-8">
               {selected ? (
-                <ThreadDetail thread={selected} />
+                <ThreadDetail
+                  thread={selected}
+                  canEdit={canEdit(tier)}
+                  canDelete={canDelete(tier)}
+                />
               ) : (
                 <div className="h-full flex items-center justify-center py-20 text-center">
                   <div>
@@ -172,7 +189,15 @@ export default async function AdminCounselPage({
   );
 }
 
-function ThreadDetail({ thread }: { thread: CounselThread }) {
+function ThreadDetail({
+  thread,
+  canEdit,
+  canDelete,
+}: {
+  thread: CounselThread;
+  canEdit: boolean;
+  canDelete: boolean;
+}) {
   const status = STATUS_CONFIG[thread.status];
   const cohortLabel = thread.cohort
     ? COHORT_LABELS[thread.cohort]
@@ -198,14 +223,16 @@ function ThreadDetail({ thread }: { thread: CounselThread }) {
             </p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
-            {thread.advisorHasUnread && (
+            {canEdit && thread.advisorHasUnread && (
               <MarkReadButton threadId={thread.id} />
             )}
-            <CloseThreadButton
-              threadId={thread.id}
-              isClosed={thread.status === "closed"}
-            />
-            <DeleteThreadButton threadId={thread.id} />
+            {canEdit && (
+              <CloseThreadButton
+                threadId={thread.id}
+                isClosed={thread.status === "closed"}
+              />
+            )}
+            {canDelete && <DeleteThreadButton threadId={thread.id} />}
           </div>
         </div>
 
@@ -227,9 +254,11 @@ function ThreadDetail({ thread }: { thread: CounselThread }) {
       </div>
 
       {/* Reply box */}
-      <div className="pt-2 border-t border-border">
-        <ReplyBox threadId={thread.id} disabled={thread.status === "closed"} />
-      </div>
+      {canEdit && (
+        <div className="pt-2 border-t border-border">
+          <ReplyBox threadId={thread.id} disabled={thread.status === "closed"} />
+        </div>
+      )}
     </article>
   );
 }

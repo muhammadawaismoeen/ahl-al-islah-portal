@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Plus, CalendarDays, ListChecks } from "lucide-react";
-import { isAuthenticated } from "@/app/admin/actions";
+import { isAuthenticated, getFeaturePermission } from "@/app/admin/actions";
+import { canEdit } from "@/lib/admin-permissions";
 import { listSessions } from "@/lib/sessions-store";
 import { formatDate } from "@/lib/utils";
 import { SeedIdentityPillarsButton } from "./SessionAdminButtons";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { AdminLoginScreen } from "@/components/admin/AdminLoginScreen";
+import { FeatureRestricted, ReadOnlyBanner } from "@/components/admin/FeatureGate";
 
 export const metadata: Metadata = {
   title: "Sessions — Admin",
@@ -21,11 +23,23 @@ export default async function AdminSessionsPage() {
     return <AdminLoginScreen />;
   }
 
+  const tier = await getFeaturePermission("programming.sessions");
+  if (tier === "none") {
+    return (
+      <AdminShell section="programming">
+        <FeatureRestricted />
+      </AdminShell>
+    );
+  }
+
   const sessions = await listSessions();
+  const canEditSessions = canEdit(tier);
 
   return (
     <AdminShell section="programming">
       <div>
+          {tier === "read" && <ReadOnlyBanner />}
+
           <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
             <div>
               <span className="arabic-text block text-emerald-deep">الجلسات</span>
@@ -36,10 +50,12 @@ export default async function AdminSessionsPage() {
                 {sessions.length} session{sessions.length === 1 ? "" : "s"}
               </p>
             </div>
-            <Link href="/admin/sessions/new" className="btn-primary inline-flex">
-              <Plus className="h-4 w-4" />
-              New Session
-            </Link>
+            {canEditSessions && (
+              <Link href="/admin/sessions/new" className="btn-primary inline-flex">
+                <Plus className="h-4 w-4" />
+                New Session
+              </Link>
+            )}
           </div>
 
           {sessions.length === 0 ? (
@@ -50,7 +66,7 @@ export default async function AdminSessionsPage() {
                 Start with the founding session — the Ibrahim journey with the
                 Identity Pillars Audit activity pre-loaded.
               </p>
-              <SeedIdentityPillarsButton />
+              {canEditSessions && <SeedIdentityPillarsButton />}
             </div>
           ) : (
             <ul className="space-y-3">

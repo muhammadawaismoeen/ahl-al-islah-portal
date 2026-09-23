@@ -1,7 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { isAuthenticated } from "@/app/admin/actions";
+import { getFeaturePermission } from "@/app/admin/actions";
+import { canEdit, canDelete } from "@/lib/admin-permissions";
 import { getContent, saveContent, resetContent } from "@/lib/content-store";
 import type { SiteContent } from "@/lib/content-types";
 
@@ -14,8 +15,8 @@ import type { SiteContent } from "@/lib/content-types";
 export async function updateContent(
   jsonString: string
 ): Promise<{ ok: boolean; error?: string }> {
-  const authed = await isAuthenticated();
-  if (!authed) return { ok: false, error: "Not authenticated." };
+  const tier = await getFeaturePermission("programming.content");
+  if (!canEdit(tier)) return { ok: false, error: "You don't have permission to edit content." };
 
   let content: SiteContent;
   try {
@@ -42,8 +43,8 @@ export async function resetToDefaults(): Promise<{
   ok: boolean;
   error?: string;
 }> {
-  const authed = await isAuthenticated();
-  if (!authed) return { ok: false, error: "Not authenticated." };
+  const tier = await getFeaturePermission("programming.content");
+  if (!canDelete(tier)) return { ok: false, error: "You don't have permission to reset content." };
 
   try {
     await resetContent();
