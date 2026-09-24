@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Mail, Phone, Download } from "lucide-react";
-import { isAuthenticated, getFeaturePermission } from "./actions";
+import { redirect } from "next/navigation";
+import { getAdminRole, getFeaturePermission } from "./actions";
+import { roleHasSection, sectionsForRole, SECTION_HOME } from "@/lib/admin-permissions";
 import { listSubmissions } from "@/lib/storage";
 import { getAllPositions } from "@/lib/positions";
 import type { Position } from "@/lib/positions";
@@ -32,10 +34,17 @@ export default async function AdminPage({
 }: {
   searchParams: Promise<{ id?: string; wing?: string; position?: string }>;
 }) {
-  const [authed, session] = await Promise.all([isAuthenticated(), auth()]);
+  const [role, session] = await Promise.all([getAdminRole(), auth()]);
 
-  if (!authed) {
+  if (!role) {
     return <AdminLoginScreen deniedEmail={session?.user?.email} />;
+  }
+
+  // /admin is the People section's home. A role without People access
+  // (e.g. Drive Manager) would otherwise land here and immediately hit
+  // "Access restricted" — send them to their own section instead.
+  if (!roleHasSection(role, "people")) {
+    redirect(SECTION_HOME[sectionsForRole(role)[0]]);
   }
 
   const tier = await getFeaturePermission("people.members");

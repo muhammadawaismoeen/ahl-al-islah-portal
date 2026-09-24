@@ -41,6 +41,17 @@ export function sectionsForRole(role: AdminRole): AdminSection[] {
   return ROLE_SECTIONS[role];
 }
 
+/** Where a signed-in admin should land first, per section. Used by /admin
+ *  to send a role without "people" access (e.g. Drive Manager) straight to
+ *  their own section instead of the People-gated root page. */
+export const SECTION_HOME: Record<AdminSection, string> = {
+  people: "/admin",
+  community: "/admin/messages",
+  programming: "/admin/sessions",
+  drive: "/admin/drive",
+  users: "/admin/users",
+};
+
 /* ------------------------------------------------------------------ */
 /*  Per-feature permission tiers                                        */
 /* ------------------------------------------------------------------ */
