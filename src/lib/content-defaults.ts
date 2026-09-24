@@ -176,6 +176,7 @@ export const DEFAULT_CONTENT: SiteContent = {
     items: [
       { label: "About", href: "/about" },
       { label: "Model", href: "/model" },
+      { label: "Team", href: "/team" },
       { label: "Sessions", href: "/sessions" },
       { label: "Positions", href: "/positions" },
       { label: "Roadmap", href: "/roadmap" },
@@ -397,6 +398,25 @@ export const DEFAULT_CONTENT: SiteContent = {
     eyebrow: "انضم إلينا",
     heading: "Become a Member",
     lead: "Sign up to be part of the Ahl Al-Islah community. Show up to sessions, stay on our cohort updates, and grow alongside the team. No leadership commitment required.",
+  },
+
+  team: {
+    eyebrow: "Who leads",
+    heading: "Our Team",
+    lead: "One Advisor, two parallel cohorts — each led with full trust and accountability.",
+    root: { role: "Advisor", name: "Muhammad Awais Moeen" },
+    branches: [
+      {
+        label: "Brothers",
+        head: { role: "Head of Males", name: "Ammar Amjad" },
+        deputy: { role: "Deputy of Males", name: "Muhammad Ahmed" },
+      },
+      {
+        label: "Sisters",
+        head: { role: "Head of Females", name: "Hajrah Noor" },
+        deputy: { role: "Deputy of Females", name: "Fatima Bukhari" },
+      },
+    ],
   },
 };
 

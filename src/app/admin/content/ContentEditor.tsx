@@ -30,6 +30,7 @@ import {
   Handshake,
   ClipboardList,
   ClipboardEdit,
+  Users,
 } from "lucide-react";
 import { toast } from "sonner";
 import type {
@@ -830,6 +831,163 @@ export function ContentEditor({
             className="text-xs text-emerald-deep hover:underline flex items-center gap-1 mt-1"
           >
             <Plus className="h-3 w-3" /> Add stage
+          </button>
+        </div>
+      </Section>
+
+      {/* ─── Team ─── */}
+      <Section
+        title="Team"
+        subtitle={content.team.heading}
+        icon={<Users className="h-5 w-5" />}
+        defaultOpen={true}
+      >
+        <Field label="Eyebrow">
+          <TextInput
+            value={content.team.eyebrow}
+            onChange={(v) => set("team", { eyebrow: v })}
+          />
+        </Field>
+        <Field label="Heading">
+          <TextInput
+            value={content.team.heading}
+            onChange={(v) => set("team", { heading: v })}
+          />
+        </Field>
+        <Field label="Lead Paragraph">
+          <TextArea
+            value={content.team.lead}
+            onChange={(v) => set("team", { lead: v })}
+            rows={2}
+          />
+        </Field>
+
+        <div>
+          <p className="text-xs uppercase tracking-wider text-ink/50 font-medium mb-2">
+            Root
+          </p>
+          <div className="p-3 rounded-lg border border-border space-y-2">
+            <TextInput
+              value={content.team.root.role}
+              onChange={(v) =>
+                set("team", { root: { ...content.team.root, role: v } })
+              }
+              placeholder="Role, e.g. Advisor"
+            />
+            <TextInput
+              value={content.team.root.name}
+              onChange={(v) =>
+                set("team", { root: { ...content.team.root, name: v } })
+              }
+              placeholder="Name"
+            />
+          </div>
+        </div>
+
+        <div>
+          <p className="text-xs uppercase tracking-wider text-ink/50 font-medium mb-2">
+            Branches
+          </p>
+          {content.team.branches.map((branch, i) => (
+            <div
+              key={i}
+              className="p-3 rounded-lg border border-border mb-3 space-y-2"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-emerald-deep">
+                  Branch {i + 1}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const branches = content.team.branches.filter(
+                      (_, idx) => idx !== i
+                    );
+                    set("team", { branches });
+                  }}
+                  className="p-1 text-danger-400 hover:text-danger-600 transition"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
+              </div>
+              <TextInput
+                value={branch.label}
+                onChange={(v) => {
+                  const branches = [...content.team.branches];
+                  branches[i] = { ...branches[i], label: v };
+                  set("team", { branches });
+                }}
+                placeholder="Branch label, e.g. Brothers"
+              />
+              <p className="text-[11px] text-ink/40 mt-1">Head</p>
+              <TextInput
+                value={branch.head.role}
+                onChange={(v) => {
+                  const branches = [...content.team.branches];
+                  branches[i] = {
+                    ...branches[i],
+                    head: { ...branches[i].head, role: v },
+                  };
+                  set("team", { branches });
+                }}
+                placeholder="Head role, e.g. Head of Males"
+              />
+              <TextInput
+                value={branch.head.name}
+                onChange={(v) => {
+                  const branches = [...content.team.branches];
+                  branches[i] = {
+                    ...branches[i],
+                    head: { ...branches[i].head, name: v },
+                  };
+                  set("team", { branches });
+                }}
+                placeholder="Head name"
+              />
+              <p className="text-[11px] text-ink/40 mt-1">Deputy</p>
+              <TextInput
+                value={branch.deputy.role}
+                onChange={(v) => {
+                  const branches = [...content.team.branches];
+                  branches[i] = {
+                    ...branches[i],
+                    deputy: { ...branches[i].deputy, role: v },
+                  };
+                  set("team", { branches });
+                }}
+                placeholder="Deputy role, e.g. Deputy of Males"
+              />
+              <TextInput
+                value={branch.deputy.name}
+                onChange={(v) => {
+                  const branches = [...content.team.branches];
+                  branches[i] = {
+                    ...branches[i],
+                    deputy: { ...branches[i].deputy, name: v },
+                  };
+                  set("team", { branches });
+                }}
+                placeholder="Deputy name"
+              />
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={() => {
+              set("team", {
+                branches: [
+                  ...content.team.branches,
+                  {
+                    label: "",
+                    head: { role: "", name: "" },
+                    deputy: { role: "", name: "" },
+                  },
+                ],
+              });
+            }}
+            className="text-xs text-emerald-deep hover:underline flex items-center gap-1 mt-1"
+          >
+            <Plus className="h-3 w-3" /> Add branch
           </button>
         </div>
       </Section>

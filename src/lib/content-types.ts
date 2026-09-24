@@ -191,6 +191,29 @@ export interface BecomeMemberPageContent {
   lead: string;
 }
 
+// ---------------------------------------------------------------------------
+// Team — org hierarchy page, admin-editable.
+// ---------------------------------------------------------------------------
+
+export interface TeamMember {
+  role: string;
+  name: string;
+}
+
+export interface TeamBranch {
+  label: string;
+  head: TeamMember;
+  deputy: TeamMember;
+}
+
+export interface TeamContent {
+  eyebrow: string;
+  heading: string;
+  lead: string;
+  root: TeamMember;
+  branches: TeamBranch[];
+}
+
 export interface SiteContent {
   hero: HeroContent;
   about: AboutContent;
@@ -205,4 +228,5 @@ export interface SiteContent {
   drive: DriveContent;
   feedbackPage: FeedbackPageContent;
   becomeMemberPage: BecomeMemberPageContent;
+  team: TeamContent;
 }

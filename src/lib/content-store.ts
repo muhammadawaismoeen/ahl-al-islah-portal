@@ -119,5 +119,6 @@ function mergeWithDefaults(stored: Partial<SiteContent>): SiteContent {
       ...DEFAULT_CONTENT.becomeMemberPage,
       ...(stored.becomeMemberPage ?? {}),
     },
+    team: { ...DEFAULT_CONTENT.team, ...(stored.team ?? {}) },
   };
 }
