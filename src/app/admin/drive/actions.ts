@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { getFeaturePermission } from "@/app/admin/actions";
+import { getFeaturePermission, currentAdminEmail } from "@/app/admin/actions";
 import { canEdit, canDelete } from "@/lib/admin-permissions";
 import {
   createDrive,
@@ -19,6 +19,7 @@ import {
   deleteAmbassador,
   updateAmbassadorName,
   recordManualDonation,
+  recordCashDonation,
 } from "@/lib/drive-store";
 import {
   setIhsanPercentage,
@@ -289,6 +290,28 @@ export async function recordManualDonationAction(
     donorName: donorName?.trim() || null,
     note: note?.trim() || null,
     reviewedBy: "Admin",
+  });
+  if (!result.ok) return { ok: false, error: result.error };
+  refresh();
+  return { ok: true };
+}
+
+export async function recordCashDonationAction(
+  driveId: string | null,
+  amount: number,
+  donorName?: string,
+  note?: string
+): Promise<{ ok: boolean; error?: string }> {
+  const tier = await getFeaturePermission("drive.donations");
+  if (!canEdit(tier)) return { ok: false, error: "Not authorized." };
+
+  const reviewedBy = (await currentAdminEmail()) ?? "Admin";
+  const result = await recordCashDonation({
+    driveId,
+    amount,
+    donorName: donorName?.trim() || null,
+    note: note?.trim() || null,
+    reviewedBy,
   });
   if (!result.ok) return { ok: false, error: result.error };
   refresh();

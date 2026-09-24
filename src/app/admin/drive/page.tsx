@@ -260,6 +260,7 @@ export default async function AdminDrivePage({
           {tab === "donations" && (
             <DonationsPanel
               donations={donations}
+              drives={drives}
               driveNameById={driveNameById}
               canEdit={tabCanEdit}
               canDelete={tabCanDelete}

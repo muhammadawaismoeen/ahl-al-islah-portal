@@ -986,6 +986,48 @@ export async function recordManualDonation(input: {
   return { ok: true, donation };
 }
 
+/**
+ * Records a general cash/in-hand donation an admin collected outside the
+ * public proof-upload flow and not attributed to any ambassador — e.g. cash
+ * handed over at the office. Saved as already verified, same as
+ * recordManualDonation, but credits the drive's (or general fund's) raised
+ * total directly instead of an ambassador leaderboard.
+ */
+export async function recordCashDonation(input: {
+  driveId: string | null;
+  amount: number;
+  donorName?: string | null;
+  note?: string | null;
+  reviewedBy: string;
+}): Promise<{ ok: true; donation: Donation } | { ok: false; error: string }> {
+  if (!Number.isFinite(input.amount) || input.amount <= 0) {
+    return { ok: false, error: "Please enter a valid amount." };
+  }
+
+  const now = new Date().toISOString();
+  const donation: Donation = {
+    id: genId("dnt"),
+    driveId: input.driveId,
+    donorName: input.donorName ?? null,
+    donorContact: input.note ?? null,
+    amount: input.amount,
+    donorSubmittedAmount: input.amount,
+    proofUrl: "manual-entry",
+    status: "verified",
+    reviewedBy: input.reviewedBy,
+    reviewedAt: now,
+    refCode: genCode("DN"),
+    ambassadorId: null,
+    createdAt: now,
+  };
+  await writeRecord(COLLECTION.donations, DIR.donations, donation);
+  if (input.driveId) {
+    await recomputeDriveRaised(input.driveId);
+  }
+  revalidateTag(STATS_TAG);
+  return { ok: true, donation };
+}
+
 async function recomputeAmbassadorRaised(ambassadorId: string): Promise<void> {
   const ambassador = await getAmbassador(ambassadorId);
   if (!ambassador) return;

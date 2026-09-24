@@ -36,6 +36,7 @@ import {
   confirmApplicationAction,
   reviewDonationAction,
   deleteDonationAction,
+  recordCashDonationAction,
 } from "./actions";
 
 export function CreateDriveForm() {
@@ -1041,17 +1042,54 @@ export function DonationReviewButtons({ donation }: { donation: Donation }) {
 
 export function DonationsPanel({
   donations,
+  drives,
   driveNameById,
   canEdit,
   canDelete,
 }: {
   donations: Donation[];
+  drives: Drive[];
   driveNameById: Record<string, string>;
   canEdit: boolean;
   canDelete: boolean;
 }) {
+  const router = useRouter();
   const [query, setQuery] = useState("");
   const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  const [addingCash, setAddingCash] = useState(false);
+  const [cashDriveId, setCashDriveId] = useState("");
+  const [cashDonorName, setCashDonorName] = useState("");
+  const [cashAmount, setCashAmount] = useState("");
+  const [cashNote, setCashNote] = useState("");
+  const [savingCash, setSavingCash] = useState(false);
+
+  async function saveCashDonation() {
+    const amount = Number(cashAmount);
+    if (!Number.isFinite(amount) || amount <= 0) {
+      toast.error("Enter a valid amount.");
+      return;
+    }
+    setSavingCash(true);
+    const res = await recordCashDonationAction(
+      cashDriveId || null,
+      amount,
+      cashDonorName.trim() || undefined,
+      cashNote.trim() || undefined
+    );
+    setSavingCash(false);
+    if (res.ok) {
+      toast.success(`${DRIVE_CURRENCY} ${amount.toLocaleString()} cash donation recorded.`);
+      setAddingCash(false);
+      setCashDriveId("");
+      setCashDonorName("");
+      setCashAmount("");
+      setCashNote("");
+      router.refresh();
+    } else {
+      toast.error(res.error ?? "Failed to record donation.");
+    }
+  }
 
   const donationsByEmail = useMemo(() => {
     const map = new Map<string, Donation[]>();
@@ -1077,17 +1115,93 @@ export function DonationsPanel({
 
   return (
     <div className="ornate-card p-2">
-      <div className="p-3 pb-1">
-        <div className="relative">
-          <Search className="h-3.5 w-3.5 text-ink/40 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search by donor name, email, contact, or ref code"
-            className="input-field !pl-9 text-sm"
-          />
+      <div className="p-3 pb-1 space-y-3">
+        <div className="flex items-center gap-2">
+          <div className="relative flex-1">
+            <Search className="h-3.5 w-3.5 text-ink/40 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search by donor name, email, contact, or ref code"
+              className="input-field !pl-9 text-sm"
+            />
+          </div>
+          {canEdit && !addingCash && (
+            <button
+              type="button"
+              onClick={() => setAddingCash(true)}
+              className="btn-ghost !py-2 !px-3 text-xs shrink-0 inline-flex items-center gap-1.5"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              Add Cash Donation
+            </button>
+          )}
         </div>
+
+        {addingCash && (
+          <div className="rounded-xl border border-border bg-bg p-3 space-y-2.5">
+            <p className="text-xs font-medium text-ink/70">
+              Record cash or in-person payment received directly (no proof upload needed —
+              saved as verified immediately).
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <select
+                value={cashDriveId}
+                onChange={(e) => setCashDriveId(e.target.value)}
+                className="input-field text-sm"
+              >
+                <option value="">General fund</option>
+                {drives.map((d) => (
+                  <option key={d.id} value={d.id}>
+                    {d.name}
+                  </option>
+                ))}
+              </select>
+              <input
+                type="number"
+                min="1"
+                value={cashAmount}
+                onChange={(e) => setCashAmount(e.target.value)}
+                placeholder={`Amount (${DRIVE_CURRENCY})`}
+                className="input-field text-sm"
+              />
+              <input
+                type="text"
+                value={cashDonorName}
+                onChange={(e) => setCashDonorName(e.target.value)}
+                placeholder="Donor name (optional)"
+                className="input-field text-sm"
+              />
+              <input
+                type="text"
+                value={cashNote}
+                onChange={(e) => setCashNote(e.target.value)}
+                placeholder="Note (optional)"
+                className="input-field text-sm"
+              />
+            </div>
+            <div className="flex items-center gap-2 pt-1">
+              <button
+                type="button"
+                onClick={saveCashDonation}
+                disabled={savingCash}
+                className="btn-primary !py-1.5 !px-3 text-xs inline-flex items-center gap-1.5"
+              >
+                {savingCash && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                Save donation
+              </button>
+              <button
+                type="button"
+                onClick={() => setAddingCash(false)}
+                disabled={savingCash}
+                className="btn-ghost !py-1.5 !px-3 text-xs"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
       </div>
       {filtered.length === 0 ? (
         <p className="p-10 text-sm text-ink/60 text-center">
@@ -1119,14 +1233,18 @@ export function DonationsPanel({
                       </p>
                     )}
                     <div className="flex items-center gap-3 mt-1">
-                      <a
-                        href={d.proofUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-[11px] text-emerald-deep hover:underline"
-                      >
-                        View proof
-                      </a>
+                      {d.proofUrl === "manual-entry" ? (
+                        <span className="text-[11px] text-ink/50">Manual entry — no proof upload</span>
+                      ) : (
+                        <a
+                          href={d.proofUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[11px] text-emerald-deep hover:underline"
+                        >
+                          View proof
+                        </a>
+                      )}
                       {history.length > 0 && (
                         <button
                           type="button"
