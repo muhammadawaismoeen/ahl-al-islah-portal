@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { isAuthenticated, getFeaturePermission } from "@/app/admin/actions";
 import { canEdit, canDelete } from "@/lib/admin-permissions";
 import { getContent } from "@/lib/content-store";
+import { DEFAULT_CONTENT } from "@/lib/content-defaults";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { AdminLoginScreen } from "@/components/admin/AdminLoginScreen";
 import { FeatureRestricted, ReadOnlyBanner } from "@/components/admin/FeatureGate";
@@ -31,6 +32,7 @@ export default async function ContentPage() {
   }
 
   const content = await getContent();
+  const safeContent = { ...content, team: content.team ?? DEFAULT_CONTENT.team };
 
   return (
     <AdminShell section="programming">
@@ -51,7 +53,7 @@ export default async function ContentPage() {
         </div>
 
         <ContentEditor
-          initialContent={content}
+          initialContent={safeContent}
           canEdit={canEdit(tier)}
           canDelete={canDelete(tier)}
         />
