@@ -12,6 +12,7 @@ import {
   deleteDriveItem,
   checkInApplication,
   confirmApplication,
+  deleteApplication,
   reviewDonation,
   deleteDonation,
   getDriveItem,
@@ -206,6 +207,18 @@ export async function confirmApplicationAction(
   if (!canEdit(tier)) return { ok: false, error: "Not authorized." };
 
   const result = await confirmApplication(id, itemId);
+  if (!result.ok) return { ok: false, error: result.error };
+  refresh();
+  return { ok: true };
+}
+
+export async function deleteApplicationAction(
+  id: string
+): Promise<{ ok: boolean; error?: string }> {
+  const tier = await getFeaturePermission("drive.applicants");
+  if (!canDelete(tier)) return { ok: false, error: "Not authorized." };
+
+  const result = await deleteApplication(id);
   if (!result.ok) return { ok: false, error: result.error };
   refresh();
   return { ok: true };

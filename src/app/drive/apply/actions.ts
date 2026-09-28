@@ -1,10 +1,22 @@
 "use server";
 
+import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
-import { reserveBook, getApplication, normalizeContact } from "@/lib/drive-store";
+import { reserveBook, getApplication, listApplications, normalizeContact } from "@/lib/drive-store";
 import { addDriveDeviceId, getDriveDeviceIds } from "@/lib/drive-session";
 import { notifyNewBookApplication } from "@/lib/notify";
+
+/** Best-effort requester IP — the first hop in x-forwarded-for is the
+ *  original client on Vercel's proxy chain. Returns null in the filesystem
+ *  dev fallback (no proxy in front of `next dev`), which quietly disables
+ *  this specific check locally without affecting anything else. */
+async function getClientIp(): Promise<string | null> {
+  const h = await headers();
+  const forwarded = h.get("x-forwarded-for");
+  if (forwarded) return forwarded.split(",")[0].trim();
+  return h.get("x-real-ip");
+}
 
 export async function reserveBookAction(input: {
   driveId: string;
@@ -58,6 +70,32 @@ export async function reserveBookAction(input: {
     }
   }
 
+  // Same-network abuse check: an incognito window or a second browser
+  // clears the device cookie above, but not the network it's on. If any
+  // OTHER application for this drive was submitted from the same IP under
+  // different details, refuse for the same reason as the device check.
+  // Shared campus/hostel wifi can occasionally put two genuine applicants
+  // behind one address — the identity-match escape hatch below still lets
+  // that pair each apply once, it only blocks a THIRD identity repeating
+  // from that address.
+  const ip = await getClientIp();
+  if (ip) {
+    const sameDriveApps = await listApplications(input.driveId);
+    const priorFromThisIp = sameDriveApps.filter((a) => a.submittedIp === ip);
+    const matchesPriorIpIdentity = priorFromThisIp.some(
+      (a) =>
+        normalizeContact(a.applicantContact) === normalizeContact(contact) ||
+        (a.applicantEmail?.trim().toLowerCase() ?? "") === applicantEmail.trim().toLowerCase()
+    );
+    if (priorFromThisIp.length > 0 && !matchesPriorIpIdentity) {
+      return {
+        ok: false,
+        error:
+          "An application for this drive was already submitted from this network under different details. Please continue with the same name, contact, and Google account, or reach out to us if this is a mistake.",
+      };
+    }
+  }
+
   try {
     const result = await reserveBook({
       driveId: input.driveId,
@@ -65,6 +103,7 @@ export async function reserveBookAction(input: {
       applicantName: name,
       applicantContact: contact,
       applicantEmail,
+      submittedIp: ip,
     });
     if (!result.ok) return { ok: false, error: result.error };
 

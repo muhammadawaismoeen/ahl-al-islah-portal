@@ -34,6 +34,7 @@ import {
   deleteDriveItemAction,
   checkInByCodeAction,
   confirmApplicationAction,
+  deleteApplicationAction,
   reviewDonationAction,
   deleteDonationAction,
   recordCashDonationAction,
@@ -570,11 +571,13 @@ export function ApplicantsPanel({
   items,
   driveNameById,
   canEdit,
+  canDelete,
 }: {
   applications: DriveApplication[];
   items: DriveItem[];
   driveNameById: Record<string, string>;
   canEdit: boolean;
+  canDelete: boolean;
 }) {
   const [query, setQuery] = useState("");
   const itemById = useMemo(() => new Map(items.map((i) => [i.id, i])), [items]);
@@ -646,6 +649,23 @@ export function ApplicantsPanel({
                   </span>
                   {canEdit && a.status === "pending-review" && (
                     <ConfirmApplicationButton application={a} items={itemsForDrive} />
+                  )}
+                  {canDelete && (
+                    <DeleteButton
+                      title="Delete this application?"
+                      description={
+                        a.status === "pending-review" || a.status === "confirmed"
+                          ? `This permanently removes ${a.applicantName}'s application and returns their reserved copy of ${
+                              itemById.get(a.itemId)?.name ?? "the item"
+                            } back to stock. This cannot be undone.`
+                          : `This permanently removes ${a.applicantName}'s application. This cannot be undone.`
+                      }
+                      successMessage="Application deleted."
+                      action={() => deleteApplicationAction(a.id)}
+                      iconOnly
+                      ariaLabel={`Delete application from ${a.applicantName}`}
+                      className="btn-ghost !py-1.5 !px-2.5 text-xs text-danger hover:text-danger-700"
+                    />
                   )}
                 </div>
               </li>

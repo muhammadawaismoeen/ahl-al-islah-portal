@@ -485,6 +485,7 @@ export async function reserveBook(input: {
   applicantName: string;
   applicantContact: string;
   applicantEmail: string;
+  submittedIp?: string | null;
 }): Promise<
   | { ok: true; application: DriveApplication }
   | { ok: false; error: string }
@@ -567,6 +568,7 @@ export async function reserveBook(input: {
     createdAt: now,
     updatedAt: now,
     flaggedReason,
+    submittedIp: input.submittedIp ?? null,
   };
 
   if (hasStock) {
@@ -710,6 +712,35 @@ export async function confirmApplication(
   };
   await writeRecord(COLLECTION.applications, DIR.applications, updated);
   return { ok: true, application: updated };
+}
+
+/** Removes an application entirely. A "pending-review" or "confirmed"
+ *  application already reserved a unit of stock at creation time (or at
+ *  swap, via confirmApplication) — that unit is released back to the
+ *  catalog item here. A "waitlisted" application never held a unit, and a
+ *  "picked-up" one already handed its book out, so neither adjusts stock. */
+export async function deleteApplication(
+  id: string
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const application = await getApplication(id);
+  if (!application) return { ok: false, error: "Application not found." };
+
+  if (application.status === "pending-review" || application.status === "confirmed") {
+    const item = await getDriveItem(application.itemId);
+    if (item) {
+      if (isRedisStore()) {
+        await incrCounter(COLLECTION.items, item.id);
+      }
+      await writeRecord(COLLECTION.items, DIR.items, {
+        ...item,
+        remainingStock: item.remainingStock + 1,
+      });
+      revalidateTag(ITEMS_TAG);
+    }
+  }
+
+  await deleteRecord(COLLECTION.applications, DIR.applications, id);
+  return { ok: true };
 }
 
 /* ------------------------------------------------------------------ */

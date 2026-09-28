@@ -248,6 +248,7 @@ export default async function AdminDrivePage({
               items={items}
               driveNameById={driveNameById}
               canEdit={tabCanEdit}
+              canDelete={tabCanDelete}
             />
           )}
 

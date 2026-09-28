@@ -74,6 +74,12 @@ export interface DriveApplication {
    *  not blocked outright since it may well be two real people, just
    *  surfaced for the Advisor to glance at in the Applicants tab. */
   flaggedReason?: string | null;
+  /** Best-effort requester IP at submission time (from x-forwarded-for),
+   *  used only server-side to spot a second application from the same
+   *  network under different details — never shown in any UI. Absent on
+   *  records written before this check existed, and unset entirely in the
+   *  filesystem dev fallback (no real proxy in front of it). */
+  submittedIp?: string | null;
 }
 
 export type DonationStatus = "pending" | "verified" | "rejected";
