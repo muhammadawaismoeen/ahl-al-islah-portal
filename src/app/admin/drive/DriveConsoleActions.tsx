@@ -580,19 +580,75 @@ export function ApplicantsPanel({
   canDelete: boolean;
 }) {
   const [query, setQuery] = useState("");
+  const [selectedItemId, setSelectedItemId] = useState<string>("all");
   const itemById = useMemo(() => new Map(items.map((i) => [i.id, i])), [items]);
+
+  // Items sharing a name across different drives get the drive name
+  // appended to their tab label so the two don't look like one tab.
+  const nameCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const i of items) counts.set(i.name, (counts.get(i.name) ?? 0) + 1);
+    return counts;
+  }, [items]);
+
+  const applicantCountByItem = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const a of applications) counts.set(a.itemId, (counts.get(a.itemId) ?? 0) + 1);
+    return counts;
+  }, [applications]);
+
   const q = query.trim().toLowerCase();
-  const filtered = q
+  const bySearch = q
     ? applications.filter(
         (a) =>
           a.applicantName.toLowerCase().includes(q) ||
           a.applicantContact.toLowerCase().includes(q)
       )
     : applications;
+  const filtered =
+    selectedItemId === "all"
+      ? bySearch
+      : bySearch.filter((a) => a.itemId === selectedItemId);
 
   return (
     <div className="ornate-card p-2">
-      <div className="p-3 pb-1">
+      <div className="p-3 pb-1 space-y-3">
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => setSelectedItemId("all")}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition ${
+              selectedItemId === "all"
+                ? "bg-emerald-deep text-white"
+                : "bg-border text-ink/60 hover:bg-emerald-deep/10 hover:text-emerald-deep"
+            }`}
+          >
+            All
+            <span className="opacity-70">{applications.length}</span>
+          </button>
+          {items.map((item) => {
+            const label =
+              (nameCounts.get(item.name) ?? 0) > 1
+                ? `${item.name} · ${driveNameById[item.driveId] ?? "Drive"}`
+                : item.name;
+            const active = selectedItemId === item.id;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => setSelectedItemId(item.id)}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition ${
+                  active
+                    ? "bg-emerald-deep text-white"
+                    : "bg-border text-ink/60 hover:bg-emerald-deep/10 hover:text-emerald-deep"
+                }`}
+              >
+                {label}
+                <span className="opacity-70">{applicantCountByItem.get(item.id) ?? 0}</span>
+              </button>
+            );
+          })}
+        </div>
         <div className="relative">
           <Search className="h-3.5 w-3.5 text-ink/40 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
@@ -608,7 +664,9 @@ export function ApplicantsPanel({
         <p className="p-10 text-sm text-ink/60 text-center">
           {applications.length === 0
             ? "No applications yet."
-            : "No applicants match that search."}
+            : q
+              ? "No applicants match that search."
+              : "No applicants for this item yet."}
         </p>
       ) : (
         <ul className="divide-y divide-border">
