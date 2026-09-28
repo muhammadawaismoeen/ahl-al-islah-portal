@@ -8,6 +8,7 @@ import { getContent } from "@/lib/content-store";
 import { getApplication, getDrive, getDriveItem } from "@/lib/drive-store";
 import { formatDate } from "@/lib/utils";
 import { TicketQr } from "./TicketQr";
+import { SaveQrDialog } from "./SaveQrDialog";
 
 export const metadata: Metadata = {
   title: "Your Pickup Ticket — Qur'an & Seerah Drive",
@@ -56,8 +57,15 @@ export default async function DriveApplicationPage({
   const status = STATUS_CONFIG[application.status];
   const StatusIcon = status.icon;
 
+  const driveDateLabel = drive
+    ? drive.startDate === drive.endDate
+      ? formatDate(drive.startDate)
+      : `${formatDate(drive.startDate)} \u2013 ${formatDate(drive.endDate)}`
+    : null;
+
   return (
     <>
+      {drive && <SaveQrDialog driveName={drive.name} driveDateLabel={driveDateLabel} />}
       <Navbar content={content.nav} customLogo={content.customLogo} />
       <main className="pt-32 pb-20">
         <div className="container-prose max-w-xl mx-auto">
