@@ -13,6 +13,20 @@ export function formatDate(date: string | Date) {
   });
 }
 
+/** Drive Day label — the single day applicants come collect their item.
+ *  Falls back to the donation-collection startDate–endDate range on drives
+ *  where an admin hasn't set pickupDate yet, so nothing breaks mid-rollout. */
+export function formatDriveDateLabel(
+  pickupDate: string | null | undefined,
+  startDate: string,
+  endDate: string
+) {
+  if (pickupDate) return formatDate(pickupDate);
+  return startDate === endDate
+    ? formatDate(startDate)
+    : `${formatDate(startDate)} – ${formatDate(endDate)}`;
+}
+
 export function slugify(text: string) {
   return text
     .toLowerCase()

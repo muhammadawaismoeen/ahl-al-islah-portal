@@ -16,7 +16,7 @@ import { Footer } from "@/components/Footer";
 import { getContent } from "@/lib/content-store";
 import { getActiveDrive, computeDriveStats } from "@/lib/drive-store";
 import { DRIVE_CURRENCY } from "@/lib/drive-config";
-import { formatDate } from "@/lib/utils";
+import { formatDriveDateLabel } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Qur'an & Seerah Drive — Ahl Al-Islah",
@@ -63,7 +63,7 @@ export default async function DrivePage() {
               <div className="inline-flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 mt-4 text-xs text-ink/55">
                 <span className="inline-flex items-center gap-1.5">
                   <CalendarDays className="h-3.5 w-3.5 text-emerald-deep" />
-                  {formatDate(drive.startDate)} – {formatDate(drive.endDate)}
+                  {formatDriveDateLabel(drive.pickupDate, drive.startDate, drive.endDate)}
                 </span>
                 <span className="inline-flex items-center gap-1.5">
                   <MapPin className="h-3.5 w-3.5 text-emerald-deep" />

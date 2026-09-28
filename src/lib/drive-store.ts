@@ -240,6 +240,7 @@ export async function createDrive(input: {
   name: string;
   startDate: string;
   endDate: string;
+  pickupDate: string;
   goalAmount: number;
   pickupLocation: string;
   pickupNote?: string;
@@ -250,6 +251,7 @@ export async function createDrive(input: {
     name: input.name,
     startDate: input.startDate,
     endDate: input.endDate,
+    pickupDate: input.pickupDate,
     status: "open",
     goalAmount: input.goalAmount,
     raisedAmount: 0,
@@ -273,6 +275,7 @@ export async function updateDrive(
       | "name"
       | "startDate"
       | "endDate"
+      | "pickupDate"
       | "status"
       | "goalAmount"
       | "pickupLocation"

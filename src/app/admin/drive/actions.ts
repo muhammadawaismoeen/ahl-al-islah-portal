@@ -45,12 +45,14 @@ export async function createDriveAction(
   const name = ((formData.get("name") as string) ?? "").trim();
   const startDate = (formData.get("startDate") as string) ?? "";
   const endDate = (formData.get("endDate") as string) ?? "";
+  const pickupDate = (formData.get("pickupDate") as string) ?? "";
   const goalAmount = Number(formData.get("goalAmount"));
   const pickupLocation = ((formData.get("pickupLocation") as string) ?? "").trim();
   const pickupNote = ((formData.get("pickupNote") as string) ?? "").trim() || undefined;
 
   if (name.length < 2) return { ok: false, error: "Please enter a drive name." };
   if (!startDate || !endDate) return { ok: false, error: "Please set both dates." };
+  if (!pickupDate) return { ok: false, error: "Please set the Drive Day (pickup date)." };
   if (!Number.isFinite(goalAmount) || goalAmount < 0) {
     return { ok: false, error: "Please enter a valid goal amount." };
   }
@@ -58,7 +60,45 @@ export async function createDriveAction(
     return { ok: false, error: "Please enter a pickup location." };
   }
 
-  await createDrive({ name, startDate, endDate, goalAmount, pickupLocation, pickupNote });
+  await createDrive({ name, startDate, endDate, pickupDate, goalAmount, pickupLocation, pickupNote });
+  refresh();
+  return { ok: true };
+}
+
+export async function updateDriveDetailsAction(
+  id: string,
+  input: {
+    name: string;
+    startDate: string;
+    endDate: string;
+    pickupDate: string;
+    pickupLocation: string;
+    pickupNote?: string;
+  }
+): Promise<{ ok: boolean; error?: string }> {
+  const tier = await getFeaturePermission("drive.drives");
+  if (!canEdit(tier)) return { ok: false, error: "Not authorized." };
+
+  const name = input.name.trim();
+  const pickupLocation = input.pickupLocation.trim();
+  const pickupNote = input.pickupNote?.trim() || undefined;
+
+  if (name.length < 2) return { ok: false, error: "Please enter a drive name." };
+  if (!input.startDate || !input.endDate) return { ok: false, error: "Please set both dates." };
+  if (!input.pickupDate) return { ok: false, error: "Please set the Drive Day (pickup date)." };
+  if (pickupLocation.length < 2) {
+    return { ok: false, error: "Please enter a pickup location." };
+  }
+
+  const updated = await updateDrive(id, {
+    name,
+    startDate: input.startDate,
+    endDate: input.endDate,
+    pickupDate: input.pickupDate,
+    pickupLocation,
+    pickupNote,
+  });
+  if (!updated) return { ok: false, error: "Drive not found." };
   refresh();
   return { ok: true };
 }

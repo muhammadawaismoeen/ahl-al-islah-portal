@@ -28,6 +28,7 @@ import {
   setDriveStatusAction,
   setApplicationsOpenAction,
   updateDriveGoalAction,
+  updateDriveDetailsAction,
   deleteDriveAction,
   createDriveItemAction,
   updateDriveItemAction,
@@ -71,13 +72,17 @@ export function CreateDriveForm() {
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label htmlFor="startDate" className="label-field">Start date</label>
+          <label htmlFor="startDate" className="label-field">Donations open</label>
           <input id="startDate" name="startDate" type="date" required className="input-field" />
         </div>
         <div>
-          <label htmlFor="endDate" className="label-field">End date</label>
+          <label htmlFor="endDate" className="label-field">Donations close</label>
           <input id="endDate" name="endDate" type="date" required className="input-field" />
         </div>
+      </div>
+      <div>
+        <label htmlFor="pickupDate" className="label-field">Drive Day (pickup date)</label>
+        <input id="pickupDate" name="pickupDate" type="date" required className="input-field" />
       </div>
       <div>
         <label htmlFor="goalAmount" className="label-field">Fundraising goal</label>
@@ -239,6 +244,132 @@ export function DriveGoalForm({ drive, canEdit }: { drive: Drive; canEdit: boole
         {pending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
         Save goal
       </button>
+    </div>
+  );
+}
+
+export function DriveDetailsForm({ drive, canEdit }: { drive: Drive; canEdit: boolean }) {
+  const router = useRouter();
+  const [editing, setEditing] = useState(false);
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [name, setName] = useState(drive.name);
+  const [startDate, setStartDate] = useState(drive.startDate);
+  const [endDate, setEndDate] = useState(drive.endDate);
+  const [pickupDate, setPickupDate] = useState(drive.pickupDate ?? "");
+  const [pickupLocation, setPickupLocation] = useState(drive.pickupLocation);
+  const [pickupNote, setPickupNote] = useState(drive.pickupNote ?? "");
+
+  if (!canEdit) return null;
+
+  if (!editing) {
+    return (
+      <button
+        type="button"
+        onClick={() => setEditing(true)}
+        className="btn-ghost !py-1.5 !px-3 text-xs"
+      >
+        Edit details
+      </button>
+    );
+  }
+
+  async function handle() {
+    setError(null);
+    setPending(true);
+    const res = await updateDriveDetailsAction(drive.id, {
+      name,
+      startDate,
+      endDate,
+      pickupDate,
+      pickupLocation,
+      pickupNote: pickupNote || undefined,
+    });
+    setPending(false);
+    if (res.ok) {
+      toast.success("Drive details updated.");
+      setEditing(false);
+      router.refresh();
+    } else {
+      setError(res.error ?? "Failed to update drive details.");
+    }
+  }
+
+  return (
+    <div className="rounded-xl border border-border bg-surface-2/60 p-3 space-y-3">
+      <div>
+        <label className="label-field">Name</label>
+        <input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className="input-field !py-1.5 text-sm"
+        />
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="label-field">Donations open</label>
+          <input
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            className="input-field !py-1.5 text-sm"
+          />
+        </div>
+        <div>
+          <label className="label-field">Donations close</label>
+          <input
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            className="input-field !py-1.5 text-sm"
+          />
+        </div>
+      </div>
+      <div>
+        <label className="label-field">Drive Day (pickup date)</label>
+        <input
+          type="date"
+          value={pickupDate}
+          onChange={(e) => setPickupDate(e.target.value)}
+          className="input-field !py-1.5 text-sm"
+        />
+      </div>
+      <div>
+        <label className="label-field">Pickup location</label>
+        <input
+          value={pickupLocation}
+          onChange={(e) => setPickupLocation(e.target.value)}
+          className="input-field !py-1.5 text-sm"
+        />
+      </div>
+      <div>
+        <label className="label-field">Pickup note (optional)</label>
+        <input
+          value={pickupNote}
+          onChange={(e) => setPickupNote(e.target.value)}
+          className="input-field !py-1.5 text-sm"
+        />
+      </div>
+      {error && <p className="error-text">{error}</p>}
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={handle}
+          disabled={pending}
+          className="btn-primary !py-1.5 !px-3 text-xs"
+        >
+          {pending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+          Save details
+        </button>
+        <button
+          type="button"
+          onClick={() => setEditing(false)}
+          disabled={pending}
+          className="btn-ghost !py-1.5 !px-3 text-xs"
+        >
+          Cancel
+        </button>
+      </div>
     </div>
   );
 }

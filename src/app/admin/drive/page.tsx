@@ -24,12 +24,13 @@ import {
 } from "@/lib/drive-store";
 import { getDriveSettings } from "@/lib/drive-settings";
 import { DRIVE_CURRENCY } from "@/lib/drive-config";
-import { formatDate } from "@/lib/utils";
+import { formatDriveDateLabel } from "@/lib/utils";
 import {
   CreateDriveForm,
   DriveStatusToggle,
   ApplicationsToggle,
   DriveGoalForm,
+  DriveDetailsForm,
   DeleteDriveButton,
   CreateItemForm,
   ItemStockForm,
@@ -192,7 +193,7 @@ export default async function AdminDrivePage({
                         <div>
                           <p className="font-medium text-ink">{d.name}</p>
                           <p className="text-xs text-ink/50 mt-0.5">
-                            {formatDate(d.startDate)} – {formatDate(d.endDate)} ·{" "}
+                            Drive Day: {formatDriveDateLabel(d.pickupDate, d.startDate, d.endDate)} ·{" "}
                             {d.pickupLocation}
                           </p>
                         </div>
@@ -206,7 +207,10 @@ export default async function AdminDrivePage({
                         <DriveStatusToggle drive={d} canEdit={tabCanEdit} />
                         <ApplicationsToggle drive={d} canEdit={tabCanEdit} />
                       </div>
-                      <DriveGoalForm drive={d} canEdit={tabCanEdit} />
+                      <div className="flex flex-col gap-2 items-start">
+                        <DriveGoalForm drive={d} canEdit={tabCanEdit} />
+                        <DriveDetailsForm drive={d} canEdit={tabCanEdit} />
+                      </div>
                     </div>
                   ))
                 )}

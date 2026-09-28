@@ -13,8 +13,15 @@ export type DriveStatus = "open" | "closed";
 export interface Drive {
   id: string;
   name: string;
-  startDate: string; // ISO date, yyyy-mm-dd
-  endDate: string; // ISO date, yyyy-mm-dd
+  startDate: string; // ISO date, yyyy-mm-dd — donation collection window opens
+  endDate: string; // ISO date, yyyy-mm-dd — donation collection window closes
+  /** ISO date, yyyy-mm-dd — the actual day applicants come collect their
+   *  item. Distinct from startDate/endDate above (the donation window):
+   *  a drive commonly keeps collecting donations for weeks before handing
+   *  anything out on a single pickup day. Undefined on drives created
+   *  before this field existed; every display falls back to the
+   *  startDate–endDate range until an admin sets it. */
+  pickupDate?: string;
   status: DriveStatus;
   goalAmount: number;
   raisedAmount: number;

@@ -6,7 +6,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { getContent } from "@/lib/content-store";
 import { getApplication, getDrive, getDriveItem } from "@/lib/drive-store";
-import { formatDate } from "@/lib/utils";
+import { formatDriveDateLabel } from "@/lib/utils";
 import { TicketQr } from "./TicketQr";
 import { SaveQrDialog } from "./SaveQrDialog";
 
@@ -58,9 +58,7 @@ export default async function DriveApplicationPage({
   const StatusIcon = status.icon;
 
   const driveDateLabel = drive
-    ? drive.startDate === drive.endDate
-      ? formatDate(drive.startDate)
-      : `${formatDate(drive.startDate)} \u2013 ${formatDate(drive.endDate)}`
+    ? formatDriveDateLabel(drive.pickupDate, drive.startDate, drive.endDate)
     : null;
 
   return (
@@ -97,7 +95,7 @@ export default async function DriveApplicationPage({
                 </span>
                 <span className="inline-flex items-center gap-1.5">
                   <CalendarDays className="h-3.5 w-3.5 text-emerald-deep" />
-                  {formatDate(drive.startDate)} – {formatDate(drive.endDate)}
+                  {formatDriveDateLabel(drive.pickupDate, drive.startDate, drive.endDate)}
                 </span>
               </div>
             )}
@@ -108,7 +106,15 @@ export default async function DriveApplicationPage({
             <div className="gold-divider" />
 
             <div className="flex flex-col items-center gap-4">
-              <TicketQr value={application.pickupCode} />
+              <TicketQr
+                value={application.pickupCode}
+                driveName={drive?.name ?? "Qur'an & Seerah Drive"}
+                itemName={item?.name ?? "Reserved item"}
+                applicantName={application.applicantName}
+                applicantContact={application.applicantContact}
+                dateLabel={driveDateLabel}
+                pickupLocation={drive?.pickupLocation ?? ""}
+              />
               <p className="font-mono text-lg tracking-wide text-emerald-deep">
                 {application.pickupCode}
               </p>
