@@ -659,7 +659,7 @@ export function ApplicantsPanel({
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search by name or email"
+            placeholder="Search by name or phone"
             className="input-field !pl-9 text-sm"
           />
         </div>

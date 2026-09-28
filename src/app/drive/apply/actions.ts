@@ -36,8 +36,9 @@ export async function reserveBookAction(input: {
   if (name.length < 2) {
     return { ok: false, error: "Please enter your full name." };
   }
-  if (contact.length < 5) {
-    return { ok: false, error: "Please enter a valid email or phone number." };
+  const contactDigits = contact.replace(/\D/g, "");
+  if (contactDigits.length < 10) {
+    return { ok: false, error: "Please enter a valid phone number." };
   }
   if (!input.driveId || !input.itemId) {
     return { ok: false, error: "Please choose an item." };

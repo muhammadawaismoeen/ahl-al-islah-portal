@@ -108,14 +108,16 @@ export function ApplyForm({
         </div>
         <div>
           <label htmlFor="applicantContact" className="label-field">
-            Email or phone
+            Phone number
           </label>
           <input
             id="applicantContact"
+            type="tel"
+            inputMode="tel"
             value={contact}
             onChange={(e) => setContact(e.target.value)}
             className="input-field"
-            placeholder="you@example.com"
+            placeholder="03XX-XXXXXXX"
             required
           />
         </div>
