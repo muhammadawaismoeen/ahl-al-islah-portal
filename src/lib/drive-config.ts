@@ -15,14 +15,4 @@ export const DRIVE_CURRENCY = "Rs.";
  *  without pulling server-only `fs`/Redis code into the browser bundle. */
 export const MAX_PROOF_BYTES = 5 * 1024 * 1024;
 
-/** Book applications are restricted to Akhtar Saeed Medical and Dental
- *  College's official student email domain — an explicit gate requested
- *  alongside admin-approval for that program. (Ambassador registration is
- *  open to any signed-in Google account; it does not use this gate.) */
-export const COLLEGE_EMAIL_DOMAIN = "@amdc.edu.pk";
-
-export function isCollegeEmail(email: string): boolean {
-  return email.trim().toLowerCase().endsWith(COLLEGE_EMAIL_DOMAIN);
-}
-
 export const DEFAULT_IHSAN_PERCENTAGE = 20;

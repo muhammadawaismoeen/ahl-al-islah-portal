@@ -37,7 +37,6 @@ import type {
   Ambassador,
 } from "./drive-types";
 import { getDriveSettings, computeSuggestedTarget } from "./drive-settings";
-import { isCollegeEmail } from "./drive-config";
 
 const DATA_ROOT = path.join(process.cwd(), "data", "drive");
 const DIR = {
@@ -418,8 +417,16 @@ export async function findApplicationByPickupCode(
   return all.find((a) => a.pickupCode === normalized) ?? null;
 }
 
-function normalizeContact(contact: string): string {
-  return contact.trim().toLowerCase();
+/** Collapses equivalent phone-number spellings (+92 vs 0-prefix, spaces,
+ *  dashes) down to their last 10 digits so "0300-1234567", "+923001234567",
+ *  and "92 300 1234567" all resolve to the same applicant. Emails pass
+ *  through as plain trim+lowercase — stripping non-digits would destroy
+ *  them. */
+export function normalizeContact(contact: string): string {
+  const trimmed = contact.trim().toLowerCase();
+  if (trimmed.includes("@")) return trimmed;
+  const digits = trimmed.replace(/\D/g, "");
+  return digits.length >= 10 ? digits.slice(-10) : digits;
 }
 
 /**
@@ -441,14 +448,6 @@ export async function reserveBook(input: {
   | { ok: true; application: DriveApplication }
   | { ok: false; error: string }
 > {
-  if (!isCollegeEmail(input.applicantEmail)) {
-    return {
-      ok: false,
-      error:
-        "Book applications are only open to Akhtar Saeed Medical and Dental College student accounts.",
-    };
-  }
-
   const drive = await getDrive(input.driveId);
   if (!drive || !drive.applicationsOpen) {
     return { ok: false, error: "Applications aren't open for this drive right now." };
@@ -460,12 +459,18 @@ export async function reserveBook(input: {
   }
 
   const contact = normalizeContact(input.applicantContact);
+  const email = input.applicantEmail.trim().toLowerCase();
   const existing = await listApplications(input.driveId);
 
+  // A match on EITHER contact or email counts as the same applicant, so
+  // switching Google accounts (email) or rewording a phone number (contact)
+  // alone can't be used to slip past the limits below.
+  const isSameApplicant = (a: DriveApplication) =>
+    normalizeContact(a.applicantContact) === contact ||
+    (a.applicantEmail?.trim().toLowerCase() ?? "") === email;
+
   const existingForItem = existing.filter(
-    (a) =>
-      a.itemId === input.itemId &&
-      normalizeContact(a.applicantContact) === contact
+    (a) => a.itemId === input.itemId && isSameApplicant(a)
   );
   if (existingForItem.length > 0) {
     return {
@@ -474,9 +479,7 @@ export async function reserveBook(input: {
     };
   }
 
-  const totalForContact = existing.filter(
-    (a) => normalizeContact(a.applicantContact) === contact
-  ).length;
+  const totalForContact = existing.filter(isSameApplicant).length;
   if (totalForContact >= item.perStudentLimit) {
     return {
       ok: false,

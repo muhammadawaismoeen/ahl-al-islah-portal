@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ArrowLeft, BookOpen, GraduationCap } from "lucide-react";
+import { ArrowLeft, BookOpen } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { getContent } from "@/lib/content-store";
 import { auth } from "@/lib/auth";
 import { getActiveDrive, listDriveItems } from "@/lib/drive-store";
-import { isCollegeEmail, COLLEGE_EMAIL_DOMAIN } from "@/lib/drive-config";
 import { ApplyForm } from "./ApplyForm";
 
 export const metadata: Metadata = {
@@ -23,10 +22,8 @@ export default async function DriveApplyPage() {
   if (!email) {
     redirect(`/drive/signin?callbackUrl=${encodeURIComponent("/drive/apply")}`);
   }
-  const eligible = isCollegeEmail(email);
-
   const content = await getContent();
-  const drive = eligible ? await getActiveDrive() : null;
+  const drive = await getActiveDrive();
   const items = drive ? await listDriveItems(drive.id) : [];
 
   return (
@@ -54,25 +51,7 @@ export default async function DriveApplyPage() {
             </p>
           </div>
 
-          {!eligible ? (
-            <div className="ornate-card p-8 text-center">
-              <GraduationCap className="h-8 w-8 text-ink/25 mx-auto mb-3" />
-              <p className="text-sm text-ink/70 font-medium mb-1">
-                Use your official college email
-              </p>
-              <p className="text-sm text-ink/60 mb-4">
-                Book applications are only open to Akhtar Saeed Medical and
-                Dental College student accounts ({COLLEGE_EMAIL_DOMAIN}).
-                You&apos;re signed in as <strong>{email}</strong>.
-              </p>
-              <Link
-                href={`/drive/signin?switch=1&callbackUrl=${encodeURIComponent("/drive/apply")}`}
-                className="btn-secondary inline-flex"
-              >
-                Switch Google account
-              </Link>
-            </div>
-          ) : !drive ? (
+          {!drive ? (
             <div className="ornate-card p-8 text-center">
               <p className="text-sm text-ink/60">
                 There&apos;s no open drive right now — check back soon, or{" "}
