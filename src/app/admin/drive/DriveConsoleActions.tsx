@@ -612,19 +612,19 @@ export function ApplicantsPanel({
 
   return (
     <div className="ornate-card p-2">
-      <div className="p-3 pb-1 space-y-3">
-        <div className="flex flex-wrap gap-2">
+      <div className="px-3 pt-3">
+        <div className="flex items-end gap-5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden border-b border-border">
           <button
             type="button"
             onClick={() => setSelectedItemId("all")}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition ${
+            className={`shrink-0 -mb-px pb-2.5 border-b-2 text-sm font-medium tracking-wide transition whitespace-nowrap ${
               selectedItemId === "all"
-                ? "bg-emerald-deep text-white"
-                : "bg-border text-ink/60 hover:bg-emerald-deep/10 hover:text-emerald-deep"
+                ? "border-emerald-deep text-emerald-deep"
+                : "border-transparent text-ink/45 hover:text-ink/70"
             }`}
           >
             All
-            <span className="opacity-70">{applications.length}</span>
+            <span className="ml-1.5 text-xs tabular-nums text-ink/35">{applications.length}</span>
           </button>
           {items.map((item) => {
             const label =
@@ -637,18 +637,22 @@ export function ApplicantsPanel({
                 key={item.id}
                 type="button"
                 onClick={() => setSelectedItemId(item.id)}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition ${
+                className={`shrink-0 -mb-px pb-2.5 border-b-2 text-sm font-medium tracking-wide transition whitespace-nowrap ${
                   active
-                    ? "bg-emerald-deep text-white"
-                    : "bg-border text-ink/60 hover:bg-emerald-deep/10 hover:text-emerald-deep"
+                    ? "border-emerald-deep text-emerald-deep"
+                    : "border-transparent text-ink/45 hover:text-ink/70"
                 }`}
               >
                 {label}
-                <span className="opacity-70">{applicantCountByItem.get(item.id) ?? 0}</span>
+                <span className="ml-1.5 text-xs tabular-nums text-ink/35">
+                  {applicantCountByItem.get(item.id) ?? 0}
+                </span>
               </button>
             );
           })}
         </div>
+      </div>
+      <div className="p-3 pb-1">
         <div className="relative">
           <Search className="h-3.5 w-3.5 text-ink/40 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
