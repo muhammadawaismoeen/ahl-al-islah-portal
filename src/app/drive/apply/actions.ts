@@ -3,7 +3,7 @@
 import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
-import { reserveBook, getApplication, listApplications, normalizeContact } from "@/lib/drive-store";
+import { reserveBook, getApplication, listApplications } from "@/lib/drive-store";
 import { addDriveDeviceId, getDriveDeviceIds } from "@/lib/drive-session";
 import { notifyNewBookApplication } from "@/lib/notify";
 
@@ -44,24 +44,19 @@ export async function reserveBookAction(input: {
   }
 
   // Same-device abuse check: this browser's device cookie remembers every
-  // application id it has ever submitted (see drive-session.ts). If it
-  // already holds one for THIS drive under a different email/contact, someone
-  // is switching Google accounts or rewording their number to get around the
-  // per-student limit in reserveBook() below — refuse before that check even
-  // runs. A cookie is not a real device fingerprint (clearing it resets this
-  // signal), so this raises the bar without pretending to be airtight.
+  // application id it has ever submitted (see drive-session.ts). No
+  // exceptions here — once this device holds ANY application for this
+  // drive, every further attempt from it is refused outright, even under a
+  // matching name/contact/Google account. A cookie is not a real device
+  // fingerprint (clearing it resets this signal), so this raises the bar
+  // without pretending to be airtight.
   const deviceIds = await getDriveDeviceIds();
   if (deviceIds.applications.length > 0) {
     const priorOnThisDrive = (
       await Promise.all(deviceIds.applications.map((id) => getApplication(id)))
     ).filter((a): a is NonNullable<typeof a> => !!a && a.driveId === input.driveId);
 
-    const matchesPriorIdentity = priorOnThisDrive.some(
-      (a) =>
-        normalizeContact(a.applicantContact) === normalizeContact(contact) ||
-        (a.applicantEmail?.trim().toLowerCase() ?? "") === applicantEmail.trim().toLowerCase()
-    );
-    if (priorOnThisDrive.length > 0 && !matchesPriorIdentity) {
+    if (priorOnThisDrive.length > 0) {
       return {
         ok: false,
         error: "An application for this Drive was already submitted.",
@@ -70,23 +65,17 @@ export async function reserveBookAction(input: {
   }
 
   // Same-network abuse check: an incognito window or a second browser
-  // clears the device cookie above, but not the network it's on. If any
-  // OTHER application for this drive was submitted from the same IP under
-  // different details, refuse for the same reason as the device check.
-  // Shared campus/hostel wifi can occasionally put two genuine applicants
-  // behind one address — the identity-match escape hatch below still lets
-  // that pair each apply once, it only blocks a THIRD identity repeating
-  // from that address.
+  // clears the device cookie above, but not the network it's on. No
+  // exceptions here either — note this is shared-IP-scoped (e.g. a
+  // campus/hostel wifi NAT), so it will also block a second genuine
+  // applicant behind the same address; that trade-off is intentional per
+  // "no one submits more than one application from a device" — a legitimate
+  // second applicant just needs a different network.
   const ip = await getClientIp();
   if (ip) {
     const sameDriveApps = await listApplications(input.driveId);
     const priorFromThisIp = sameDriveApps.filter((a) => a.submittedIp === ip);
-    const matchesPriorIpIdentity = priorFromThisIp.some(
-      (a) =>
-        normalizeContact(a.applicantContact) === normalizeContact(contact) ||
-        (a.applicantEmail?.trim().toLowerCase() ?? "") === applicantEmail.trim().toLowerCase()
-    );
-    if (priorFromThisIp.length > 0 && !matchesPriorIpIdentity) {
+    if (priorFromThisIp.length > 0) {
       return {
         ok: false,
         error: "An application for this Drive was already submitted.",

@@ -12,6 +12,7 @@ import {
   setCounter,
   decrCounter,
   incrCounter,
+  claimOnce,
 } from "./redis";
 
 export type {
@@ -527,6 +528,24 @@ export async function reserveBook(input: {
       ok: false,
       error: `You've reached the limit of ${item.perStudentLimit} item(s) per student for this drive.`,
     };
+  }
+
+  // The checks above read `existing` before either of two concurrent
+  // requests (e.g. a double-tap on "Submit", or two open tabs) has written
+  // anything — both can see zero prior applications and both pass. This
+  // claim closes that window: only the first of two racing requests for
+  // the same (drive, item, verified email) can ever win it, so the same
+  // signed-in identity can never end up with two applications for one
+  // item no matter how the requests overlap. Email, not contact, because
+  // it's server-verified by Google sign-in rather than user-typed.
+  if (isRedisStore()) {
+    const claimed = await claimOnce(COLLECTION.applications, `claim:${input.driveId}:${input.itemId}:${email}`);
+    if (!claimed) {
+      return {
+        ok: false,
+        error: "You already have an application for this item.",
+      };
+    }
   }
 
   const flaggedReason = detectPossibleDuplicate(

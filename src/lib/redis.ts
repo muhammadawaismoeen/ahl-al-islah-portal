@@ -118,3 +118,18 @@ export async function decrCounter(collection: string, id: string): Promise<numbe
 export async function incrCounter(collection: string, id: string): Promise<number> {
   return redis().incr(counterKey(collection, id));
 }
+
+/**
+ * One-shot atomic claim, separate from the counters above — for "has THIS
+ * exact key ever been claimed" rather than a running quantity. SET ... NX
+ * only succeeds for the first caller; every later caller (even one racing
+ * in the same millisecond) gets null back. Used to close the window
+ * between reading "does an application already exist" and writing the new
+ * one, which a plain read-then-write can't do atomically.
+ */
+const claimKey = (collection: string, id: string) => `aai:${collection}:${id}:claim`;
+
+export async function claimOnce(collection: string, id: string): Promise<boolean> {
+  const result = await redis().set(claimKey(collection, id), "1", { nx: true });
+  return result === "OK";
+}
