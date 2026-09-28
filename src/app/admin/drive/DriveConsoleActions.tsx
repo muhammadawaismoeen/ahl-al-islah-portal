@@ -625,6 +625,14 @@ export function ApplicantsPanel({
                       Originally requested {itemById.get(a.requestedItemId)?.name ?? "a different item"}
                     </p>
                   )}
+                  {a.flaggedReason && (
+                    <p
+                      className="inline-flex items-center gap-1 text-[11px] text-amber mt-0.5"
+                      title={a.flaggedReason}
+                    >
+                      <AlertTriangle className="h-3 w-3 shrink-0" /> Possible duplicate
+                    </p>
+                  )}
                   <p className="text-[11px] text-ink/40 mt-0.5">
                     Code <code className="font-mono">{a.pickupCode}</code> · Applied{" "}
                     {formatDate(a.createdAt)}

@@ -429,6 +429,47 @@ export function normalizeContact(contact: string): string {
   return digits.length >= 10 ? digits.slice(-10) : digits;
 }
 
+function last7Digits(contact: string): string | null {
+  const digits = contact.replace(/\D/g, "");
+  return digits.length >= 7 ? digits.slice(-7) : null;
+}
+
+function emailLocalPart(email: string): string {
+  return email.trim().toLowerCase().split("@")[0];
+}
+
+/** Best-effort "this might be the same person again" signal for the admin
+ *  console — near-misses that aren't close enough for normalizeContact()
+ *  to treat as the same applicant (so each still gets their own item), but
+ *  similar enough to be worth a human glance: phone numbers that share their
+ *  last 7 digits, emails that share a local part on a different domain, or
+ *  an identical name under different contact details entirely. Returns a
+ *  human-readable reason, or null if nothing looks suspicious. Checked only
+ *  against applicants NOT already recognised as the same person, so a
+ *  legitimate second item for the true owner never flags itself. */
+function detectPossibleDuplicate(
+  others: DriveApplication[],
+  candidate: { name: string; contact: string; email: string }
+): string | null {
+  const name = candidate.name.trim().toLowerCase();
+  const contact7 = last7Digits(candidate.contact);
+  const email = emailLocalPart(candidate.email);
+
+  for (const a of others) {
+    const otherContact7 = last7Digits(a.applicantContact);
+    if (contact7 && otherContact7 && contact7 === otherContact7) {
+      return `Phone number closely resembles ${a.applicantName}'s (${a.applicantContact}).`;
+    }
+    if (a.applicantEmail && emailLocalPart(a.applicantEmail) === email) {
+      return `Email closely resembles ${a.applicantName}'s (${a.applicantEmail}).`;
+    }
+    if (a.applicantName.trim().toLowerCase() === name) {
+      return `Same name as another applicant on this drive (${a.applicantContact}).`;
+    }
+  }
+  return null;
+}
+
 /**
  * Reserve a copy of a catalog item for an applicant. Enforces, server-side:
  *  - the item's per-student limit (by normalized contact, the closest proxy
@@ -487,6 +528,11 @@ export async function reserveBook(input: {
     };
   }
 
+  const flaggedReason = detectPossibleDuplicate(
+    existing.filter((a) => !isSameApplicant(a)),
+    { name: input.applicantName, contact: input.applicantContact, email: input.applicantEmail }
+  );
+
   const now = new Date().toISOString();
 
   // Atomic decrement so two concurrent applicants can't both read the same
@@ -520,6 +566,7 @@ export async function reserveBook(input: {
     pickupCode: genCode("BK"),
     createdAt: now,
     updatedAt: now,
+    flaggedReason,
   };
 
   if (hasStock) {

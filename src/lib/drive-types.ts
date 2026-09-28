@@ -68,6 +68,12 @@ export interface DriveApplication {
   createdAt: string;
   updatedAt: string;
   pickedUpAt?: string;
+  /** Set when reserveBook() notices this application's name/contact/email
+   *  closely resembles another applicant's on the same drive (typo-level
+   *  phone/email match, or an identical name under different details) —
+   *  not blocked outright since it may well be two real people, just
+   *  surfaced for the Advisor to glance at in the Applicants tab. */
+  flaggedReason?: string | null;
 }
 
 export type DonationStatus = "pending" | "verified" | "rejected";
