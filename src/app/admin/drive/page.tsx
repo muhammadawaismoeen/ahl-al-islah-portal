@@ -121,6 +121,15 @@ export default async function AdminDrivePage({
     ]);
   const driveById = new Map(drives.map((d) => [d.id, d]));
   const driveNameById = Object.fromEntries(drives.map((d) => [d.id, d.name]));
+  // listDrives() already sorts most-recently-created first — reuse that
+  // order to group the Applicants tab's per-item tabs by drive recency,
+  // without disturbing the Catalog tab's own item ordering.
+  const driveOrderIndex = new Map(drives.map((d, i) => [d.id, i]));
+  const itemsByDriveRecency = [...items].sort(
+    (a, b) =>
+      (driveOrderIndex.get(a.driveId) ?? Infinity) -
+      (driveOrderIndex.get(b.driveId) ?? Infinity)
+  );
   const pendingDonations = donations.filter((d) => d.status === "pending").length;
   const pendingAmbassadors = ambassadors.filter((a) => a.status === "pending").length;
 
@@ -245,7 +254,7 @@ export default async function AdminDrivePage({
           {tab === "applicants" && (
             <ApplicantsPanel
               applications={applications}
-              items={items}
+              items={itemsByDriveRecency}
               driveNameById={driveNameById}
               canEdit={tabCanEdit}
               canDelete={tabCanDelete}
