@@ -64,8 +64,7 @@ export async function reserveBookAction(input: {
     if (priorOnThisDrive.length > 0 && !matchesPriorIdentity) {
       return {
         ok: false,
-        error:
-          "This device already has an application for this drive under different details. Please continue with the same name, contact, and Google account, or reach out to us if this is a mistake.",
+        error: "An application for this Drive was already submitted.",
       };
     }
   }
@@ -90,8 +89,7 @@ export async function reserveBookAction(input: {
     if (priorFromThisIp.length > 0 && !matchesPriorIpIdentity) {
       return {
         ok: false,
-        error:
-          "An application for this drive was already submitted from this network under different details. Please continue with the same name, contact, and Google account, or reach out to us if this is a mistake.",
+        error: "An application for this Drive was already submitted.",
       };
     }
   }
