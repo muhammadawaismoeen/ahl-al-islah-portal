@@ -10,6 +10,31 @@ export const DRIVE_DEVICE_COOKIE = "ahl_drive_ids";
 
 export type DriveStatus = "open" | "closed";
 
+/** Canonical Department / Year-of-study option lists for the Drive apply
+ *  form — kept in sync with the equivalent membership-application fields
+ *  in questions.ts so both forms use the same organizational taxonomy. */
+export const DRIVE_DEPARTMENT_OPTIONS = [
+  "MBBS",
+  "BDS",
+  "DPT",
+  "MIT (Medical Imaging Technology)",
+  "MLT (Medical Lab Technology)",
+  "Pharmacy / Pharm-D",
+  "Nutrition",
+  "Nursing",
+  "Other",
+] as const;
+
+export const DRIVE_YEAR_OF_STUDY_OPTIONS = [
+  "1st year",
+  "2nd year",
+  "3rd year",
+  "4th year",
+  "Final year",
+  "House officer / intern",
+  "Other",
+] as const;
+
 export interface Drive {
   id: string;
   name: string;
@@ -68,6 +93,10 @@ export interface DriveApplication {
   /** Google account email of the signed-in applicant. Absent on records
    *  created before Google sign-in became mandatory. */
   applicantEmail?: string;
+  /** Absent on records written before these fields existed (see
+   *  withApplicationDefaults), which default them to "". */
+  applicantDepartment?: string;
+  applicantYearOfStudy?: string;
   status: ApplicationStatus;
   /** Shown as a QR code on the ticket page and matched at the pickup table —
    *  a ticket number, not a secret credential, so it's stored in plaintext. */

@@ -4,7 +4,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, BookOpen, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
-import type { DriveItem } from "@/lib/drive-types";
+import {
+  DRIVE_DEPARTMENT_OPTIONS,
+  DRIVE_YEAR_OF_STUDY_OPTIONS,
+  type DriveItem,
+} from "@/lib/drive-types";
 import { reserveBookAction } from "./actions";
 
 export function ApplyForm({
@@ -20,6 +24,8 @@ export function ApplyForm({
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [contact, setContact] = useState("");
+  const [department, setDepartment] = useState("");
+  const [yearOfStudy, setYearOfStudy] = useState("");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -36,6 +42,8 @@ export function ApplyForm({
       itemId: selectedItemId,
       applicantName: name,
       applicantContact: contact,
+      applicantDepartment: department,
+      applicantYearOfStudy: yearOfStudy,
     });
     setPending(false);
     if (res.ok && res.applicationId) {
@@ -120,6 +128,48 @@ export function ApplyForm({
             placeholder="03XX-XXXXXXX"
             required
           />
+        </div>
+        <div>
+          <label htmlFor="applicantDepartment" className="label-field">
+            Department
+          </label>
+          <select
+            id="applicantDepartment"
+            value={department}
+            onChange={(e) => setDepartment(e.target.value)}
+            className="input-field"
+            required
+          >
+            <option value="" disabled>
+              Select your department
+            </option>
+            {DRIVE_DEPARTMENT_OPTIONS.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label htmlFor="applicantYearOfStudy" className="label-field">
+            Year of study
+          </label>
+          <select
+            id="applicantYearOfStudy"
+            value={yearOfStudy}
+            onChange={(e) => setYearOfStudy(e.target.value)}
+            className="input-field"
+            required
+          >
+            <option value="" disabled>
+              Select your year of study
+            </option>
+            {DRIVE_YEAR_OF_STUDY_OPTIONS.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 

@@ -816,6 +816,11 @@ export function ApplicantsPanel({
                     {itemById.get(a.itemId)?.name ?? "Item"} · {driveNameById[a.driveId] ?? "Drive"} ·{" "}
                     {a.applicantContact}
                   </p>
+                  {(a.applicantDepartment || a.applicantYearOfStudy) && (
+                    <p className="text-[11px] text-ink/40 mt-0.5">
+                      {[a.applicantDepartment, a.applicantYearOfStudy].filter(Boolean).join(" · ")}
+                    </p>
+                  )}
                   {wasSwapped && (
                     <p className="text-[11px] text-amber mt-0.5">
                       Originally requested {itemById.get(a.requestedItemId)?.name ?? "a different item"}

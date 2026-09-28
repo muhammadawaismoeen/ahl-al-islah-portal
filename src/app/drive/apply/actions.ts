@@ -23,6 +23,8 @@ export async function reserveBookAction(input: {
   itemId: string;
   applicantName: string;
   applicantContact: string;
+  applicantDepartment: string;
+  applicantYearOfStudy: string;
 }): Promise<{ ok: boolean; error?: string; applicationId?: string }> {
   const session = await auth();
   const applicantEmail = session?.user?.email;
@@ -32,6 +34,8 @@ export async function reserveBookAction(input: {
 
   const name = input.applicantName.trim();
   const contact = input.applicantContact.trim();
+  const department = input.applicantDepartment.trim();
+  const yearOfStudy = input.applicantYearOfStudy.trim();
 
   if (name.length < 2) {
     return { ok: false, error: "Please enter your full name." };
@@ -39,6 +43,12 @@ export async function reserveBookAction(input: {
   const contactDigits = contact.replace(/\D/g, "");
   if (contactDigits.length < 10) {
     return { ok: false, error: "Please enter a valid phone number." };
+  }
+  if (!department) {
+    return { ok: false, error: "Please select your department." };
+  }
+  if (!yearOfStudy) {
+    return { ok: false, error: "Please select your year of study." };
   }
   if (!input.driveId || !input.itemId) {
     return { ok: false, error: "Please choose an item." };
@@ -89,6 +99,8 @@ export async function reserveBookAction(input: {
       applicantName: name,
       applicantContact: contact,
       applicantEmail,
+      applicantDepartment: department,
+      applicantYearOfStudy: yearOfStudy,
       submittedIp: ip,
     });
     if (!result.ok) return { ok: false, error: result.error };

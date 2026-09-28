@@ -378,7 +378,12 @@ export async function deleteDriveItem(id: string): Promise<boolean> {
  *  current itemId, so they read as "not changed since request" rather than
  *  crashing on a missing field. */
 function withApplicationDefaults(app: DriveApplication): DriveApplication {
-  return { ...app, requestedItemId: app.requestedItemId ?? app.itemId };
+  return {
+    ...app,
+    requestedItemId: app.requestedItemId ?? app.itemId,
+    applicantDepartment: app.applicantDepartment ?? "",
+    applicantYearOfStudy: app.applicantYearOfStudy ?? "",
+  };
 }
 
 export async function listApplications(
@@ -489,6 +494,8 @@ export async function reserveBook(input: {
   applicantName: string;
   applicantContact: string;
   applicantEmail: string;
+  applicantDepartment: string;
+  applicantYearOfStudy: string;
   submittedIp?: string | null;
 }): Promise<
   | { ok: true; application: DriveApplication }
@@ -585,6 +592,8 @@ export async function reserveBook(input: {
     applicantName: input.applicantName,
     applicantContact: input.applicantContact,
     applicantEmail: input.applicantEmail,
+    applicantDepartment: input.applicantDepartment,
+    applicantYearOfStudy: input.applicantYearOfStudy,
     status: hasStock ? "pending-review" : "waitlisted",
     pickupCode: genCode("BK"),
     createdAt: now,
