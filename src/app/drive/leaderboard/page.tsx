@@ -5,7 +5,6 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { getContent } from "@/lib/content-store";
 import { listAmbassadors, getActiveDrive } from "@/lib/drive-store";
-import { DRIVE_CURRENCY } from "@/lib/drive-config";
 
 export const metadata: Metadata = {
   title: "Ambassador Leaderboard — Ahl Al-Islah",
@@ -94,9 +93,6 @@ export default async function LeaderboardPage() {
                         />
                       </div>
                     </div>
-                    <p className="text-sm font-medium text-emerald-deep shrink-0">
-                      {DRIVE_CURRENCY} {a.raisedAmount.toLocaleString()}
-                    </p>
                   </li>
                 );
               })}
