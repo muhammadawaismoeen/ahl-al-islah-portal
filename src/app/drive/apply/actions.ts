@@ -3,7 +3,7 @@
 import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
-import { reserveBook, getApplication, listApplications } from "@/lib/drive-store";
+import { reserveBook, getApplication } from "@/lib/drive-store";
 import { addDriveDeviceId, getDriveDeviceIds } from "@/lib/drive-session";
 import { notifyNewBookApplication } from "@/lib/notify";
 
@@ -64,24 +64,13 @@ export async function reserveBookAction(input: {
     }
   }
 
-  // Same-network abuse check: an incognito window or a second browser
-  // clears the device cookie above, but not the network it's on. No
-  // exceptions here either — note this is shared-IP-scoped (e.g. a
-  // campus/hostel wifi NAT), so it will also block a second genuine
-  // applicant behind the same address; that trade-off is intentional per
-  // "no one submits more than one application from a device" — a legitimate
-  // second applicant just needs a different network.
+  // The requester's IP is recorded on the application below purely as an
+  // audit field (never shown in any UI, never used to block) — a shared
+  // wifi/campus NAT puts many different real applicants behind one public
+  // IP, so "same IP" is a network signal, not a device signal, and isn't
+  // trustworthy as a duplicate check on its own. Device-level dedup above
+  // (the cookie) is the one that actually blocks repeats.
   const ip = await getClientIp();
-  if (ip) {
-    const sameDriveApps = await listApplications(input.driveId);
-    const priorFromThisIp = sameDriveApps.filter((a) => a.submittedIp === ip);
-    if (priorFromThisIp.length > 0) {
-      return {
-        ok: false,
-        error: "An application for this Drive was already submitted.",
-      };
-    }
-  }
 
   try {
     const result = await reserveBook({
