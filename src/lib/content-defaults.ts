@@ -175,13 +175,10 @@ export const DEFAULT_CONTENT: SiteContent = {
     siteNameArabic: "أهل الإصلاح",
     items: [
       { label: "About", href: "/about" },
-      { label: "Model", href: "/model" },
       { label: "Team", href: "/team" },
-      { label: "Sessions", href: "/sessions" },
       { label: "Positions", href: "/positions" },
       { label: "Roadmap", href: "/roadmap" },
       { label: "Drive", href: "/drive" },
-      { label: "Feedback", href: "/feedback" },
     ],
     ctaLabel: "Become a Member",
   },

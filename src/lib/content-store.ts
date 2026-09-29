@@ -79,11 +79,21 @@ export async function resetContent(): Promise<void> {
  * href is already present.
  */
 const REQUIRED_NAV_ROUTES: { label: string; href: string }[] = [
-  { label: "Sessions", href: "/sessions" },
-  { label: "Feedback", href: "/feedback" },
   { label: "Drive", href: "/drive" },
   { label: "Team", href: "/team" },
 ];
+
+/**
+ * Routes deliberately taken out of the public nav. Dropping them from
+ * DEFAULT_CONTENT isn't enough on its own: once the content editor has
+ * been saved even once, nav.items comes from the stored copy, which still
+ * lists them. Filtering here removes them from that stored copy too.
+ *
+ * The pages themselves still exist and still answer on their own URLs —
+ * this only hides the links. To put one back in the nav, delete its href
+ * from this list; while it is listed the content editor cannot re-add it.
+ */
+const RETIRED_NAV_ROUTES: string[] = ["/model", "/sessions", "/feedback"];
 
 /**
  * Shallow-merge stored content with defaults so newly-added fields
@@ -91,8 +101,10 @@ const REQUIRED_NAV_ROUTES: { label: string; href: string }[] = [
  */
 function mergeWithDefaults(stored: Partial<SiteContent>): SiteContent {
   const mergedNav = { ...DEFAULT_CONTENT.nav, ...(stored.nav ?? {}) };
-  // ensure portal-required routes are always present in nav.items
-  const items = [...(mergedNav.items ?? [])];
+  // drop retired routes first, then ensure portal-required ones are present
+  const items = (mergedNav.items ?? []).filter(
+    (it) => !RETIRED_NAV_ROUTES.includes(it.href)
+  );
   for (const required of REQUIRED_NAV_ROUTES) {
     if (!items.some((it) => it.href === required.href)) {
       items.push(required);
