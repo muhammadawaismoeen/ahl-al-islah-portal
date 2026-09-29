@@ -182,20 +182,35 @@ export async function createDriveItemAction(
   return { ok: true };
 }
 
+/** `remainingStock` and `remainingDelta` are mutually exclusive and both
+ *  optional: the console sends the first only when the Advisor edited the
+ *  Left box by hand, and the second when Left is just following a change
+ *  to Total. Sending neither (a per-student-limit tweak on its own) leaves
+ *  the running count untouched instead of rewriting it from a stale page. */
 export async function updateDriveItemAction(
   id: string,
-  patch: { totalStock: number; remainingStock: number; perStudentLimit: number }
-): Promise<{ ok: boolean; error?: string }> {
+  patch: {
+    totalStock: number;
+    perStudentLimit: number;
+    remainingStock?: number;
+    remainingDelta?: number;
+  }
+): Promise<{
+  ok: boolean;
+  error?: string;
+  item?: { totalStock: number; remainingStock: number; perStudentLimit: number };
+}> {
   const tier = await getFeaturePermission("drive.catalog");
   if (!canEdit(tier)) return { ok: false, error: "Not authorized." };
 
   if (
     !Number.isInteger(patch.totalStock) ||
-    !Number.isInteger(patch.remainingStock) ||
     !Number.isInteger(patch.perStudentLimit) ||
     patch.totalStock < 0 ||
-    patch.remainingStock < 0 ||
-    patch.perStudentLimit < 1
+    patch.perStudentLimit < 1 ||
+    (patch.remainingStock !== undefined &&
+      (!Number.isInteger(patch.remainingStock) || patch.remainingStock < 0)) ||
+    (patch.remainingDelta !== undefined && !Number.isInteger(patch.remainingDelta))
   ) {
     return { ok: false, error: "Please enter valid numbers." };
   }
@@ -203,7 +218,14 @@ export async function updateDriveItemAction(
   const updated = await updateDriveItemStock(id, patch);
   if (!updated) return { ok: false, error: "Item not found." };
   refresh();
-  return { ok: true };
+  return {
+    ok: true,
+    item: {
+      totalStock: updated.totalStock,
+      remainingStock: updated.remainingStock,
+      perStudentLimit: updated.perStudentLimit,
+    },
+  };
 }
 
 export async function deleteDriveItemAction(

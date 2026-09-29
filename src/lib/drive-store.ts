@@ -12,6 +12,7 @@ import {
   setCounter,
   decrCounter,
   incrCounter,
+  incrByCounter,
   claimOnce,
 } from "./redis";
 
@@ -349,17 +350,50 @@ export async function createDriveItem(input: {
 /** Admin-only stock edit — an authoritative override, so it force-sets the
  *  atomic reservation counter rather than going through reserveBook's
  *  decrement path. */
+/** Admin stock edit.
+ *
+ *  The running count is only touched when the caller says how:
+ *  `remainingStock` is an authoritative override (the Advisor typed a
+ *  number into the Left box), while `remainingDelta` is relative — it
+ *  applies on top of whatever the live counter holds right now, so raising
+ *  Total by 10 adds 10 copies without handing back any reservation that
+ *  landed while the console page sat open. Passing neither leaves the
+ *  count alone, which is what a rename or a per-student-limit change wants.
+ */
 export async function updateDriveItemStock(
   id: string,
-  patch: Partial<Pick<DriveItem, "totalStock" | "remainingStock" | "perStudentLimit" | "name">>
+  patch: Partial<Pick<DriveItem, "totalStock" | "remainingStock" | "perStudentLimit" | "name">> & {
+    remainingDelta?: number;
+  }
 ): Promise<DriveItem | null> {
   const item = await getDriveItem(id);
   if (!item) return null;
-  const updated: DriveItem = { ...item, ...patch };
-  await writeRecord(COLLECTION.items, DIR.items, updated);
-  if (isRedisStore() && patch.remainingStock !== undefined) {
-    await setCounter(COLLECTION.items, id, updated.remainingStock);
+
+  const { remainingStock, remainingDelta, ...fields } = patch;
+
+  let nextRemaining = item.remainingStock;
+  if (remainingStock !== undefined) {
+    nextRemaining = Math.max(0, remainingStock);
+    if (isRedisStore()) {
+      await setCounter(COLLECTION.items, id, nextRemaining);
+    }
+  } else if (remainingDelta) {
+    if (isRedisStore()) {
+      await ensureCounter(COLLECTION.items, id, item.remainingStock);
+      nextRemaining = await incrByCounter(COLLECTION.items, id, remainingDelta);
+      if (nextRemaining < 0) {
+        // Total was cut below what's already been claimed. Floor the
+        // counter so the next applicant isn't refused against a negative.
+        await setCounter(COLLECTION.items, id, 0);
+        nextRemaining = 0;
+      }
+    } else {
+      nextRemaining = Math.max(0, item.remainingStock + remainingDelta);
+    }
   }
+
+  const updated: DriveItem = { ...item, ...fields, remainingStock: nextRemaining };
+  await writeRecord(COLLECTION.items, DIR.items, updated);
   revalidateTag(ITEMS_TAG);
   return updated;
 }

@@ -457,20 +457,75 @@ export function ItemStockForm({
   canEdit: boolean;
 }) {
   const router = useRouter();
+  // Baseline = what the server last confirmed, which is what Total and Left
+  // are measured against. Kept in state rather than read from props so a
+  // successful save re-bases without the component remounting.
+  const [baseTotal, setBaseTotal] = useState(totalStock);
+  const [baseRemaining, setBaseRemaining] = useState(remainingStock);
   const [total, setTotal] = useState(String(totalStock));
   const [remaining, setRemaining] = useState(String(remainingStock));
   const [limit, setLimit] = useState(String(perStudentLimit));
+  // Set once the Advisor types in the Left box: from then on Left is an
+  // explicit override and stops trailing Total.
+  const [remainingEdited, setRemainingEdited] = useState(false);
   const [pending, setPending] = useState(false);
 
+  /** Adding 10 to Total means 10 more copies to give out, so Left moves with
+   *  it and the copies already claimed stay claimed. Cutting Total below
+   *  what's gone floors Left at 0. */
+  function handleTotalChange(next: string) {
+    setTotal(next);
+    if (remainingEdited) return;
+    const parsed = Number(next);
+    if (next.trim() === "" || !Number.isFinite(parsed)) return;
+    setRemaining(String(Math.max(0, baseRemaining + (parsed - baseTotal))));
+  }
+
   async function handle() {
+    // Guard before sending: an empty box reads as Number("") === 0, which
+    // would otherwise submit a Total of 0 and take Left down with it.
+    const nextTotal = Number(total);
+    const nextLimit = Number(limit);
+    const nextRemaining = Number(remaining);
+    const blank = (v: string) => v.trim() === "";
+    if (
+      blank(total) ||
+      !Number.isInteger(nextTotal) ||
+      nextTotal < 0 ||
+      blank(limit) ||
+      !Number.isInteger(nextLimit) ||
+      nextLimit < 1 ||
+      (remainingEdited &&
+        (blank(remaining) || !Number.isInteger(nextRemaining) || nextRemaining < 0))
+    ) {
+      toast.error("Please enter valid numbers.");
+      return;
+    }
+
     setPending(true);
+    const delta = nextTotal - baseTotal;
     const res = await updateDriveItemAction(itemId, {
-      totalStock: Number(total),
-      remainingStock: Number(remaining),
-      perStudentLimit: Number(limit),
+      totalStock: nextTotal,
+      perStudentLimit: nextLimit,
+      // An explicit Left edit wins. Otherwise send the Total change as a
+      // relative nudge, so a reservation made while this page was open is
+      // not rolled back — and send nothing at all when Total didn't move.
+      ...(remainingEdited
+        ? { remainingStock: nextRemaining }
+        : delta !== 0
+          ? { remainingDelta: delta }
+          : {}),
     });
     setPending(false);
     if (res.ok) {
+      if (res.item) {
+        setBaseTotal(res.item.totalStock);
+        setBaseRemaining(res.item.remainingStock);
+        setTotal(String(res.item.totalStock));
+        setRemaining(String(res.item.remainingStock));
+        setLimit(String(res.item.perStudentLimit));
+      }
+      setRemainingEdited(false);
       toast.success("Item updated.");
       router.refresh();
     } else {
@@ -490,11 +545,20 @@ export function ItemStockForm({
     <div className="flex flex-wrap items-center gap-2">
       <label className="text-[11px] text-ink/50">
         Total
-        <input type="number" min={0} value={total} onChange={(e) => setTotal(e.target.value)} className="input-field !py-1 !px-2 text-xs w-16 ml-1" />
+        <input type="number" min={0} value={total} onChange={(e) => handleTotalChange(e.target.value)} className="input-field !py-1 !px-2 text-xs w-16 ml-1" />
       </label>
       <label className="text-[11px] text-ink/50">
         Left
-        <input type="number" min={0} value={remaining} onChange={(e) => setRemaining(e.target.value)} className="input-field !py-1 !px-2 text-xs w-16 ml-1" />
+        <input
+          type="number"
+          min={0}
+          value={remaining}
+          onChange={(e) => {
+            setRemainingEdited(true);
+            setRemaining(e.target.value);
+          }}
+          className="input-field !py-1 !px-2 text-xs w-16 ml-1"
+        />
       </label>
       <label className="text-[11px] text-ink/50">
         Limit

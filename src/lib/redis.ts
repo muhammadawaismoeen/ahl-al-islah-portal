@@ -119,6 +119,17 @@ export async function incrCounter(collection: string, id: string): Promise<numbe
   return redis().incr(counterKey(collection, id));
 }
 
+/** Relative adjustment by any amount (negative shrinks) — for an admin
+ *  restock that must land on top of whatever reservations have happened
+ *  since the console page was loaded, rather than overwriting them. */
+export async function incrByCounter(
+  collection: string,
+  id: string,
+  delta: number
+): Promise<number> {
+  return redis().incrby(counterKey(collection, id), delta);
+}
+
 /**
  * One-shot atomic claim, separate from the counters above — for "has THIS
  * exact key ever been claimed" rather than a running quantity. SET ... NX
