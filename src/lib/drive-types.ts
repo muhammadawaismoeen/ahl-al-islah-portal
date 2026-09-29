@@ -111,10 +111,10 @@ export interface DriveApplication {
    *  surfaced for the Advisor to glance at in the Applicants tab. */
   flaggedReason?: string | null;
   /** Best-effort requester IP at submission time (from x-forwarded-for),
-   *  used only server-side to spot a second application from the same
-   *  network under different details — never shown in any UI. Absent on
-   *  records written before this check existed, and unset entirely in the
-   *  filesystem dev fallback (no real proxy in front of it). */
+   *  kept server-side as an audit trail only — it does not block duplicate
+   *  applications (shared campus wifi puts many real applicants on one
+   *  address) and is never shown in any UI. Absent on older records, and
+   *  unset entirely in the filesystem dev fallback (no real proxy). */
   submittedIp?: string | null;
 }
 

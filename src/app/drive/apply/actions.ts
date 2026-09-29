@@ -3,14 +3,14 @@
 import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
-import { reserveBook, getApplication, listApplications } from "@/lib/drive-store";
+import { reserveBook, getApplication } from "@/lib/drive-store";
 import { addDriveDeviceId, getDriveDeviceIds } from "@/lib/drive-session";
 import { notifyNewBookApplication } from "@/lib/notify";
 
 /** Best-effort requester IP — the first hop in x-forwarded-for is the
  *  original client on Vercel's proxy chain. Returns null in the filesystem
- *  dev fallback (no proxy in front of `next dev`), which quietly disables
- *  this specific check locally without affecting anything else. */
+ *  dev fallback (no proxy in front of `next dev`), in which case the
+ *  application is simply stored without one. */
 async function getClientIp(): Promise<string | null> {
   const h = await headers();
   const forwarded = h.get("x-forwarded-for");
@@ -75,22 +75,12 @@ export async function reserveBookAction(input: {
     }
   }
 
-  // Same-network abuse check: an incognito window or a second browser
-  // clears the device cookie above, but not the network it's on. No
-  // exceptions here either — note this is shared-IP-scoped (e.g. a
-  // campus/hostel wifi NAT), so it will also block a second genuine
-  // applicant behind the same address; that trade-off is intentional.
+  // The requester IP is still recorded on the application for the Advisor's
+  // audit trail, but it no longer blocks anything: a shared campus/hostel
+  // wifi NAT puts many genuine applicants behind one address, and turning
+  // them away was costing more real applications than it stopped duplicate
+  // ones. The device-cookie check above remains the duplicate guard.
   const ip = await getClientIp();
-  if (ip) {
-    const sameDriveApps = await listApplications(input.driveId);
-    const priorFromThisIp = sameDriveApps.filter((a) => a.submittedIp === ip);
-    if (priorFromThisIp.length > 0) {
-      return {
-        ok: false,
-        error: "An application for this Drive was already submitted.",
-      };
-    }
-  }
 
   try {
     const result = await reserveBook({
