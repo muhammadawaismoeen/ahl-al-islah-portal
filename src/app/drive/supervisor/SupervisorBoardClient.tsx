@@ -31,32 +31,36 @@ export function SupervisorPinGate() {
   }
 
   return (
-    <form onSubmit={submit} className="w-full max-w-xs text-center">
-      <Lock className="h-7 w-7 text-gold mx-auto mb-5" />
-      <h1 className="font-serif text-2xl text-white mb-1">Drive Day board</h1>
-      <p className="text-sm text-white/55 mb-7">
-        Enter the PIN your Advisor gave you.
-      </p>
-      <input
-        type="password"
-        inputMode="numeric"
-        autoFocus
-        autoComplete="off"
-        value={pin}
-        onChange={(e) => setPin(e.target.value)}
-        placeholder="••••"
-        aria-label="Supervisor PIN"
-        className="w-full text-center text-2xl tracking-[0.5em] font-mono bg-white/10 border border-white/20 rounded-xl py-3 text-white placeholder:text-white/25 focus:outline-none focus:border-gold"
-      />
-      {error && <p className="text-sm text-gold mt-3">{error}</p>}
-      <button
-        type="submit"
-        disabled={pending || pin.length < 1}
-        className="w-full mt-5 rounded-xl bg-gold text-[#17241D] font-semibold py-3 disabled:opacity-40 inline-flex items-center justify-center gap-2"
-      >
-        {pending && <Loader2 className="h-4 w-4 animate-spin" />}
-        Open the board
-      </button>
+    <form onSubmit={submit} className="w-full max-w-sm">
+      <div className="ornate-card p-8 sm:p-10 text-center">
+        <span className="inline-flex items-center justify-center h-12 w-12 rounded-full bg-emerald/10 mb-5">
+          <Lock className="h-5 w-5 text-emerald-deep" />
+        </span>
+        <h1 className="heading-serif text-2xl text-ink mb-1.5">Drive Day board</h1>
+        <p className="text-sm text-ink/55 mb-7">
+          Enter the PIN your Advisor gave you.
+        </p>
+        <input
+          type="password"
+          inputMode="numeric"
+          autoFocus
+          autoComplete="off"
+          value={pin}
+          onChange={(e) => setPin(e.target.value)}
+          placeholder="••••"
+          aria-label="Supervisor PIN"
+          className="input-field text-center text-2xl tracking-[0.45em] font-mono !py-3"
+        />
+        {error && <p className="text-sm text-danger mt-3">{error}</p>}
+        <button
+          type="submit"
+          disabled={pending || pin.length < 1}
+          className="btn-primary w-full mt-5"
+        >
+          {pending && <Loader2 className="h-4 w-4 animate-spin" />}
+          Open the board
+        </button>
+      </div>
     </form>
   );
 }
@@ -89,7 +93,7 @@ export function BoardAutoRefresh({ generatedAt }: { generatedAt: string }) {
     <button
       type="button"
       onClick={() => router.refresh()}
-      className="inline-flex items-center gap-2 text-sm text-white/45 hover:text-white/80 transition-colors"
+      className="inline-flex items-center gap-2 text-sm text-ink/40 hover:text-emerald-deep transition-colors"
     >
       <RefreshCw className="h-3.5 w-3.5" />
       {/* Rendered empty on the server: the time is formatted in the

@@ -7,7 +7,7 @@ import {
   type WingTotals,
   type SupervisorBoard,
 } from "@/lib/drive-supervisor";
-import { DRIVE_WINGS, DRIVE_WING_LABEL } from "@/lib/drive-types";
+import { DRIVE_WINGS, DRIVE_WING_LABEL, type DriveWing } from "@/lib/drive-types";
 import { SupervisorPinGate, BoardAutoRefresh } from "./SupervisorBoardClient";
 
 export const metadata: Metadata = {
@@ -16,11 +16,6 @@ export const metadata: Metadata = {
 };
 
 export const dynamic = "force-dynamic";
-
-/** Deep jewel ground rather than the portal's ivory: this page is meant to
- *  be projected or left on a laptop across a bright hall, where large light
- *  figures on a dark field read from the back of the room. */
-const GROUND = "min-h-screen bg-[#0C1A14] text-white";
 
 export default async function SupervisorBoardPage() {
   // An admin already signed into the console never has to know the PIN —
@@ -33,20 +28,20 @@ export default async function SupervisorBoardPage() {
 
   if (!signedIn && !pinSet) {
     return (
-      <main className={`${GROUND} flex items-center justify-center p-6`}>
-        <p className="text-center text-white/55 max-w-sm">
+      <Centered>
+        <p className="text-ink/55 max-w-sm">
           The Drive Day board is switched off. An Owner can turn it on from
           Admin → Drive → Payment Settings.
         </p>
-      </main>
+      </Centered>
     );
   }
 
   if (!signedIn && !hasCookie) {
     return (
-      <main className={`${GROUND} flex items-center justify-center p-6`}>
+      <Centered>
         <SupervisorPinGate />
-      </main>
+      </Centered>
     );
   }
 
@@ -54,24 +49,20 @@ export default async function SupervisorBoardPage() {
 
   if (!board) {
     return (
-      <main className={`${GROUND} flex items-center justify-center p-6`}>
-        <p className="text-center text-white/55">No drive to report on yet.</p>
-      </main>
+      <Centered>
+        <p className="text-ink/55">No drive to report on yet.</p>
+      </Centered>
     );
   }
 
   return (
-    <main className={`${GROUND} px-5 py-7 sm:px-8 sm:py-10`}>
-      <div className="max-w-6xl mx-auto">
+    <main className="min-h-screen bg-bg">
+      <div className="max-w-6xl mx-auto px-5 py-8 sm:px-8 sm:py-12">
         <Header board={board} />
 
-        <div className="grid sm:grid-cols-2 gap-5 mb-8">
+        <div className="grid sm:grid-cols-2 gap-5 sm:gap-6 mb-8">
           {DRIVE_WINGS.map((wing) => (
-            <WingCard
-              key={wing}
-              label={DRIVE_WING_LABEL[wing]}
-              totals={board.wings[wing]}
-            />
+            <WingCard key={wing} wing={wing} totals={board.wings[wing]} />
           ))}
         </div>
 
@@ -83,44 +74,89 @@ export default async function SupervisorBoardPage() {
   );
 }
 
-function Header({ board }: { board: SupervisorBoard }) {
+function Centered({ children }: { children: React.ReactNode }) {
   return (
-    <header className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3 mb-7">
-      <div>
-        <h1 className="font-serif text-2xl sm:text-3xl text-white leading-tight">
-          {board.driveName}
-        </h1>
-        <p className="text-sm text-white/45 mt-1">{board.pickupLocation}</p>
-      </div>
-      <div className="flex items-center gap-5">
-        <div className="text-right">
-          <p className="text-[0.7rem] uppercase tracking-wider text-white/40">
-            In the hall
-          </p>
-          <p className="text-2xl font-semibold tabular-nums text-white">
-            {board.overall.registered - board.overall.handedOver}
-          </p>
+    <main className="min-h-screen bg-bg flex items-center justify-center p-6 text-center">
+      {children}
+    </main>
+  );
+}
+
+function Header({ board }: { board: SupervisorBoard }) {
+  const inHall = board.overall.registered - board.overall.handedOver;
+  return (
+    <header className="mb-8">
+      <div className="flex flex-wrap items-start justify-between gap-x-8 gap-y-4">
+        <div>
+          <span className="section-eyebrow mb-3">Drive Day</span>
+          <h1 className="heading-serif text-3xl sm:text-4xl text-ink leading-tight">
+            {board.driveName}
+          </h1>
+          <p className="text-sm text-ink/50 mt-1.5">{board.pickupLocation}</p>
         </div>
-        <BoardAutoRefresh generatedAt={board.generatedAt} />
+
+        <div className="flex items-center gap-6">
+          <div className="text-right">
+            <p className="text-[0.68rem] uppercase tracking-widest text-ink/45 mb-1">
+              In the hall now
+            </p>
+            <p className="heading-serif text-4xl sm:text-5xl text-emerald-deep tabular-nums leading-none">
+              {inHall}
+            </p>
+          </div>
+          <BoardAutoRefresh generatedAt={board.generatedAt} />
+        </div>
       </div>
+      <div className="h-px bg-border mt-7" />
     </header>
   );
 }
 
-function WingCard({ label, totals }: { label: string; totals: WingTotals }) {
+/** Brothers read emerald, Sisters gold — the portal's two jewel accents,
+ *  so the two columns are told apart at a glance from across the hall
+ *  without either reading as the "primary" one. */
+const WING_ACCENT: Record<DriveWing, { bar: string; title: string }> = {
+  male: { bar: "bg-emerald-deep", title: "text-emerald-deep" },
+  female: { bar: "bg-amber", title: "text-amber" },
+};
+
+function WingCard({ wing, totals }: { wing: DriveWing; totals: WingTotals }) {
+  const accent = WING_ACCENT[wing];
+  const served = totals.booked
+    ? Math.round((totals.handedOver / totals.booked) * 100)
+    : 0;
+
   return (
-    <section className="rounded-2xl border border-white/10 bg-white/[0.04] p-6">
-      <div className="flex items-baseline justify-between mb-6">
-        <h2 className="font-serif text-xl text-gold">{label}</h2>
-        <p className="text-sm text-white/40 tabular-nums">
-          {totals.booked} booked
-        </p>
+    <section className="ornate-card overflow-hidden">
+      <div className={`h-1 ${accent.bar}`} />
+      <div className="p-6 sm:p-7">
+        <div className="flex items-baseline justify-between mb-6">
+          <h2 className={`heading-serif text-2xl ${accent.title}`}>
+            {DRIVE_WING_LABEL[wing]}
+          </h2>
+          <p className="text-sm text-ink/45 tabular-nums">
+            {totals.booked} booked
+          </p>
+        </div>
+
+        <dl className="grid grid-cols-3 gap-4 text-center mb-7">
+          <Figure label="Registered" value={totals.registered} tone="ink" />
+          <Figure label="Handed over" value={totals.handedOver} tone="accent" accent={accent.title} />
+          <Figure label="Yet to arrive" value={totals.yetToArrive} tone="dim" />
+        </dl>
+
+        <div
+          className="h-1.5 rounded-full bg-surface-2 overflow-hidden"
+          role="img"
+          aria-label={`${served}% of ${DRIVE_WING_LABEL[wing]} served`}
+        >
+          <div
+            className={`h-full rounded-full ${accent.bar} transition-[width] duration-500`}
+            style={{ width: `${served}%` }}
+          />
+        </div>
+        <p className="text-xs text-ink/40 mt-2 tabular-nums">{served}% served</p>
       </div>
-      <dl className="grid grid-cols-3 gap-3 text-center">
-        <Figure label="Registered" value={totals.registered} tone="bright" />
-        <Figure label="Handed over" value={totals.handedOver} tone="gold" />
-        <Figure label="Yet to arrive" value={totals.yetToArrive} tone="dim" />
-      </dl>
     </section>
   );
 }
@@ -129,25 +165,23 @@ function Figure({
   label,
   value,
   tone,
+  accent,
 }: {
   label: string;
   value: number;
-  tone: "bright" | "gold" | "dim";
+  tone: "ink" | "accent" | "dim";
+  accent?: string;
 }) {
   const color =
-    tone === "gold"
-      ? "text-gold"
-      : tone === "dim"
-        ? "text-white/45"
-        : "text-white";
+    tone === "accent" ? (accent ?? "text-ink") : tone === "dim" ? "text-ink/35" : "text-ink";
   return (
     <div>
       <dd
-        className={`font-serif text-4xl sm:text-5xl tabular-nums leading-none ${color}`}
+        className={`heading-serif text-4xl sm:text-5xl tabular-nums leading-none ${color}`}
       >
         {value}
       </dd>
-      <dt className="text-[0.7rem] uppercase tracking-wider text-white/40 mt-2">
+      <dt className="text-[0.68rem] uppercase tracking-widest text-ink/45 mt-2.5">
         {label}
       </dt>
     </div>
@@ -159,13 +193,13 @@ function Figure({
 function UnassignedNotice({ board }: { board: SupervisorBoard }) {
   const { booked, registered, handedOver } = board.unassigned;
   return (
-    <p className="rounded-xl border border-gold/30 bg-gold/10 px-5 py-3 text-sm text-gold mb-8">
+    <p className="rounded-xl border border-amber/30 bg-amber/[0.07] px-5 py-3.5 text-sm text-amber mb-8 leading-relaxed">
       <strong className="font-semibold tabular-nums">{booked}</strong>{" "}
       {booked === 1 ? "applicant has" : "applicants have"} no wing recorded, so{" "}
       {booked === 1 ? "it isn't" : "they aren't"} counted above —{" "}
-      <span className="tabular-nums">{registered}</span> registered,{" "}
-      <span className="tabular-nums">{handedOver}</span> handed over. Set their
-      wing in Admin → Drive → Applicants.
+      <span className="tabular-nums font-medium">{registered}</span> registered,{" "}
+      <span className="tabular-nums font-medium">{handedOver}</span> handed
+      over. Set their wing in Admin → Drive → Applicants.
     </p>
   );
 }
@@ -173,39 +207,36 @@ function UnassignedNotice({ board }: { board: SupervisorBoard }) {
 function BookTable({ board }: { board: SupervisorBoard }) {
   if (board.books.length === 0) return null;
   return (
-    <section className="rounded-2xl border border-white/10 bg-white/[0.04] overflow-hidden">
+    <section className="ornate-card overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full text-left">
           <thead>
-            <tr className="text-[0.7rem] uppercase tracking-wider text-white/40 border-b border-white/10">
-              <th className="px-5 py-3 font-medium">Book</th>
-              <th className="px-5 py-3 font-medium text-right">Booked</th>
-              <th className="px-5 py-3 font-medium text-right">Given</th>
-              <th className="px-5 py-3 font-medium text-right">Left</th>
+            <tr className="bg-surface-2/60 text-[0.68rem] uppercase tracking-widest text-ink/45">
+              <th className="px-5 sm:px-7 py-3.5 font-medium">Book</th>
+              <th className="px-5 py-3.5 font-medium text-right">Booked</th>
+              <th className="px-5 py-3.5 font-medium text-right">Given</th>
+              <th className="px-5 sm:px-7 py-3.5 font-medium text-right">Left</th>
             </tr>
           </thead>
           <tbody>
             {board.books.map((book) => (
-              <tr
-                key={book.id}
-                className="border-b border-white/[0.07] last:border-0"
-              >
-                <td className="px-5 py-3.5 text-base sm:text-lg text-white">
+              <tr key={book.id} className="border-t border-border/70">
+                <td className="px-5 sm:px-7 py-4 text-base sm:text-lg text-ink font-medium">
                   {book.name}
                 </td>
-                <td className="px-5 py-3.5 text-right text-lg tabular-nums text-white/70">
+                <td className="px-5 py-4 text-right text-lg tabular-nums text-ink/55">
                   {book.booked}
                 </td>
-                <td className="px-5 py-3.5 text-right text-lg tabular-nums text-gold">
+                <td className="px-5 py-4 text-right text-lg tabular-nums text-emerald-deep font-medium">
                   {book.given}
                 </td>
-                <td className="px-5 py-3.5 text-right">
+                <td className="px-5 sm:px-7 py-4 text-right">
                   {book.left === 0 ? (
-                    <span className="inline-block rounded-md bg-danger/25 text-[#F3A49C] text-xs font-semibold uppercase tracking-wider px-2.5 py-1">
+                    <span className="inline-block rounded-full border border-danger/30 bg-danger/10 text-danger text-[0.68rem] font-semibold uppercase tracking-widest px-3 py-1">
                       Out
                     </span>
                   ) : (
-                    <span className="text-lg tabular-nums text-white">
+                    <span className="text-lg tabular-nums text-ink">
                       {book.left}
                     </span>
                   )}
