@@ -137,9 +137,6 @@ function Brand({
       )}
       {!collapsed && (
         <span className="min-w-0">
-          <span className="arabic-text block text-emerald-deep text-[11px] leading-none">
-            لوحة الإدارة
-          </span>
           <span className="heading-serif block text-base font-semibold text-emerald-deep leading-tight truncate">
             Admin
           </span>
