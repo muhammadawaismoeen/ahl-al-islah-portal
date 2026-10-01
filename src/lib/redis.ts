@@ -144,3 +144,13 @@ export async function claimOnce(collection: string, id: string): Promise<boolean
   const result = await redis().set(claimKey(collection, id), "1", { nx: true });
   return result === "OK";
 }
+
+/** Hands a claim back when the work it was guarding didn't go ahead after
+ *  all — without this, a caller that won the claim and then bailed out
+ *  would be locked out of ever retrying. */
+export async function releaseClaim(
+  collection: string,
+  id: string
+): Promise<void> {
+  await redis().del(claimKey(collection, id));
+}

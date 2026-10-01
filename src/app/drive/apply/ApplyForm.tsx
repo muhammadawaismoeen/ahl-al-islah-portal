@@ -59,26 +59,41 @@ export function ApplyForm({
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="grid sm:grid-cols-2 gap-4">
         {items.map((item) => {
-          const isWaitlist = item.remainingStock <= 0;
+          const outOfStock = item.remainingStock <= 0;
           const selected = selectedItemId === item.id;
           return (
             <button
               key={item.id}
               type="button"
-              onClick={() => setSelectedItemId(item.id)}
+              disabled={outOfStock}
+              aria-disabled={outOfStock}
+              onClick={() => {
+                if (outOfStock) return;
+                setSelectedItemId(item.id);
+              }}
               className={`ornate-card p-5 text-left transition ${
-                selected
-                  ? "ring-2 ring-emerald-deep border-emerald-deep/40"
-                  : "hover:border-emerald-deep/30"
+                outOfStock
+                  ? "opacity-60 cursor-not-allowed"
+                  : selected
+                    ? "ring-2 ring-emerald-deep border-emerald-deep/40"
+                    : "hover:border-emerald-deep/30"
               }`}
             >
               <div className="flex items-start justify-between gap-2 mb-2">
-                <div className="inline-flex items-center justify-center h-9 w-9 rounded-xl bg-emerald-deep/10 shrink-0">
-                  <BookOpen className="h-4.5 w-4.5 text-emerald-deep" />
+                <div
+                  className={`inline-flex items-center justify-center h-9 w-9 rounded-xl shrink-0 ${
+                    outOfStock ? "bg-ink/10" : "bg-emerald-deep/10"
+                  }`}
+                >
+                  <BookOpen
+                    className={`h-4.5 w-4.5 ${
+                      outOfStock ? "text-ink/40" : "text-emerald-deep"
+                    }`}
+                  />
                 </div>
-                {isWaitlist ? (
-                  <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-amber/15 text-amber">
-                    Waitlist
+                {outOfStock ? (
+                  <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-danger/10 text-danger">
+                    Out of stock
                   </span>
                 ) : (
                   <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-emerald-deep/15 text-emerald-deep">
@@ -88,9 +103,11 @@ export function ApplyForm({
               </div>
               <p className="font-medium text-sm text-ink">{item.name}</p>
               <p className="mt-1 text-xs text-ink/50">
-                Limit {item.perStudentLimit} per student
+                {outOfStock
+                  ? "Every copy is booked — check back after the next restock."
+                  : `Limit ${item.perStudentLimit} per student`}
               </p>
-              {selected && (
+              {selected && !outOfStock && (
                 <p className="mt-2 inline-flex items-center gap-1 text-xs text-emerald-deep font-medium">
                   <CheckCircle2 className="h-3.5 w-3.5" /> Selected
                 </p>

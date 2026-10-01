@@ -14,6 +14,7 @@ import {
   incrCounter,
   incrByCounter,
   claimOnce,
+  releaseClaim,
 } from "./redis";
 
 export type {
@@ -518,9 +519,11 @@ function detectPossibleDuplicate(
  *  - the item's per-student limit (by normalized contact, the closest proxy
  *    to "student identity" available without an account system)
  *  - one active application per item per applicant
- * Returns the created application: pending-review (awaiting Advisor
- * confirmation) if stock is available, waitlisted otherwise — decrementing
- * remaining stock in the pending-review case so it isn't double-reserved.
+ * Returns the created application as pending-review, awaiting Advisor
+ * confirmation, and decrements remaining stock so the copy isn't
+ * double-reserved. An item with nothing left can't be booked at all — the
+ * request is refused rather than queued, so nobody leaves with a ticket for
+ * a book that isn't there.
  */
 export async function reserveBook(input: {
   driveId: string;
@@ -543,6 +546,13 @@ export async function reserveBook(input: {
   const item = await getDriveItem(input.itemId);
   if (!item || item.driveId !== input.driveId) {
     return { ok: false, error: "That catalog item no longer exists." };
+  }
+
+  // Fast path for an item that was already empty when the page loaded. The
+  // atomic decrement further down still guards the narrower race where the
+  // last copy goes between here and there.
+  if (item.remainingStock <= 0) {
+    return { ok: false, error: `${item.name} is out of stock.` };
   }
 
   const contact = normalizeContact(input.applicantContact);
@@ -602,20 +612,22 @@ export async function reserveBook(input: {
   // Atomic decrement so two concurrent applicants can't both read the same
   // pre-decrement stock count and both win the last copy (see redis.ts).
   // Filesystem dev fallback has no concurrent writers, so a plain read is fine.
-  let hasStock: boolean;
-  let remainingAfter = item.remainingStock;
+  let remainingAfter = item.remainingStock - 1;
   if (isRedisStore()) {
     await ensureCounter(COLLECTION.items, item.id, item.remainingStock);
     const decremented = await decrCounter(COLLECTION.items, item.id);
-    hasStock = decremented >= 0;
-    if (hasStock) {
-      remainingAfter = decremented;
-    } else {
+    if (decremented < 0) {
       await incrCounter(COLLECTION.items, item.id); // undo — no stock consumed
+      // Someone else took the last copy while this request was in flight.
+      // Hand the duplicate-guard claim back, or this applicant could never
+      // retry once the item is restocked.
+      await releaseClaim(
+        COLLECTION.applications,
+        `claim:${input.driveId}:${input.itemId}:${email}`
+      );
+      return { ok: false, error: `${item.name} is out of stock.` };
     }
-  } else {
-    hasStock = item.remainingStock > 0;
-    if (hasStock) remainingAfter = item.remainingStock - 1;
+    remainingAfter = decremented;
   }
 
   const application: DriveApplication = {
@@ -628,7 +640,7 @@ export async function reserveBook(input: {
     applicantEmail: input.applicantEmail,
     applicantDepartment: input.applicantDepartment,
     applicantYearOfStudy: input.applicantYearOfStudy,
-    status: hasStock ? "pending-review" : "waitlisted",
+    status: "pending-review",
     pickupCode: genCode("BK"),
     createdAt: now,
     updatedAt: now,
@@ -636,15 +648,13 @@ export async function reserveBook(input: {
     submittedIp: input.submittedIp ?? null,
   };
 
-  if (hasStock) {
-    // Direct write, not updateDriveItemStock — that would force-set the
-    // counter and could clobber a concurrent decrement that landed after ours.
-    await writeRecord(COLLECTION.items, DIR.items, {
-      ...item,
-      remainingStock: remainingAfter,
-    });
-    revalidateTag(ITEMS_TAG);
-  }
+  // Direct write, not updateDriveItemStock — that would force-set the
+  // counter and could clobber a concurrent decrement that landed after ours.
+  await writeRecord(COLLECTION.items, DIR.items, {
+    ...item,
+    remainingStock: remainingAfter,
+  });
+  revalidateTag(ITEMS_TAG);
 
   await writeRecord(COLLECTION.applications, DIR.applications, application);
   return { ok: true, application };

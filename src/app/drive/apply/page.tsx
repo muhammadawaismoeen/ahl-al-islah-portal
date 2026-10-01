@@ -77,6 +77,20 @@ export default async function DriveApplyPage() {
                 This drive&apos;s catalog isn&apos;t published yet — check back soon.
               </p>
             </div>
+          ) : items.every((i) => i.remainingStock <= 0) ? (
+            <div className="ornate-card p-8 text-center">
+              <span className="inline-block text-[10px] font-medium px-2 py-0.5 rounded-full bg-danger/10 text-danger mb-3">
+                Out of stock
+              </span>
+              <p className="text-sm text-ink/60">
+                Every copy in this drive is booked right now. Check back after
+                the next restock, or{" "}
+                <Link href="/drive/donate" className="text-emerald-deep hover:underline">
+                  donate to fund more copies
+                </Link>
+                .
+              </p>
+            </div>
           ) : (
             <ApplyForm
               driveId={drive.id}
