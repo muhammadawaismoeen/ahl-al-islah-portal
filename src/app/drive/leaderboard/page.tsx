@@ -5,8 +5,6 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { getContent } from "@/lib/content-store";
 import { listAmbassadors, getActiveDrive } from "@/lib/drive-store";
-import { computeGoalProgress } from "@/lib/drive-goal";
-import { DRIVE_CURRENCY } from "@/lib/drive-config";
 
 export const metadata: Metadata = {
   title: "Ambassador Leaderboard — Ahl Al-Islah",
@@ -21,9 +19,6 @@ export default async function LeaderboardPage() {
   const ranked = ambassadors
     .filter((a) => a.status === "approved")
     .sort((a, b) => b.raisedAmount - a.raisedAmount);
-
-  const { goal, goalMet } = computeGoalProgress(drive);
-  const ambassadorTotal = ranked.reduce((sum, a) => sum + a.raisedAmount, 0);
 
   return (
     <>
@@ -49,27 +44,6 @@ export default async function LeaderboardPage() {
               donations raised.
             </p>
           </div>
-
-          {goalMet && (
-            <div className="animate-fade-up rounded-xl border border-gold/45 bg-gradient-to-r from-gold/15 to-emerald/10 px-5 py-4 mb-6 flex items-center gap-4">
-              <span
-                aria-hidden
-                className="font-arabic text-amber text-2xl leading-none shrink-0"
-              >
-                الحمد لله
-              </span>
-              <div className="min-w-0">
-                <p className="heading-serif font-semibold text-ink text-base">
-                  The Drive reached its goal.
-                </p>
-                <p className="mt-0.5 text-sm text-ink/60 leading-relaxed">
-                  Ambassadors below raised {DRIVE_CURRENCY}{" "}
-                  {ambassadorTotal.toLocaleString()} of the {DRIVE_CURRENCY}{" "}
-                  {goal.toLocaleString()} target.
-                </p>
-              </div>
-            </div>
-          )}
 
           {ranked.length === 0 ? (
             <div className="ornate-card p-10 text-center">
