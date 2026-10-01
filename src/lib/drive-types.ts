@@ -35,6 +35,26 @@ export const DRIVE_YEAR_OF_STUDY_OPTIONS = [
   "Other",
 ] as const;
 
+/** Which wing of the department an applicant belongs to. Stored as
+ *  "male"/"female" to match the `wing` field membership submissions and
+ *  head applications already use, so the whole portal speaks one dialect;
+ *  every user-facing surface renders it through the label maps below. */
+export type DriveWing = "male" | "female";
+
+export const DRIVE_WINGS: DriveWing[] = ["male", "female"];
+
+/** Plural, for counts and column headings: "Brothers: 31". */
+export const DRIVE_WING_LABEL: Record<DriveWing, string> = {
+  male: "Brothers",
+  female: "Sisters",
+};
+
+/** Singular, for a student choosing on their own behalf. */
+export const DRIVE_WING_SELF_LABEL: Record<DriveWing, string> = {
+  male: "Brother",
+  female: "Sister",
+};
+
 export interface Drive {
   id: string;
   name: string;
@@ -103,6 +123,10 @@ export interface DriveApplication {
    *  withApplicationDefaults), which default them to "". */
   applicantDepartment?: string;
   applicantYearOfStudy?: string;
+  /** Absent on every application submitted before the apply form asked for
+   *  it — those are backfilled by hand from the Applicants tab, so treat
+   *  undefined as "not yet recorded", never as a default wing. */
+  applicantGender?: DriveWing;
   status: ApplicationStatus;
   /** Shown as a QR code on the ticket page and matched at the pickup table —
    *  a ticket number, not a secret credential, so it's stored in plaintext. */
@@ -229,4 +253,9 @@ export interface DriveSettings {
    *  suggested Ihsan-level target, e.g. 20 = own target x 1.2. */
   ihsanPercentage: number;
   paymentMethods: PaymentMethod[];
+  /** Unlocks the read-only Drive Day supervisor board at /drive/supervisor.
+   *  Stored in plaintext on purpose: an Owner has to be able to read it off
+   *  the screen to hand to a supervisor, and it guards a page with no
+   *  personal data on it — counts and stock only. Absent = board disabled. */
+  supervisorPin?: string;
 }

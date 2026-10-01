@@ -25,6 +25,7 @@ import { toast } from "sonner";
 import { formatDate } from "@/lib/utils";
 import { DRIVE_CURRENCY } from "@/lib/drive-config";
 import type { Drive, DriveApplication, DriveItem, Donation } from "@/lib/drive-types";
+import { DRIVE_WINGS, DRIVE_WING_LABEL } from "@/lib/drive-types";
 import type { DeskScanResult, DeskSearchHit } from "./actions";
 import { DeleteButton } from "@/components/admin/DeleteButton";
 import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
@@ -43,6 +44,7 @@ import {
   handOverAtDeskAction,
   searchApplicationsForDeskAction,
   confirmApplicationAction,
+  setApplicationGenderAction,
   deleteApplicationAction,
   reviewDonationAction,
   deleteDonationAction,
@@ -697,6 +699,73 @@ export function DeleteDriveItemButton({ itemId, itemName }: { itemId: string; it
   );
 }
 
+/**
+ * Sets the wing on one applicant. Exists because the apply form only
+ * started asking in the middle of a live drive — every application taken
+ * before that has no wing, and the supervisor's Brothers/Sisters totals
+ * can't be trusted until each one is filled in by hand here.
+ *
+ * Shows "Not set" as a real, selectable-from state rather than quietly
+ * defaulting to a wing, so an unfilled record is visibly unfilled.
+ */
+function ApplicantGenderSelect({
+  application,
+  canEdit,
+}: {
+  application: DriveApplication;
+  canEdit: boolean;
+}) {
+  const router = useRouter();
+  const [pending, setPending] = useState(false);
+  const current = application.applicantGender;
+
+  if (!canEdit) {
+    return (
+      <span
+        className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${
+          current ? "bg-sapphire/15 text-sapphire" : "bg-danger/10 text-danger"
+        }`}
+      >
+        {current ? DRIVE_WING_LABEL[current] : "Wing not set"}
+      </span>
+    );
+  }
+
+  async function handleChange(next: string) {
+    if (!next) return;
+    setPending(true);
+    const res = await setApplicationGenderAction(application.id, next);
+    setPending(false);
+    if (res.ok) {
+      toast.success(`${application.applicantName} set to ${DRIVE_WING_LABEL[next as "male" | "female"]}.`);
+      router.refresh();
+    } else {
+      toast.error(res.error ?? "Couldn't set that.");
+    }
+  }
+
+  return (
+    <select
+      value={current ?? ""}
+      disabled={pending}
+      onChange={(e) => handleChange(e.target.value)}
+      aria-label={`Wing for ${application.applicantName}`}
+      className={`input-field !py-1 !text-xs w-auto ${
+        current ? "" : "!border-danger/40 !text-danger"
+      }`}
+    >
+      <option value="" disabled>
+        Not set
+      </option>
+      {DRIVE_WINGS.map((wing) => (
+        <option key={wing} value={wing}>
+          {DRIVE_WING_LABEL[wing]}
+        </option>
+      ))}
+    </select>
+  );
+}
+
 export const APP_STATUS_STYLE: Record<DriveApplication["status"], string> = {
   "pending-review": "bg-sapphire/15 text-sapphire",
   confirmed: "bg-emerald-deep/15 text-emerald-deep",
@@ -891,7 +960,16 @@ export function ApplicantsPanel({
 }) {
   const [query, setQuery] = useState("");
   const [selectedItemId, setSelectedItemId] = useState<string>("all");
+  const [onlyMissingWing, setOnlyMissingWing] = useState(false);
   const itemById = useMemo(() => new Map(items.map((i) => [i.id, i])), [items]);
+
+  // The apply form only started asking for the wing mid-drive, so the
+  // backfill is a finite, shrinking pile. Surfacing the count turns it into
+  // a task with a visible end rather than a hunt through the whole list.
+  const missingWingCount = useMemo(
+    () => applications.filter((a) => !a.applicantGender).length,
+    [applications]
+  );
 
   // Items sharing a name across different drives get the drive name
   // appended to their tab label so the two don't look like one tab.
@@ -915,10 +993,13 @@ export function ApplicantsPanel({
           a.applicantContact.toLowerCase().includes(q)
       )
     : applications;
-  const filtered =
+  const byItem =
     selectedItemId === "all"
       ? bySearch
       : bySearch.filter((a) => a.itemId === selectedItemId);
+  const filtered = onlyMissingWing
+    ? byItem.filter((a) => !a.applicantGender)
+    : byItem;
 
   return (
     <div className="ornate-card p-2">
@@ -962,7 +1043,7 @@ export function ApplicantsPanel({
           })}
         </div>
       </div>
-      <div className="p-3 pb-1">
+      <div className="p-3 pb-1 space-y-2">
         <div className="relative">
           <Search className="h-3.5 w-3.5 text-ink/40 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
@@ -973,6 +1054,22 @@ export function ApplicantsPanel({
             className="input-field !pl-9 text-sm"
           />
         </div>
+        {missingWingCount > 0 && (
+          <button
+            type="button"
+            onClick={() => setOnlyMissingWing((v) => !v)}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition ${
+              onlyMissingWing
+                ? "bg-danger text-white"
+                : "bg-danger/10 text-danger hover:bg-danger/20"
+            }`}
+          >
+            <AlertTriangle className="h-3.5 w-3.5" />
+            {onlyMissingWing
+              ? `Showing ${missingWingCount} with no wing set`
+              : `${missingWingCount} still need a wing`}
+          </button>
+        )}
       </div>
       {filtered.length === 0 ? (
         <p className="p-10 text-sm text-ink/60 text-center">
@@ -1019,6 +1116,7 @@ export function ApplicantsPanel({
                   </p>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
+                  <ApplicantGenderSelect application={a} canEdit={canEdit} />
                   <span
                     className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${APP_STATUS_STYLE[a.status]}`}
                   >

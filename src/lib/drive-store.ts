@@ -23,6 +23,7 @@ export type {
   DriveItem,
   DriveApplication,
   ApplicationStatus,
+  DriveWing,
   Donation,
   DonationStatus,
   DriveStats,
@@ -35,6 +36,7 @@ import type {
   DriveItem,
   DriveApplication,
   ApplicationStatus,
+  DriveWing,
   Donation,
   DriveStats,
   Ambassador,
@@ -421,6 +423,27 @@ function withApplicationDefaults(app: DriveApplication): DriveApplication {
   };
 }
 
+/** Backfills the wing on an application submitted before the apply form
+ *  asked for one. Deliberately a plain setter with no status conditions:
+ *  it is bookkeeping the Advisor does from the Applicants tab, and it must
+ *  stay available on a ticket that has already been handed over, since the
+ *  supervisor totals count those too. */
+export async function setApplicationGender(
+  id: string,
+  gender: DriveWing
+): Promise<{ ok: true; application: DriveApplication } | { ok: false; error: string }> {
+  const application = await getApplication(id);
+  if (!application) return { ok: false, error: "Application not found." };
+
+  const updated: DriveApplication = {
+    ...application,
+    applicantGender: gender,
+    updatedAt: new Date().toISOString(),
+  };
+  await writeRecord(COLLECTION.applications, DIR.applications, updated);
+  return { ok: true, application: updated };
+}
+
 export async function listApplications(
   driveId?: string
 ): Promise<DriveApplication[]> {
@@ -533,6 +556,7 @@ export async function reserveBook(input: {
   applicantEmail: string;
   applicantDepartment: string;
   applicantYearOfStudy: string;
+  applicantGender: DriveWing;
   submittedIp?: string | null;
 }): Promise<
   | { ok: true; application: DriveApplication }
@@ -640,6 +664,7 @@ export async function reserveBook(input: {
     applicantEmail: input.applicantEmail,
     applicantDepartment: input.applicantDepartment,
     applicantYearOfStudy: input.applicantYearOfStudy,
+    applicantGender: input.applicantGender,
     status: "pending-review",
     pickupCode: genCode("BK"),
     createdAt: now,

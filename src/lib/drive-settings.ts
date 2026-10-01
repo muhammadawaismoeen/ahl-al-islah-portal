@@ -73,6 +73,19 @@ export async function setIhsanPercentage(value: number): Promise<DriveSettings> 
   return updated;
 }
 
+/** Sets or clears the supervisor board PIN. An empty string disables the
+ *  board outright rather than leaving it open. */
+export async function setSupervisorPin(pin: string): Promise<DriveSettings> {
+  const current = await getDriveSettings();
+  const trimmed = pin.trim();
+  const updated: DriveSettings = {
+    ...current,
+    supervisorPin: trimmed || undefined,
+  };
+  await writeSettings(updated);
+  return updated;
+}
+
 export async function addPaymentMethod(input: {
   kind: PaymentMethodKind;
   label: string;
@@ -121,6 +134,10 @@ function mergeWithDefaults(stored: Partial<DriveSettings>): DriveSettings {
     paymentMethods: Array.isArray(stored.paymentMethods)
       ? stored.paymentMethods
       : DEFAULT_SETTINGS.paymentMethods,
+    supervisorPin:
+      typeof stored.supervisorPin === "string" && stored.supervisorPin.trim()
+        ? stored.supervisorPin
+        : undefined,
   };
 }
 

@@ -11,7 +11,7 @@ import {
   Award,
   Wallet,
 } from "lucide-react";
-import { isAuthenticated, getFeaturePermissions } from "@/app/admin/actions";
+import { isAuthenticated, getFeaturePermissions, getAdminRole } from "@/app/admin/actions";
 import { canRead, canEdit, canDelete } from "@/lib/admin-permissions";
 import type { AdminFeature, PermissionTier } from "@/lib/admin-types";
 import { AdminShell } from "@/components/admin/AdminShell";
@@ -25,6 +25,7 @@ import {
   listAmbassadors,
 } from "@/lib/drive-store";
 import { getDriveSettings } from "@/lib/drive-settings";
+import type { DriveSettings } from "@/lib/drive-types";
 import { DRIVE_CURRENCY } from "@/lib/drive-config";
 import { formatDriveDateLabel } from "@/lib/utils";
 import {
@@ -45,6 +46,7 @@ import {
 import {
   AmbassadorsPanel,
   IhsanPercentageForm,
+  SupervisorPinForm,
   AddPaymentMethodForm,
   PaymentMethodsList,
 } from "./AmbassadorPaymentPanels";
@@ -147,7 +149,9 @@ export default async function AdminDrivePage({
       tab === "applicants" ? listApplications() : [],
       needsDonations ? listDonations() : [],
       needsAmbassadors ? listAmbassadors() : [],
-      tab === "payments" ? getDriveSettings() : { ihsanPercentage: 0, paymentMethods: [] },
+      tab === "payments"
+        ? getDriveSettings()
+        : ({ ihsanPercentage: 0, paymentMethods: [] } as DriveSettings),
     ]);
   const driveById = new Map(drives.map((d) => [d.id, d]));
   const driveNameById = Object.fromEntries(drives.map((d) => [d.id, d.name]));
@@ -337,6 +341,10 @@ export default async function AdminDrivePage({
                 <IhsanPercentageForm
                   ihsanPercentage={driveSettings.ihsanPercentage}
                   canEdit={tabCanEdit}
+                />
+                <SupervisorPinForm
+                  supervisorPin={driveSettings.supervisorPin}
+                  isOwner={(await getAdminRole()) === "owner"}
                 />
               </div>
             </div>

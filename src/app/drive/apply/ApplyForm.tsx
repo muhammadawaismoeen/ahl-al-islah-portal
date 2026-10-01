@@ -7,6 +7,8 @@ import { toast } from "sonner";
 import {
   DRIVE_DEPARTMENT_OPTIONS,
   DRIVE_YEAR_OF_STUDY_OPTIONS,
+  DRIVE_WINGS,
+  DRIVE_WING_SELF_LABEL,
   type DriveItem,
 } from "@/lib/drive-types";
 import { reserveBookAction } from "./actions";
@@ -26,6 +28,7 @@ export function ApplyForm({
   const [contact, setContact] = useState("");
   const [department, setDepartment] = useState("");
   const [yearOfStudy, setYearOfStudy] = useState("");
+  const [gender, setGender] = useState("");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -44,6 +47,7 @@ export function ApplyForm({
       applicantContact: contact,
       applicantDepartment: department,
       applicantYearOfStudy: yearOfStudy,
+      applicantGender: gender,
     });
     setPending(false);
     if (res.ok && res.applicationId) {
@@ -163,6 +167,27 @@ export function ApplyForm({
             {DRIVE_DEPARTMENT_OPTIONS.map((option) => (
               <option key={option} value={option}>
                 {option}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label htmlFor="applicantGender" className="label-field">
+            Brother or Sister
+          </label>
+          <select
+            id="applicantGender"
+            value={gender}
+            onChange={(e) => setGender(e.target.value)}
+            className="input-field"
+            required
+          >
+            <option value="" disabled>
+              Select
+            </option>
+            {DRIVE_WINGS.map((wing) => (
+              <option key={wing} value={wing}>
+                {DRIVE_WING_SELF_LABEL[wing]}
               </option>
             ))}
           </select>

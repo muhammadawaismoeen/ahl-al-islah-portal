@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { getFeaturePermission, currentAdminEmail } from "@/app/admin/actions";
+import { getFeaturePermission, currentAdminEmail, getAdminRole } from "@/app/admin/actions";
 import { canRead, canEdit, canDelete } from "@/lib/admin-permissions";
 import {
   createDrive,
@@ -14,6 +14,7 @@ import {
   handOverAtDesk,
   searchApplicationsForDesk,
   confirmApplication,
+  setApplicationGender,
   deleteApplication,
   reviewDonation,
   deleteDonation,
@@ -26,12 +27,17 @@ import {
 } from "@/lib/drive-store";
 import {
   setIhsanPercentage,
+  setSupervisorPin,
   addPaymentMethod,
   deletePaymentMethod,
 } from "@/lib/drive-settings";
 import type { DeskOutcome, DeskResult } from "@/lib/drive-store";
+import {
+  DRIVE_WINGS,
+} from "@/lib/drive-types";
 import type {
   ApplicationStatus,
+  DriveWing,
   DriveStatus,
   PaymentMethodKind,
 } from "@/lib/drive-types";
@@ -370,6 +376,26 @@ export async function confirmApplicationAction(
   return { ok: true };
 }
 
+/** One-time backfill of the wing on an application submitted before the
+ *  apply form asked for it. Gated on the Applicants feature, not the desks:
+ *  this is Advisor bookkeeping, and a desk volunteer holds only read access
+ *  to the applicant list. */
+export async function setApplicationGenderAction(
+  id: string,
+  gender: string
+): Promise<{ ok: boolean; error?: string }> {
+  const tier = await getFeaturePermission("drive.applicants");
+  if (!canEdit(tier)) return { ok: false, error: "Not authorized." };
+  if (!(DRIVE_WINGS as string[]).includes(gender)) {
+    return { ok: false, error: "Pick Brothers or Sisters." };
+  }
+
+  const result = await setApplicationGender(id, gender as DriveWing);
+  if (!result.ok) return { ok: false, error: result.error };
+  refresh();
+  return { ok: true };
+}
+
 export async function deleteApplicationAction(
   id: string
 ): Promise<{ ok: boolean; error?: string }> {
@@ -485,6 +511,34 @@ export async function recordCashDonationAction(
     reviewedBy,
   });
   if (!result.ok) return { ok: false, error: result.error };
+  refresh();
+  return { ok: true };
+}
+
+/** Sets, changes or clears the PIN that unlocks the read-only Drive Day
+ *  board at /drive/supervisor. Owner-only rather than gated on
+ *  drive.payments: it is a credential handed to someone outside the admin
+ *  console, so a Drive Manager seeing the payment settings shouldn't be able
+ *  to mint one. Passing an empty string switches the board off entirely.
+ *
+ *  Changing the PIN invalidates every board already unlocked with the old
+ *  one — the cookie is derived from the PIN (see drive-supervisor.ts). */
+export async function setSupervisorPinAction(
+  pin: string
+): Promise<{ ok: boolean; error?: string }> {
+  if ((await getAdminRole()) !== "owner") {
+    return { ok: false, error: "Only an Owner can change the supervisor PIN." };
+  }
+  const trimmed = pin.trim();
+  // Short enough to read aloud across a hall, long enough that guessing it
+  // through the unlock form isn't a few dozen tries.
+  if (trimmed && trimmed.length < 4) {
+    return { ok: false, error: "Use at least 4 characters." };
+  }
+  if (trimmed.length > 40) {
+    return { ok: false, error: "That's too long for a PIN." };
+  }
+  await setSupervisorPin(trimmed);
   refresh();
   return { ok: true };
 }

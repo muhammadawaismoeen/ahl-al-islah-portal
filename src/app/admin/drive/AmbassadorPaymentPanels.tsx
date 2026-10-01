@@ -2,7 +2,19 @@
 
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Check, X, Plus, Award, Landmark, Wallet, Pencil, HandCoins } from "lucide-react";
+import {
+  Loader2,
+  Check,
+  X,
+  Plus,
+  Award,
+  Landmark,
+  Wallet,
+  Pencil,
+  HandCoins,
+  MonitorPlay,
+  ExternalLink,
+} from "lucide-react";
 import { toast } from "sonner";
 import { formatDate } from "@/lib/utils";
 import { DRIVE_CURRENCY } from "@/lib/drive-config";
@@ -15,6 +27,7 @@ import {
   updateAmbassadorNameAction,
   recordManualDonationAction,
   setIhsanPercentageAction,
+  setSupervisorPinAction,
   addPaymentMethodAction,
   deletePaymentMethodAction,
 } from "./actions";
@@ -352,6 +365,113 @@ export function IhsanPercentageForm({
         </div>
       ) : (
         <p className="text-sm text-ink font-medium">{ihsanPercentage}%</p>
+      )}
+    </div>
+  );
+}
+
+/**
+ * The PIN that unlocks the projected Drive Day board at /drive/supervisor.
+ * Shown in plaintext on purpose — an Owner has to be able to read it off
+ * this screen and hand it to a supervisor, and it guards a page carrying
+ * only counts and stock, no personal data. Owner-only (see
+ * setSupervisorPinAction); every other role sees the explanation without
+ * the value.
+ */
+export function SupervisorPinForm({
+  supervisorPin,
+  isOwner,
+}: {
+  supervisorPin?: string;
+  isOwner: boolean;
+}) {
+  const router = useRouter();
+  const [value, setValue] = useState(supervisorPin ?? "");
+  const [pending, setPending] = useState(false);
+
+  async function save(next: string) {
+    setPending(true);
+    const res = await setSupervisorPinAction(next);
+    setPending(false);
+    if (res.ok) {
+      setValue(next);
+      toast.success(
+        next ? "Supervisor PIN saved." : "Supervisor board switched off."
+      );
+      router.refresh();
+    } else {
+      toast.error(res.error ?? "Failed to save.");
+    }
+  }
+
+  return (
+    <div className="ornate-card p-5 sm:p-6">
+      <div className="flex items-center gap-2 mb-3">
+        <MonitorPlay className="h-4 w-4 text-emerald-deep" />
+        <p className="text-xs uppercase tracking-wider text-ink/50 font-medium">
+          Supervisor board
+        </p>
+      </div>
+      <p className="text-sm text-ink/65 mb-4">
+        A read-only Drive Day screen at{" "}
+        <code className="text-xs bg-surface px-1.5 py-0.5 rounded">
+          /drive/supervisor
+        </code>{" "}
+        — Brothers and Sisters check-in counts and books left, meant to be
+        left open on a laptop. Anyone with the PIN can open it; signed-in
+        admins don&apos;t need one. Clearing the PIN switches the board off.
+      </p>
+
+      {isOwner ? (
+        <>
+          <div className="flex flex-wrap items-center gap-2">
+            <input
+              type="text"
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+              placeholder="e.g. 4821"
+              autoComplete="off"
+              className="input-field !py-1.5 text-sm w-40 font-mono tracking-widest"
+            />
+            <button
+              type="button"
+              onClick={() => save(value)}
+              disabled={pending}
+              className="btn-ghost !py-1.5 !px-3 text-xs"
+            >
+              {pending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+              Save
+            </button>
+            {supervisorPin && (
+              <button
+                type="button"
+                onClick={() => save("")}
+                disabled={pending}
+                className="text-xs text-danger hover:underline ml-1"
+              >
+                Switch off
+              </button>
+            )}
+          </div>
+          {supervisorPin && (
+            <a
+              href="/drive/supervisor"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-xs text-emerald-deep hover:underline mt-3"
+            >
+              <ExternalLink className="h-3.5 w-3.5" />
+              Open the board
+            </a>
+          )}
+          <p className="text-xs text-ink/45 mt-3">
+            Changing the PIN signs out every screen already using the old one.
+          </p>
+        </>
+      ) : (
+        <p className="text-sm text-ink/55">
+          Only an Owner can see or change this PIN.
+        </p>
       )}
     </div>
   );

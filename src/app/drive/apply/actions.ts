@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { reserveBook, getApplication } from "@/lib/drive-store";
 import { addDriveDeviceId, getDriveDeviceIds } from "@/lib/drive-session";
+import { DRIVE_WINGS, type DriveWing } from "@/lib/drive-types";
 import { notifyNewBookApplication } from "@/lib/notify";
 
 /** Best-effort requester IP — the first hop in x-forwarded-for is the
@@ -25,6 +26,7 @@ export async function reserveBookAction(input: {
   applicantContact: string;
   applicantDepartment: string;
   applicantYearOfStudy: string;
+  applicantGender: string;
 }): Promise<{ ok: boolean; error?: string; applicationId?: string }> {
   const session = await auth();
   const applicantEmail = session?.user?.email;
@@ -50,6 +52,13 @@ export async function reserveBookAction(input: {
   if (!yearOfStudy) {
     return { ok: false, error: "Please select your year of study." };
   }
+  // Re-validated server-side rather than trusted from the form: the wing
+  // drives the supervisor's Drive Day totals and which desk serves the
+  // applicant, so a junk value must never reach the record.
+  if (!(DRIVE_WINGS as string[]).includes(input.applicantGender)) {
+    return { ok: false, error: "Please select Brother or Sister." };
+  }
+  const gender = input.applicantGender as DriveWing;
   if (!input.driveId || !input.itemId) {
     return { ok: false, error: "Please choose an item." };
   }
@@ -91,6 +100,7 @@ export async function reserveBookAction(input: {
       applicantEmail,
       applicantDepartment: department,
       applicantYearOfStudy: yearOfStudy,
+      applicantGender: gender,
       submittedIp: ip,
     });
     if (!result.ok) return { ok: false, error: result.error };
