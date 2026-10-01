@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import { logout, getAdminRole } from "@/app/admin/actions";
+import { getContent } from "@/lib/content-store";
 import { listMessages } from "@/lib/message-store";
 import { listFeedback } from "@/lib/feedback-store";
 import { listSubmissions as listActivitySubmissions } from "@/lib/activity-submissions-store";
@@ -17,10 +18,11 @@ export async function AdminShell({
   section: AdminSection;
   children: React.ReactNode;
 }) {
-  const [session, role, messages, feedback, activitySubmissions, counselThreads, driveDonations] =
+  const [session, role, content, messages, feedback, activitySubmissions, counselThreads, driveDonations] =
     await Promise.all([
       auth(),
       getAdminRole(),
+      getContent(),
       listMessages(),
       listFeedback(),
       listActivitySubmissions(),
@@ -45,6 +47,7 @@ export async function AdminShell({
         adminEmail={session?.user?.email}
         role={role}
         logoutAction={logout}
+        customLogo={content.customLogo}
       />
       <div
         className="transition-[padding] duration-200 ease-out lg:pl-[var(--admin-sidebar-w,16rem)]"

@@ -20,6 +20,9 @@ interface Props {
   adminEmail?: string | null;
   role: AdminRole | null;
   logoutAction: () => Promise<void>;
+  /** The institute logo from the content store, as a data URL or a path.
+   *  Falls back to the alif mark when no logo has been uploaded. */
+  customLogo?: string;
 }
 
 const COLLAPSE_KEY = "admin-sidebar-collapsed";
@@ -108,15 +111,30 @@ function NavGroups({
   );
 }
 
-function Brand({ collapsed }: { collapsed?: boolean }) {
+function Brand({
+  collapsed,
+  customLogo,
+}: {
+  collapsed?: boolean;
+  customLogo?: string;
+}) {
   return (
     <Link
       href="/admin"
       className={`flex items-center gap-3 px-2 py-1 group ${collapsed ? "justify-center px-0" : ""}`}
     >
-      <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-deep text-white heading-serif text-base font-semibold shrink-0">
-        ا
-      </span>
+      {customLogo ? (
+        /* eslint-disable-next-line @next/next/no-img-element */
+        <img
+          src={customLogo}
+          alt=""
+          className="h-9 w-9 object-contain shrink-0"
+        />
+      ) : (
+        <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-deep text-white heading-serif text-base font-semibold shrink-0">
+          ا
+        </span>
+      )}
       {!collapsed && (
         <span className="min-w-0">
           <span className="arabic-text block text-emerald-deep text-[11px] leading-none">
@@ -173,7 +191,7 @@ function SidebarFooter({
   );
 }
 
-export function AdminSidebar({ badges, adminEmail, role, logoutAction }: Props) {
+export function AdminSidebar({ badges, adminEmail, role, logoutAction, customLogo }: Props) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
@@ -218,7 +236,7 @@ export function AdminSidebar({ badges, adminEmail, role, logoutAction }: Props) 
     <>
       {/* Mobile top bar */}
       <div className="lg:hidden fixed top-0 inset-x-0 z-40 h-14 flex items-center justify-between px-4 bg-surface border-b border-border">
-        <Brand />
+        <Brand customLogo={customLogo} />
         <span className="text-xs font-medium text-ink/50 truncate max-w-[35%]">
           {currentLabel}
         </span>
@@ -253,7 +271,7 @@ export function AdminSidebar({ badges, adminEmail, role, logoutAction }: Props) 
           }`}
         >
           <div className="flex items-center justify-between mb-6">
-            <Brand />
+            <Brand customLogo={customLogo} />
             <button
               ref={closeBtnRef}
               type="button"
@@ -277,7 +295,7 @@ export function AdminSidebar({ badges, adminEmail, role, logoutAction }: Props) 
         style={{ width: "var(--admin-sidebar-w, 16rem)" }}
       >
         <div className="mb-6 flex items-center justify-between gap-2">
-          <Brand collapsed={collapsed} />
+          <Brand collapsed={collapsed} customLogo={customLogo} />
           {!collapsed && (
             <button
               type="button"
