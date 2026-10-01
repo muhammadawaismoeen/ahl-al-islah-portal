@@ -16,6 +16,7 @@ import {
   ChevronDown,
   ChevronUp,
   AlertTriangle,
+  Pencil,
 } from "lucide-react";
 import { toast } from "sonner";
 import { formatDate } from "@/lib/utils";
@@ -32,6 +33,7 @@ import {
   deleteDriveAction,
   createDriveItemAction,
   updateDriveItemAction,
+  updateDriveItemNameAction,
   deleteDriveItemAction,
   checkInByCodeAction,
   confirmApplicationAction,
@@ -440,6 +442,111 @@ export function CreateItemForm({ drives }: { drives: Drive[] }) {
         Add item
       </button>
     </form>
+  );
+}
+
+/**
+ * Inline rename for a catalog item. Same shape as the Ambassador name editor
+ * in AmbassadorPaymentPanels — pencil to open, tick to save, cross to back
+ * out — so the two consoles behave the same way.
+ */
+export function ItemNameForm({
+  itemId,
+  name,
+  canEdit,
+}: {
+  itemId: string;
+  name: string;
+  canEdit: boolean;
+}) {
+  const router = useRouter();
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState(name);
+  const [pending, setPending] = useState(false);
+
+  function cancel() {
+    setValue(name);
+    setEditing(false);
+  }
+
+  async function save() {
+    if (value.trim() === name) {
+      setEditing(false);
+      return;
+    }
+    setPending(true);
+    const res = await updateDriveItemNameAction(itemId, value);
+    setPending(false);
+    if (res.ok) {
+      if (res.name) setValue(res.name);
+      setEditing(false);
+      toast.success("Item renamed.");
+      router.refresh();
+    } else {
+      toast.error(res.error ?? "Failed to rename item.");
+    }
+  }
+
+  if (!editing) {
+    return (
+      <p className="font-medium text-ink flex items-center gap-1.5">
+        {name}
+        {canEdit && (
+          <button
+            type="button"
+            onClick={() => {
+              setValue(name);
+              setEditing(true);
+            }}
+            className="text-ink/30 hover:text-emerald-deep transition"
+            aria-label={`Rename ${name}`}
+          >
+            <Pencil className="h-3 w-3" />
+          </button>
+        )}
+      </p>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-2">
+      <input
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            void save();
+          } else if (e.key === "Escape") {
+            cancel();
+          }
+        }}
+        className="input-field !py-1 text-sm max-w-xs"
+        autoFocus
+      />
+      <button
+        type="button"
+        onClick={save}
+        disabled={pending}
+        className="btn-ghost !py-1 !px-2.5 text-xs text-emerald-deep"
+        aria-label="Save name"
+      >
+        {pending ? (
+          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+        ) : (
+          <Check className="h-3.5 w-3.5" />
+        )}
+      </button>
+      <button
+        type="button"
+        onClick={cancel}
+        disabled={pending}
+        className="btn-ghost !py-1 !px-2.5 text-xs text-danger"
+        aria-label="Cancel rename"
+      >
+        <X className="h-3.5 w-3.5" />
+      </button>
+    </div>
   );
 }
 

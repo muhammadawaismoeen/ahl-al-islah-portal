@@ -228,6 +228,22 @@ export async function updateDriveItemAction(
   };
 }
 
+export async function updateDriveItemNameAction(
+  id: string,
+  name: string
+): Promise<{ ok: boolean; error?: string; name?: string }> {
+  const tier = await getFeaturePermission("drive.catalog");
+  if (!canEdit(tier)) return { ok: false, error: "Not authorized." };
+
+  const trimmed = name.trim();
+  if (trimmed.length < 2) return { ok: false, error: "Please enter an item name." };
+
+  const updated = await updateDriveItemStock(id, { name: trimmed });
+  if (!updated) return { ok: false, error: "Item not found." };
+  refresh();
+  return { ok: true, name: updated.name };
+}
+
 export async function deleteDriveItemAction(
   id: string
 ): Promise<{ ok: boolean; error?: string }> {

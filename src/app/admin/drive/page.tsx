@@ -33,6 +33,7 @@ import {
   DriveDetailsForm,
   DeleteDriveButton,
   CreateItemForm,
+  ItemNameForm,
   ItemStockForm,
   DeleteDriveItemButton,
   ApplicantsPanel,
@@ -230,8 +231,12 @@ export default async function AdminDrivePage({
                   items.map((i) => (
                     <div key={i.id} className="ornate-card p-5">
                       <div className="flex flex-wrap items-start justify-between gap-3 mb-3">
-                        <div>
-                          <p className="font-medium text-ink">{i.name}</p>
+                        <div className="min-w-0">
+                          <ItemNameForm
+                            itemId={i.id}
+                            name={i.name}
+                            canEdit={tabCanEdit}
+                          />
                           <p className="text-xs text-ink/50 mt-0.5">
                             {driveById.get(i.driveId)?.name ?? "Unknown drive"}
                           </p>
