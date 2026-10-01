@@ -59,6 +59,9 @@ const config: Config = {
         "fade-in": "fadeIn 0.6s ease-out",
         "fade-up": "fadeUp 0.8s ease-out",
         shimmer: "shimmer 2.5s linear infinite",
+        // Drive goal-reached celebration — see components/drive/.
+        "star-fall": "starFall 3s ease-in forwards",
+        "seal-pop": "sealPop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both",
       },
       keyframes: {
         fadeIn: {
@@ -72,6 +75,23 @@ const config: Config = {
         shimmer: {
           "0%": { backgroundPosition: "-200% 0" },
           "100%": { backgroundPosition: "200% 0" },
+        },
+        // Falls far enough to clear the hero on any viewport; the overlay
+        // clips whatever is left over. Drift and spin vary per star via the
+        // inline custom properties.
+        starFall: {
+          "0%": { opacity: "0", transform: "translate3d(0, 0, 0) rotate(0deg)" },
+          "12%": { opacity: "var(--star-opacity, 1)" },
+          "78%": { opacity: "var(--star-opacity, 1)" },
+          "100%": {
+            opacity: "0",
+            transform:
+              "translate3d(var(--star-drift, 0px), 620px, 0) rotate(var(--star-spin, 180deg))",
+          },
+        },
+        sealPop: {
+          "0%": { opacity: "0", transform: "scale(0)" },
+          "100%": { opacity: "1", transform: "scale(1)" },
         },
       },
     },
