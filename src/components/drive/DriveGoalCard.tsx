@@ -113,12 +113,9 @@ export function DriveGoalCard({ progress }: { progress: GoalProgress }) {
       </p>
 
       {won && (
-        <p className="mt-3 flex flex-wrap items-center gap-x-2.5 gap-y-1 animate-fade-up">
+        <p className="mt-3 animate-fade-up">
           <span className="font-arabic text-amber text-lg leading-none">
             الحمد لله
-          </span>
-          <span className="text-xs text-ink/55">
-            Alhamdulillah — every copy is funded.
           </span>
         </p>
       )}

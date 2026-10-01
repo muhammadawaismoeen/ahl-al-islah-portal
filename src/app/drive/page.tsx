@@ -17,7 +17,6 @@ import { getContent } from "@/lib/content-store";
 import { getActiveDrive, computeDriveStats } from "@/lib/drive-store";
 import { computeGoalProgress } from "@/lib/drive-goal";
 import { DriveGoalCard } from "@/components/drive/DriveGoalCard";
-import { GoalReachedBanner } from "@/components/drive/GoalReachedBanner";
 import { GoalReachedStars } from "@/components/drive/GoalReachedStars";
 import { DRIVE_CURRENCY } from "@/lib/drive-config";
 import { formatDriveDateLabel } from "@/lib/utils";
@@ -50,13 +49,6 @@ export default async function DrivePage() {
           {/* Hero — relative so the goal-reached stars can fall over it */}
           <div className="relative">
             {goalMet && <GoalReachedStars />}
-
-            {goalMet && drive && (
-              <GoalReachedBanner
-                progress={progress}
-                donationsOpen={drive.status === "open"}
-              />
-            )}
 
             <div className="text-center mb-10">
               <div className="inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-emerald-deep/10 mb-4">
