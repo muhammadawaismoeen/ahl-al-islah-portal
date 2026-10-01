@@ -17,11 +17,15 @@ import {
   ChevronUp,
   AlertTriangle,
   Pencil,
+  PackageCheck,
+  ArrowRight,
+  Info,
 } from "lucide-react";
 import { toast } from "sonner";
 import { formatDate } from "@/lib/utils";
 import { DRIVE_CURRENCY } from "@/lib/drive-config";
 import type { Drive, DriveApplication, DriveItem, Donation } from "@/lib/drive-types";
+import type { DeskScanResult, DeskSearchHit } from "./actions";
 import { DeleteButton } from "@/components/admin/DeleteButton";
 import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 import {
@@ -35,7 +39,9 @@ import {
   updateDriveItemAction,
   updateDriveItemNameAction,
   deleteDriveItemAction,
-  checkInByCodeAction,
+  registerAtDeskAction,
+  handOverAtDeskAction,
+  searchApplicationsForDeskAction,
   confirmApplicationAction,
   deleteApplicationAction,
   reviewDonationAction,
@@ -694,6 +700,7 @@ export function DeleteDriveItemButton({ itemId, itemName }: { itemId: string; it
 export const APP_STATUS_STYLE: Record<DriveApplication["status"], string> = {
   "pending-review": "bg-sapphire/15 text-sapphire",
   confirmed: "bg-emerald-deep/15 text-emerald-deep",
+  "checked-in": "bg-gold/20 text-amber",
   waitlisted: "bg-amber/15 text-amber",
   "picked-up": "bg-ink/15 text-ink/70",
 };
@@ -701,6 +708,7 @@ export const APP_STATUS_STYLE: Record<DriveApplication["status"], string> = {
 const APP_STATUS_LABEL: Record<DriveApplication["status"], string> = {
   "pending-review": "Pending review",
   confirmed: "Confirmed",
+  "checked-in": "Registered",
   waitlisted: "Waitlisted",
   "picked-up": "Picked up",
 };
@@ -1023,7 +1031,9 @@ export function ApplicantsPanel({
                     <DeleteButton
                       title="Delete this application?"
                       description={
-                        a.status === "pending-review" || a.status === "confirmed"
+                        a.status === "pending-review" ||
+                        a.status === "confirmed" ||
+                        a.status === "checked-in"
                           ? `This permanently removes ${a.applicantName}'s application and returns their reserved copy of ${
                               itemById.get(a.itemId)?.name ?? "the item"
                             } back to stock. This cannot be undone.`
@@ -1132,14 +1142,101 @@ function QrCameraScanner({
   );
 }
 
-export function CheckInForm({ canEdit }: { canEdit: boolean }) {
+type DeskMode = "registration" | "handover";
+
+const DESK_COPY: Record<
+  DeskMode,
+  { title: string; hint: string; verb: string; icon: typeof ScanLine }
+> = {
+  registration: {
+    title: "Registration Desk — scan 1 of 2",
+    hint: "Scan the applicant's ticket to check them in. They then move to the Book Handover desk for the second scan.",
+    verb: "Register",
+    icon: ScanLine,
+  },
+  handover: {
+    title: "Book Handover — scan 2 of 2",
+    hint: "Scan the same ticket again to hand the book over. The applicant must already have been scanned at the Registration Desk.",
+    verb: "Hand over",
+    icon: PackageCheck,
+  },
+};
+
+/** Turns one scan into the two lines the volunteer reads off the screen:
+ *  what just happened, and where the person goes next. Both desks share this
+ *  so the wording can never drift apart between them. */
+function describeScan(
+  mode: DeskMode,
+  res: DeskScanResult
+): { tone: "ok" | "warn"; headline: string; next: string } {
+  const at = res.at ? ` at ${formatClock(res.at)}` : "";
+  switch (res.outcome) {
+    case "registered":
+      return {
+        tone: "ok",
+        headline: "Scan 1 of 2 done — registered.",
+        next: "Next: send them to the Book Handover desk to scan this same ticket again.",
+      };
+    case "already-registered":
+      return {
+        tone: "warn",
+        headline: `Already registered${at} — this is a repeat scan.`,
+        next:
+          mode === "registration"
+            ? "Nothing more to do here. Send them to the Book Handover desk."
+            : "Scan 2 of 2 hasn't gone through — try the scan again.",
+      };
+    case "handed-over":
+      return {
+        tone: "ok",
+        headline: "Scan 2 of 2 done — book handed over.",
+        next: "This ticket is complete. Nothing further.",
+      };
+    case "already-handed-over":
+      return {
+        tone: "warn",
+        headline: `Book was already handed over${at}.`,
+        next: "Both scans are done — do not hand over a second copy.",
+      };
+    default:
+      return { tone: "ok", headline: "Scan recorded.", next: "" };
+  }
+}
+
+/** Local wall-clock time, e.g. "11:04 am" — the volunteer only ever needs to
+ *  compare it against "a minute ago", never a date. */
+function formatClock(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+}
+
+/**
+ * The Drive Day desk scanner, shared by both desks. `mode` picks which of the
+ * two scans this screen performs; the server action behind it enforces the
+ * order, so a ticket can't reach Handover without passing Registration first.
+ */
+export function DeskScanner({
+  mode,
+  canEdit,
+}: {
+  mode: DeskMode;
+  canEdit: boolean;
+}) {
   const router = useRouter();
+  const copy = DESK_COPY[mode];
+  const DeskIcon = copy.icon;
+
   const [code, setCode] = useState("");
   const [pending, setPending] = useState(false);
   const pendingRef = useRef(false);
-  const [result, setResult] = useState<{ name: string; item: string } | null>(null);
+  const [result, setResult] = useState<DeskScanResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [scanning, setScanning] = useState(false);
+
+  const [lookup, setLookup] = useState("");
+  const [hits, setHits] = useState<DeskSearchHit[] | null>(null);
+  const [searching, startSearch] = useTransition();
 
   async function submitCode(raw: string) {
     if (pendingRef.current) return;
@@ -1147,17 +1244,24 @@ export function CheckInForm({ canEdit }: { canEdit: boolean }) {
     setPending(true);
     setError(null);
     setResult(null);
-    const res = await checkInByCodeAction(raw);
+    const res =
+      mode === "registration"
+        ? await registerAtDeskAction(raw)
+        : await handOverAtDeskAction(raw);
     pendingRef.current = false;
     setPending(false);
     if (res.ok) {
-      setResult({ name: res.applicantName ?? "", item: res.itemName ?? "" });
+      setResult(res);
       setCode("");
-      toast.success("Checked in.");
+      setHits(null);
+      const { tone, headline } = describeScan(mode, res);
+      if (tone === "ok") toast.success(headline);
+      else toast.warning(headline);
       router.refresh();
     } else {
-      setError(res.error ?? "Couldn't check in that code.");
-      toast.error(res.error ?? "Couldn't check in that code.");
+      const message = res.error ?? `Couldn't ${copy.verb.toLowerCase()} that code.`;
+      setError(message);
+      toast.error(message);
     }
   }
 
@@ -1167,72 +1271,196 @@ export function CheckInForm({ canEdit }: { canEdit: boolean }) {
     submitCode(code);
   }
 
+  function runLookup(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const q = lookup.trim();
+    if (q.length < 2) return;
+    startSearch(async () => {
+      setHits(await searchApplicationsForDeskAction(q));
+    });
+  }
+
   if (!canEdit) {
     return (
       <div className="ornate-card p-5 sm:p-6">
         <p className="text-sm text-ink/60">
-          You have read-only access to this screen — check-in is unavailable.
+          You have read-only access to this desk — scanning is unavailable.
         </p>
       </div>
     );
   }
 
+  const described = result ? describeScan(mode, result) : null;
+
   return (
-    <div className="ornate-card p-5 sm:p-6">
-      <div className="flex items-center justify-between mb-4">
-        <p className="flex items-center gap-2 text-sm font-medium text-ink/75">
-          <ScanLine className="h-4 w-4 text-emerald-deep" />
-          Check in a pickup code
-        </p>
-        <button
-          type="button"
-          onClick={() => setScanning((s) => !s)}
-          className="btn-ghost !py-1 !px-2.5 text-xs text-emerald-deep"
-        >
-          {scanning ? (
-            <>
-              <CameraOff className="h-3.5 w-3.5" />
-              Stop scanning
-            </>
-          ) : (
-            <>
-              <Camera className="h-3.5 w-3.5" />
-              Scan QR
-            </>
-          )}
-        </button>
+    <div className="space-y-4">
+      <div className="ornate-card p-5 sm:p-6">
+        <div className="flex items-start justify-between gap-3 mb-1">
+          <p className="flex items-center gap-2 text-sm font-medium text-ink/75">
+            <DeskIcon className="h-4 w-4 text-emerald-deep" />
+            {copy.title}
+          </p>
+          <button
+            type="button"
+            onClick={() => setScanning((v) => !v)}
+            className="btn-ghost !py-1 !px-2.5 text-xs text-emerald-deep shrink-0"
+          >
+            {scanning ? (
+              <>
+                <CameraOff className="h-3.5 w-3.5" />
+                Stop scanning
+              </>
+            ) : (
+              <>
+                <Camera className="h-3.5 w-3.5" />
+                Scan QR
+              </>
+            )}
+          </button>
+        </div>
+        <p className="text-xs text-ink/50 leading-relaxed mb-4">{copy.hint}</p>
+
+        {scanning && (
+          <div className="mb-4 max-w-xs mx-auto">
+            <QrCameraScanner onDetect={submitCode} paused={pending} />
+            <p className="text-[11px] text-ink/45 text-center mt-2">
+              Point the camera at the applicant&apos;s ticket QR code.
+            </p>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="flex gap-2">
+          <input
+            type="text"
+            value={code}
+            onChange={(e) => setCode(e.target.value.toUpperCase())}
+            placeholder="BK-XXXX-XXXX"
+            className="input-field font-mono tracking-wide"
+            autoComplete="off"
+            spellCheck={false}
+          />
+          <button
+            type="submit"
+            disabled={pending || !code.trim()}
+            className="btn-primary !px-5 shrink-0"
+          >
+            {pending ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Check className="h-4 w-4" />
+            )}
+            {copy.verb}
+          </button>
+        </form>
+
+        {error && <p className="error-text mt-3">{error}</p>}
+
+        {result && described && (
+          <div
+            className={`mt-4 rounded-xl p-4 border ${
+              described.tone === "ok"
+                ? "bg-emerald-deep/5 border-emerald-deep/20"
+                : "bg-amber/10 border-amber/30"
+            }`}
+          >
+            <p
+              className={`text-sm font-semibold ${
+                described.tone === "ok" ? "text-emerald-deep" : "text-amber"
+              }`}
+            >
+              {described.headline}
+            </p>
+            <p className="text-sm text-ink mt-1">
+              <strong>{result.applicantName}</strong> — {result.itemName}
+              {result.pickupCode && (
+                <span className="font-mono text-xs text-ink/50"> · {result.pickupCode}</span>
+              )}
+            </p>
+            {described.next && (
+              <p className="flex items-start gap-1.5 text-xs text-ink/60 mt-2">
+                <ArrowRight className="h-3.5 w-3.5 shrink-0 mt-px" />
+                {described.next}
+              </p>
+            )}
+          </div>
+        )}
       </div>
 
-      {scanning && (
-        <div className="mb-4 max-w-xs mx-auto">
-          <QrCameraScanner onDetect={submitCode} paused={pending} />
-          <p className="text-[11px] text-ink/45 text-center mt-2">
-            Point the camera at the applicant&apos;s ticket QR code.
-          </p>
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit} className="flex gap-2">
-        <input
-          type="text"
-          value={code}
-          onChange={(e) => setCode(e.target.value.toUpperCase())}
-          placeholder="BK-XXXX-XXXX"
-          className="input-field font-mono tracking-wide"
-          autoComplete="off"
-          spellCheck={false}
-        />
-        <button type="submit" disabled={pending || !code.trim()} className="btn-primary !px-5 shrink-0">
-          {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
-          Check in
-        </button>
-      </form>
-      {error && <p className="error-text mt-3">{error}</p>}
-      {result && (
-        <p className="mt-3 text-sm text-emerald-deep">
-          <strong>{result.name}</strong> picked up <strong>{result.item}</strong>.
+      <div className="ornate-card p-5 sm:p-6">
+        <p className="flex items-center gap-2 text-sm font-medium text-ink/75 mb-1">
+          <Search className="h-4 w-4 text-emerald-deep" />
+          Can&apos;t scan the ticket?
         </p>
-      )}
+        <p className="text-xs text-ink/50 leading-relaxed mb-3">
+          Look the applicant up by name or phone number, then pick them from the
+          results to record the scan.
+        </p>
+        <form onSubmit={runLookup} className="flex gap-2">
+          <input
+            type="text"
+            value={lookup}
+            onChange={(e) => setLookup(e.target.value)}
+            placeholder="Name or phone number"
+            className="input-field"
+            autoComplete="off"
+          />
+          <button
+            type="submit"
+            disabled={searching || lookup.trim().length < 2}
+            className="btn-secondary !px-5 shrink-0"
+          >
+            {searching ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Search className="h-4 w-4" />
+            )}
+            Find
+          </button>
+        </form>
+
+        {hits !== null && hits.length === 0 && (
+          <p className="flex items-center gap-1.5 text-xs text-ink/50 mt-3">
+            <Info className="h-3.5 w-3.5" />
+            No ticket matches that. Only applicants who booked online have one.
+          </p>
+        )}
+
+        {hits !== null && hits.length > 0 && (
+          <ul className="mt-3 space-y-2">
+            {hits.map((hit) => (
+              <li
+                key={hit.pickupCode}
+                className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border px-3 py-2"
+              >
+                <div className="min-w-0">
+                  <p className="text-sm text-ink truncate">
+                    {hit.applicantName}
+                    <span
+                      className={`ml-2 inline-block text-[10px] font-medium px-2 py-0.5 rounded-full align-middle ${
+                        APP_STATUS_STYLE[hit.status]
+                      }`}
+                    >
+                      {APP_STATUS_LABEL[hit.status]}
+                    </span>
+                  </p>
+                  <p className="text-xs text-ink/50 truncate">
+                    {hit.itemName} · {hit.applicantContact} ·{" "}
+                    <span className="font-mono">{hit.pickupCode}</span>
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  disabled={pending}
+                  onClick={() => submitCode(hit.pickupCode)}
+                  className="btn-ghost !py-1 !px-2.5 text-xs text-emerald-deep shrink-0"
+                >
+                  {copy.verb}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </div>
   );
 }

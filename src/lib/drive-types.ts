@@ -70,9 +70,15 @@ export interface DriveItem {
   createdAt: string;
 }
 
+/** The Drive-day lifecycle. A ticket moves pending-review → confirmed →
+ *  checked-in → picked-up. The two scans on Drive Day are the last two
+ *  transitions: the Registration Desk sets checked-in, the Handover desk
+ *  sets picked-up. "waitlisted" is a dead end kept for historical records —
+ *  reserveBook no longer creates one (an out-of-stock item is refused). */
 export type ApplicationStatus =
   | "pending-review"
   | "confirmed"
+  | "checked-in"
   | "waitlisted"
   | "picked-up";
 
@@ -103,6 +109,10 @@ export interface DriveApplication {
   pickupCode: string;
   createdAt: string;
   updatedAt: string;
+  /** Set by the Registration Desk's scan on Drive Day. Absent until then,
+   *  and on records that reached picked-up before this two-stage flow
+   *  existed (see withApplicationDefaults). */
+  checkedInAt?: string;
   pickedUpAt?: string;
   /** Set when reserveBook() notices this application's name/contact/email
    *  closely resembles another applicant's on the same drive (typo-level

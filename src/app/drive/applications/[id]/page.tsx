@@ -7,6 +7,7 @@ import { Footer } from "@/components/Footer";
 import { getContent } from "@/lib/content-store";
 import { getApplication, getDrive, getDriveItem } from "@/lib/drive-store";
 import { formatDriveDateLabel } from "@/lib/utils";
+import type { ApplicationStatus } from "@/lib/drive-types";
 import { TicketQr } from "./TicketQr";
 import { SaveQrDialog } from "./SaveQrDialog";
 
@@ -17,7 +18,10 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-const STATUS_CONFIG = {
+const STATUS_CONFIG: Record<
+  ApplicationStatus,
+  { label: string; className: string; icon: typeof Clock3 }
+> = {
   "pending-review": {
     label: "Pending review",
     className: "bg-sapphire/15 text-sapphire",
@@ -26,6 +30,11 @@ const STATUS_CONFIG = {
   confirmed: {
     label: "Confirmed",
     className: "bg-emerald-deep/15 text-emerald-deep",
+    icon: CheckCircle2,
+  },
+  "checked-in": {
+    label: "Checked in",
+    className: "bg-gold/20 text-amber",
     icon: CheckCircle2,
   },
   waitlisted: {

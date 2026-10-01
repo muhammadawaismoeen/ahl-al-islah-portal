@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { getFeaturePermission, currentAdminEmail } from "@/app/admin/actions";
-import { canEdit, canDelete } from "@/lib/admin-permissions";
+import { canRead, canEdit, canDelete } from "@/lib/admin-permissions";
 import {
   createDrive,
   updateDrive,
@@ -10,7 +10,9 @@ import {
   createDriveItem,
   updateDriveItemStock,
   deleteDriveItem,
-  checkInApplication,
+  registerAtDesk,
+  handOverAtDesk,
+  searchApplicationsForDesk,
   confirmApplication,
   deleteApplication,
   reviewDonation,
@@ -27,7 +29,12 @@ import {
   addPaymentMethod,
   deletePaymentMethod,
 } from "@/lib/drive-settings";
-import type { DriveStatus, PaymentMethodKind } from "@/lib/drive-types";
+import type { DeskOutcome, DeskResult } from "@/lib/drive-store";
+import type {
+  ApplicationStatus,
+  DriveStatus,
+  PaymentMethodKind,
+} from "@/lib/drive-types";
 
 function refresh() {
   revalidatePath("/admin/drive");
@@ -256,25 +263,98 @@ export async function deleteDriveItemAction(
   return { ok: true };
 }
 
-export async function checkInByCodeAction(
-  code: string
-): Promise<{ ok: boolean; error?: string; applicantName?: string; itemName?: string }> {
+/** What a desk scan reports back to the volunteer standing at the table.
+ *  `outcome` is what the scanner turns into the "scan 1 of 2 / scan 2 of 2"
+ *  line, so it is always present on success — the UI never has to guess
+ *  which of the two scans just happened. */
+export interface DeskScanResult {
+  ok: boolean;
+  error?: string;
+  outcome?: DeskOutcome;
+  applicantName?: string;
+  itemName?: string;
+  pickupCode?: string;
+  /** ISO timestamp of the scan this outcome refers to: the check-in time for
+   *  a registration outcome, the pickup time for a handover one. Lets the UI
+   *  say "already registered at 11:04" instead of just "already registered". */
+  at?: string;
+}
+
+async function describeDeskResult(
+  result: DeskResult,
+  at: string | undefined
+): Promise<DeskScanResult> {
+  const item = await getDriveItem(result.application.itemId);
+  return {
+    ok: true,
+    outcome: result.outcome,
+    applicantName: result.application.applicantName,
+    itemName: item?.name ?? "item",
+    pickupCode: result.application.pickupCode,
+    at,
+  };
+}
+
+/** Scan 1 of 2 — the Registration Desk. */
+export async function registerAtDeskAction(code: string): Promise<DeskScanResult> {
   const tier = await getFeaturePermission("drive.checkin");
   if (!canEdit(tier)) return { ok: false, error: "Not authorized." };
 
   const normalized = code.trim().toUpperCase();
   if (!normalized) return { ok: false, error: "Please enter a pickup code." };
 
-  const result = await checkInApplication(normalized);
+  const result = await registerAtDesk(normalized);
   if (!result.ok) return { ok: false, error: result.error };
 
-  const item = await getDriveItem(result.application.itemId);
   refresh();
-  return {
-    ok: true,
-    applicantName: result.application.applicantName,
-    itemName: item?.name ?? "item",
-  };
+  return describeDeskResult(result.result, result.result.application.checkedInAt);
+}
+
+/** Scan 2 of 2 — the Book Handover desk. */
+export async function handOverAtDeskAction(code: string): Promise<DeskScanResult> {
+  const tier = await getFeaturePermission("drive.handover");
+  if (!canEdit(tier)) return { ok: false, error: "Not authorized." };
+
+  const normalized = code.trim().toUpperCase();
+  if (!normalized) return { ok: false, error: "Please enter a pickup code." };
+
+  const result = await handOverAtDesk(normalized);
+  if (!result.ok) return { ok: false, error: result.error };
+
+  refresh();
+  return describeDeskResult(result.result, result.result.application.pickedUpAt);
+}
+
+export interface DeskSearchHit {
+  pickupCode: string;
+  applicantName: string;
+  applicantContact: string;
+  itemName: string;
+  status: ApplicationStatus;
+}
+
+/** Backs the name/phone fallback at both desks, for a QR that won't scan —
+ *  a damaged screen, a flat battery, a student who left the ticket at home.
+ *  Read access to the desk is enough: the volunteer still has to scan or
+ *  pick a result to actually change anything. */
+export async function searchApplicationsForDeskAction(
+  query: string
+): Promise<DeskSearchHit[]> {
+  const [registration, handover] = await Promise.all([
+    getFeaturePermission("drive.checkin"),
+    getFeaturePermission("drive.handover"),
+  ]);
+  if (!canRead(registration) && !canRead(handover)) return [];
+
+  const matches = await searchApplicationsForDesk(query);
+  const items = await Promise.all(matches.map((a) => getDriveItem(a.itemId)));
+  return matches.map((a, i) => ({
+    pickupCode: a.pickupCode,
+    applicantName: a.applicantName,
+    applicantContact: a.applicantContact,
+    itemName: items[i]?.name ?? "item",
+    status: a.status,
+  }));
 }
 
 export async function confirmApplicationAction(

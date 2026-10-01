@@ -6,6 +6,8 @@ export const ADMIN_ROLES: AdminRole[] = [
   "content-programming",
   "community-care",
   "people-ops",
+  "drive-registration",
+  "drive-handover",
 ];
 
 export const ADMIN_ROLE_LABEL: Record<AdminRole, string> = {
@@ -14,6 +16,8 @@ export const ADMIN_ROLE_LABEL: Record<AdminRole, string> = {
   "content-programming": "Content & Programming",
   "community-care": "Community Care",
   "people-ops": "People Ops",
+  "drive-registration": "Drive — Registration Desk",
+  "drive-handover": "Drive — Book Handover",
 };
 
 export const ADMIN_ROLE_DESCRIPTION: Record<AdminRole, string> = {
@@ -23,6 +27,10 @@ export const ADMIN_ROLE_DESCRIPTION: Record<AdminRole, string> = {
   "content-programming": "Sessions, Positions, and the Content Editor.",
   "community-care": "Inbox, Feedback, Counsel, and Activity Audits.",
   "people-ops": "Core Members and Heads.",
+  "drive-registration":
+    "Drive Day volunteer — the Registration Desk scanner (first scan) and a read-only applicant list. Nothing else.",
+  "drive-handover":
+    "Drive Day volunteer — the Book Handover scanner (second scan) and a read-only applicant list. Nothing else.",
 };
 
 const ROLE_SECTIONS: Record<AdminRole, AdminSection[]> = {
@@ -31,6 +39,8 @@ const ROLE_SECTIONS: Record<AdminRole, AdminSection[]> = {
   "content-programming": ["programming"],
   "community-care": ["community"],
   "people-ops": ["people"],
+  "drive-registration": ["drive"],
+  "drive-handover": ["drive"],
 };
 
 export function roleHasSection(role: AdminRole, section: AdminSection): boolean {
@@ -73,6 +83,7 @@ export const SECTION_FEATURES: Record<Exclude<AdminSection, "users">, AdminFeatu
     "drive.catalog",
     "drive.applicants",
     "drive.checkin",
+    "drive.handover",
     "drive.donations",
     "drive.ambassadors",
     "drive.payments",
@@ -93,7 +104,8 @@ export const FEATURE_LABEL: Record<AdminFeature, string> = {
   "drive.drives": "Drives",
   "drive.catalog": "Catalog",
   "drive.applicants": "Applicants",
-  "drive.checkin": "Check-in",
+  "drive.checkin": "Registration Desk",
+  "drive.handover": "Book Handover",
   "drive.donations": "Donations",
   "drive.ambassadors": "Ambassadors",
   "drive.payments": "Payment Settings",
@@ -119,6 +131,39 @@ export const READ_ONLY_FEATURES: ReadonlySet<AdminFeature> = new Set([
   "drive.report",
 ]);
 
+/**
+ * What a role grants on a feature when no explicit override is stored.
+ *
+ * Every role that predates the Drive Day desks defaults to "full" on
+ * everything its sections include — that was the original behaviour and is
+ * preserved exactly. The two desk-volunteer roles invert it: they default
+ * to "none" and are handed only the one desk they staff, so a volunteer
+ * given the Drive section can't reach donations, catalog or the financial
+ * report.
+ */
+const ROLE_DEFAULT_TIER: Record<AdminRole, PermissionTier> = {
+  owner: "full",
+  "drive-manager": "full",
+  "content-programming": "full",
+  "community-care": "full",
+  "people-ops": "full",
+  "drive-registration": "none",
+  "drive-handover": "none",
+};
+
+const ROLE_FEATURE_DEFAULTS: Partial<
+  Record<AdminRole, Partial<Record<AdminFeature, PermissionTier>>>
+> = {
+  "drive-registration": {
+    "drive.checkin": "edit",
+    "drive.applicants": "read",
+  },
+  "drive-handover": {
+    "drive.handover": "edit",
+    "drive.applicants": "read",
+  },
+};
+
 function sectionOfFeature(feature: AdminFeature): AdminSection {
   return feature.split(".")[0] as AdminSection;
 }
@@ -137,7 +182,11 @@ export function getFeatureTier(
 ): PermissionTier {
   if (role === "owner") return "full";
   if (!roleHasSection(role, sectionOfFeature(feature))) return "none";
-  return overrides?.[feature] ?? "full";
+  return (
+    overrides?.[feature] ??
+    ROLE_FEATURE_DEFAULTS[role]?.[feature] ??
+    ROLE_DEFAULT_TIER[role]
+  );
 }
 
 export function canRead(tier: PermissionTier): boolean {

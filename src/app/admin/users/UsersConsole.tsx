@@ -14,6 +14,7 @@ import {
   PERMISSION_TIER_LABEL,
   READ_ONLY_FEATURES,
   sectionsForRole,
+  getFeatureTier,
 } from "@/lib/admin-permissions";
 import type { AdminRole, AdminUser, AdminFeature, AdminSection, PermissionTier } from "@/lib/admin-types";
 import { DeleteButton } from "@/components/admin/DeleteButton";
@@ -195,7 +196,12 @@ function PermissionsPanel({ user }: { user: AdminUser }) {
                 key={feature}
                 user={user}
                 feature={feature}
-                tier={user.permissionOverrides?.[feature] ?? "full"}
+                // No stored override means the role's own default applies —
+                // which is "full" for the long-standing roles but "none"
+                // (bar their one desk) for the Drive Day volunteers. Showing
+                // a flat "full" here would both misreport their access and,
+                // on the next save, actually grant it.
+                tier={getFeatureTier(user.role, user.permissionOverrides, feature)}
               />
             ))}
           </div>

@@ -66,3 +66,18 @@ export async function getFeaturePermission(feature: AdminFeature): Promise<Permi
   if (!role) return "none";
   return getFeatureTier(role, overrides, feature);
 }
+
+/** Same as getFeaturePermission, for several features at once off a single
+ *  store read. The Drive console needs a tier per tab to decide which tabs
+ *  the signed-in volunteer may even see; calling the singular version once
+ *  per tab would re-read the admin user store nine times per request. */
+export async function getFeaturePermissions(
+  features: AdminFeature[]
+): Promise<Record<string, PermissionTier>> {
+  const { role, overrides } = await getCurrentAdminContext();
+  const out: Record<string, PermissionTier> = {};
+  for (const feature of features) {
+    out[feature] = role ? getFeatureTier(role, overrides, feature) : "none";
+  }
+  return out;
+}

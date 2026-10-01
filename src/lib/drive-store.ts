@@ -660,38 +660,152 @@ export async function reserveBook(input: {
   return { ok: true, application };
 }
 
-export async function checkInApplication(
+/* ------------------------------------------------------------------ */
+/*  Drive Day — the two desk scans                                      */
+/* ------------------------------------------------------------------ */
+
+/** What a desk scan did, so the volunteer's screen can say which of the
+ *  two scans just happened and what the student should do next. */
+export type DeskOutcome =
+  | "registered" // scan 1 just landed
+  | "already-registered" // scan 1 had already landed earlier
+  | "handed-over" // scan 2 just landed
+  | "already-handed-over"; // scan 2 had already landed earlier
+
+export interface DeskResult {
+  application: DriveApplication;
+  outcome: DeskOutcome;
+}
+
+/**
+ * Registration Desk — the FIRST of the two Drive Day scans.
+ *
+ * Accepts a pending-review ticket directly: the stock unit was already
+ * taken at application time, so there is nothing left to approve at the
+ * desk, and requiring a prior per-applicant Advisor confirmation would
+ * stall the queue. A pending ticket is therefore promoted straight through
+ * confirmed to checked-in.
+ *
+ * Re-scanning is not an error — the desk is told the ticket was already
+ * registered, and when, so the volunteer can wave the student on.
+ */
+export async function registerAtDesk(
   code: string
-): Promise<
-  | { ok: true; application: DriveApplication }
-  | { ok: false; error: string }
-> {
+): Promise<{ ok: true; result: DeskResult } | { ok: false; error: string }> {
   const application = await findApplicationByPickupCode(code);
   if (!application) {
     return { ok: false, error: "No application matches that pickup code." };
   }
   if (application.status === "picked-up") {
-    return { ok: false, error: "This item has already been picked up." };
+    return {
+      ok: true,
+      result: { application, outcome: "already-handed-over" },
+    };
   }
-  if (application.status !== "confirmed") {
+  if (application.status === "checked-in") {
+    return {
+      ok: true,
+      result: { application, outcome: "already-registered" },
+    };
+  }
+  if (application.status === "waitlisted") {
     return {
       ok: false,
       error:
-        application.status === "waitlisted"
-          ? "This application is still waitlisted — confirm stock before check-in."
-          : "This application is still pending review — confirm it before check-in.",
+        "This application is waitlisted — no copy was ever reserved for it. Send them to the Advisor.",
     };
   }
 
+  const now = new Date().toISOString();
+  const updated: DriveApplication = {
+    ...application,
+    status: "checked-in" as ApplicationStatus,
+    checkedInAt: now,
+    updatedAt: now,
+  };
+  await writeRecord(COLLECTION.applications, DIR.applications, updated);
+  return { ok: true, result: { application: updated, outcome: "registered" } };
+}
+
+/**
+ * Handover desk — the SECOND of the two Drive Day scans, where the book
+ * actually changes hands.
+ *
+ * Refuses a ticket that never passed the Registration Desk, so the
+ * registration count stays truthful and nobody can skip the queue. A
+ * ticket already handed over comes back as "already-handed-over" rather
+ * than silently handing over a second copy — the desk shows that as a
+ * warning, since it's the one mistake that costs a physical book.
+ */
+export async function handOverAtDesk(
+  code: string
+): Promise<{ ok: true; result: DeskResult } | { ok: false; error: string }> {
+  const application = await findApplicationByPickupCode(code);
+  if (!application) {
+    return { ok: false, error: "No application matches that pickup code." };
+  }
+  if (application.status === "picked-up") {
+    return {
+      ok: true,
+      result: { application, outcome: "already-handed-over" },
+    };
+  }
+  if (application.status === "waitlisted") {
+    return {
+      ok: false,
+      error:
+        "This application is waitlisted — no copy was ever reserved for it. Send them to the Advisor.",
+    };
+  }
+  if (application.status !== "checked-in") {
+    return {
+      ok: false,
+      error:
+        "Not registered yet — send them to the Registration Desk to be scanned first.",
+    };
+  }
+
+  const now = new Date().toISOString();
   const updated: DriveApplication = {
     ...application,
     status: "picked-up" as ApplicationStatus,
-    pickedUpAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    pickedUpAt: now,
+    updatedAt: now,
   };
   await writeRecord(COLLECTION.applications, DIR.applications, updated);
   revalidateTag(STATS_TAG);
-  return { ok: true, application: updated };
+  return { ok: true, result: { application: updated, outcome: "handed-over" } };
+}
+
+/**
+ * Desk fallback for a student whose QR won't scan — a dead battery, a
+ * cracked screen, a ticket they never saved. Matches on name, contact
+ * number or email against the drive's own applications, so a volunteer can
+ * find the person and read their pickup code off the screen.
+ *
+ * Deliberately capped: a query that matches half the drive is a sign the
+ * volunteer needs to type more, not a list to scroll.
+ */
+export async function searchApplicationsForDesk(
+  query: string,
+  driveId?: string
+): Promise<DriveApplication[]> {
+  const q = query.trim().toLowerCase();
+  if (q.length < 2) return [];
+  const digits = q.replace(/\D/g, "");
+  const all = await listApplications(driveId);
+  return all
+    .filter((a) => {
+      if (a.applicantName.toLowerCase().includes(q)) return true;
+      if (a.applicantEmail?.toLowerCase().includes(q)) return true;
+      if (a.pickupCode.toLowerCase().includes(q)) return true;
+      if (digits.length >= 4) {
+        const contactDigits = a.applicantContact.replace(/\D/g, "");
+        if (contactDigits.includes(digits)) return true;
+      }
+      return false;
+    })
+    .slice(0, 8);
 }
 
 /**
@@ -800,7 +914,15 @@ export async function deleteApplication(
   const application = await getApplication(id);
   if (!application) return { ok: false, error: "Application not found." };
 
-  if (application.status === "pending-review" || application.status === "confirmed") {
+  // Every status short of picked-up still holds a copy off the shelf — the
+  // book only physically leaves at the Handover desk — so deleting one of
+  // those puts the copy back. A waitlisted record never consumed stock, and
+  // a picked-up one is already gone.
+  if (
+    application.status === "pending-review" ||
+    application.status === "confirmed" ||
+    application.status === "checked-in"
+  ) {
     const item = await getDriveItem(application.itemId);
     if (item) {
       if (isRedisStore()) {

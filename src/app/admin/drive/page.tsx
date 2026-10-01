@@ -5,13 +5,15 @@ import {
   Library,
   Users,
   ScanLine,
+  PackageCheck,
   HandCoins,
   BarChart3,
   Award,
   Wallet,
 } from "lucide-react";
-import { isAuthenticated, getFeaturePermission } from "@/app/admin/actions";
-import { canEdit, canDelete } from "@/lib/admin-permissions";
+import { isAuthenticated, getFeaturePermissions } from "@/app/admin/actions";
+import { canRead, canEdit, canDelete } from "@/lib/admin-permissions";
+import type { AdminFeature, PermissionTier } from "@/lib/admin-types";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { AdminLoginScreen } from "@/components/admin/AdminLoginScreen";
 import { FeatureRestricted, ReadOnlyBanner } from "@/components/admin/FeatureGate";
@@ -37,7 +39,7 @@ import {
   ItemStockForm,
   DeleteDriveItemButton,
   ApplicantsPanel,
-  CheckInForm,
+  DeskScanner,
   DonationsPanel,
 } from "./DriveConsoleActions";
 import {
@@ -60,16 +62,18 @@ type Tab =
   | "catalog"
   | "applicants"
   | "checkin"
+  | "handover"
   | "donations"
   | "ambassadors"
   | "payments"
   | "report";
 
-const TAB_FEATURE: Record<Tab, Parameters<typeof getFeaturePermission>[0]> = {
+const TAB_FEATURE: Record<Tab, AdminFeature> = {
   drives: "drive.drives",
   catalog: "drive.catalog",
   applicants: "drive.applicants",
   checkin: "drive.checkin",
+  handover: "drive.handover",
   donations: "drive.donations",
   ambassadors: "drive.ambassadors",
   payments: "drive.payments",
@@ -80,7 +84,8 @@ const TABS: { key: Tab; label: string; icon: typeof BookOpen }[] = [
   { key: "drives", label: "Drives", icon: BookOpen },
   { key: "catalog", label: "Catalog", icon: Library },
   { key: "applicants", label: "Applicants", icon: Users },
-  { key: "checkin", label: "Check-in", icon: ScanLine },
+  { key: "checkin", label: "Registration", icon: ScanLine },
+  { key: "handover", label: "Book Handover", icon: PackageCheck },
   { key: "donations", label: "Donations", icon: HandCoins },
   { key: "ambassadors", label: "Ambassadors", icon: Award },
   { key: "payments", label: "Payment Settings", icon: Wallet },
@@ -98,11 +103,23 @@ export default async function AdminDrivePage({
     return <AdminLoginScreen />;
   }
 
-  const { tab: tabParam } = await searchParams;
-  const tab: Tab = TABS.some((t) => t.key === tabParam) ? (tabParam as Tab) : "drives";
+  // Every tab's tier in one store read, because the tab strip itself is now
+  // permission-filtered: a Drive Day desk volunteer should see only their own
+  // desk, not eight chips that all land on "Restricted".
+  const tiers = (await getFeaturePermissions(
+    TABS.map((t) => TAB_FEATURE[t.key])
+  )) as Record<AdminFeature, PermissionTier>;
+  const visibleTabs = TABS.filter((t) => canRead(tiers[TAB_FEATURE[t.key]]));
 
-  const tier = await getFeaturePermission(TAB_FEATURE[tab]);
-  if (tier === "none") {
+  const { tab: tabParam } = await searchParams;
+  // Fall back to the first tab this role can actually open, not a hardcoded
+  // "drives" — a desk volunteer has no access to that one at all.
+  const tab: Tab | undefined = visibleTabs.some((t) => t.key === tabParam)
+    ? (tabParam as Tab)
+    : visibleTabs[0]?.key;
+
+  const tier = tab ? tiers[TAB_FEATURE[tab]] : "none";
+  if (!tab || tier === "none") {
     return (
       <AdminShell section="drive">
         <FeatureRestricted />
@@ -112,14 +129,25 @@ export default async function AdminDrivePage({
   const tabCanEdit = canEdit(tier);
   const tabCanDelete = canDelete(tier);
 
+  // Load only what the open tab (and its badges) actually render. The desk
+  // scanners need none of it, and they re-render this page after every
+  // single scan — on Drive Day that is the hottest path in the console.
+  const needsDonations =
+    tab === "donations" ||
+    tab === "report" ||
+    visibleTabs.some((t) => t.key === "donations");
+  const needsAmbassadors =
+    tab === "ambassadors" || visibleTabs.some((t) => t.key === "ambassadors");
+  const isDesk = tab === "checkin" || tab === "handover";
+
   const [drives, items, applications, donations, ambassadors, driveSettings] =
     await Promise.all([
-      listDrives(),
-      listDriveItems(),
-      listApplications(),
-      listDonations(),
-      listAmbassadors(),
-      getDriveSettings(),
+      isDesk ? [] : listDrives(),
+      tab === "catalog" || tab === "applicants" ? listDriveItems() : [],
+      tab === "applicants" ? listApplications() : [],
+      needsDonations ? listDonations() : [],
+      needsAmbassadors ? listAmbassadors() : [],
+      tab === "payments" ? getDriveSettings() : { ihsanPercentage: 0, paymentMethods: [] },
     ]);
   const driveById = new Map(drives.map((d) => [d.id, d]));
   const driveNameById = Object.fromEntries(drives.map((d) => [d.id, d.name]));
@@ -150,7 +178,7 @@ export default async function AdminDrivePage({
           </div>
 
           <div className="flex flex-wrap gap-2 mb-6">
-            {TABS.map((t) => {
+            {visibleTabs.map((t) => {
               const Icon = t.icon;
               const active = t.key === tab;
               return (
@@ -272,7 +300,13 @@ export default async function AdminDrivePage({
 
           {tab === "checkin" && (
             <div className="max-w-lg">
-              <CheckInForm canEdit={tabCanEdit} />
+              <DeskScanner mode="registration" canEdit={tabCanEdit} />
+            </div>
+          )}
+
+          {tab === "handover" && (
+            <div className="max-w-lg">
+              <DeskScanner mode="handover" canEdit={tabCanEdit} />
             </div>
           )}
 

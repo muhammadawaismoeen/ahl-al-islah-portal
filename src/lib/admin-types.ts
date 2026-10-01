@@ -9,7 +9,12 @@ export type AdminRole =
   | "drive-manager"
   | "content-programming"
   | "community-care"
-  | "people-ops";
+  | "people-ops"
+  /** Drive Day desk volunteers. Both sit inside the "drive" section but,
+   *  unlike every other role, default to no access and are granted only
+   *  their own desk — see ROLE_FEATURE_DEFAULTS in admin-permissions.ts. */
+  | "drive-registration"
+  | "drive-handover";
 
 export type AdminSection = "people" | "community" | "programming" | "drive" | "users";
 
@@ -31,6 +36,7 @@ export type AdminFeature =
   | "drive.catalog"
   | "drive.applicants"
   | "drive.checkin"
+  | "drive.handover"
   | "drive.donations"
   | "drive.ambassadors"
   | "drive.payments"
